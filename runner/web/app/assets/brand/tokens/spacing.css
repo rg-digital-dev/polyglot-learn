@@ -1,0 +1,44 @@
+/* Copied from the production site (rg-digital-dev/site, src/styles/global.css). Do not fork values: change the site, then copy here. */
+:root {
+  /* Spacing scale */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+
+  /* Layout */
+  --pad:   clamp(20px, 8.33vw, 120px);
+  /* Includes --pad, so the content is this minus two 120px gutters: 1200px on
+     a wide screen, which is the column the mock-ups were drawn on. Narrowing
+     it made the page feel tighter rather than calmer — the type is what was
+     too large, not the column. */
+  --max-w: 1440px;
+  --nav-h: 72px;
+  --band-y: clamp(72px, 10vw, 140px);  /* vertical padding of a page section */
+
+  /* Radii */
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+  /* Roles — use these, not raw px: a card or panel that sits in a section,
+     anything inside it (a tab, an inner card, a list row), and form controls,
+     square chips and icon tiles. */
+  --radius-card:    18px;
+  --radius-control: 10px;
+  /* Speech bubbles are 16px with one 4px corner, the tail, pointing at the ghost. */
+
+  /* Card padding: a card in a grid or list, and the one big panel a section
+     is built around. */
+  --pad-card:  clamp(20px, 2.2vw, 28px);
+  --pad-panel: clamp(24px, 3vw, 40px);
+
+}

@@ -1,0 +1,278 @@
+id = "rust"
+name = "Rust"
+
+[lings]
+name = "Rustlings"
+url = "https://github.com/rust-lang/rustlings"
+
+[install]
+windows = [
+  "winget install --id Microsoft.VisualStudio.BuildTools -e --override \"--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended\"",
+  "winget install --id Rustlang.Rustup -e",
+  "rustup default stable",
+]
+macos = [
+  "xcode-select --install",
+  "brew install rustup",
+  "export PATH=\"$(brew --prefix rustup)/bin:$PATH\"   # also add this line to ~/.zshrc",
+  "rustup default stable",
+]
+arch = [
+  "sudo pacman -S --needed base-devel rustup",
+  "rustup default stable",
+]
+debian = [
+  "sudo apt install build-essential rustup   # Debian 13+ / Ubuntu 24.04+",
+  "rustup default stable",
+]
+fedora = [
+  "sudo dnf install gcc rustup",
+  "rustup-init -y",
+]
+
+# functions & strings (hello)
+[[links.functions]]
+kind = "docs"
+title = "The Rust Book: 3.3 Functions"
+url = "https://doc.rust-lang.org/book/ch03-03-how-functions-work.html"
+
+[[links.functions]]
+kind = "docs"
+title = "The Rust Book: 8.2 Storing UTF-8 Encoded Text with Strings"
+url = "https://doc.rust-lang.org/book/ch08-02-strings.html"
+
+[[links.functions]]
+kind = "lings"
+title = "Rustlings: 02_functions"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/02_functions"
+
+[[links.functions]]
+kind = "lings"
+title = "Rustlings: 09_strings"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/09_strings"
+
+[[links.functions]]
+kind = "exercism"
+title = "Exercism Rust: Functions"
+url = "https://exercism.org/tracks/rust/concepts/functions"
+
+# conditionals (leap-year)
+[[links.conditionals]]
+kind = "docs"
+title = "The Rust Book: 3.5 Control Flow, if Expressions"
+url = "https://doc.rust-lang.org/book/ch03-05-control-flow.html#if-expressions"
+
+[[links.conditionals]]
+kind = "docs"
+title = "Rust by Example: if/else"
+url = "https://doc.rust-lang.org/rust-by-example/flow_control/if_else.html"
+
+[[links.conditionals]]
+kind = "lings"
+title = "Rustlings: 03_if"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/03_if"
+
+[[links.conditionals]]
+kind = "exercism"
+title = "Exercism Rust: Booleans"
+url = "https://exercism.org/tracks/rust/concepts/booleans"
+
+# loops (sum-of-multiples)
+[[links.loops]]
+kind = "docs"
+title = "The Rust Book: 3.5 Control Flow, Repetition with Loops"
+url = "https://doc.rust-lang.org/book/ch03-05-control-flow.html#repetition-with-loops"
+
+[[links.loops]]
+kind = "docs"
+title = "Rust by Example: for and range"
+url = "https://doc.rust-lang.org/rust-by-example/flow_control/for.html"
+
+[[links.loops]]
+kind = "lings"
+title = "Rustlings: 05_vecs (looping over a slice)"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/05_vecs"
+
+[[links.loops]]
+kind = "exercism"
+title = "Exercism Rust: Loops"
+url = "https://exercism.org/tracks/rust/concepts/loops"
+
+# maps (word-count)
+[[links.maps]]
+kind = "docs"
+title = "The Rust Book: 8.3 Storing Keys with Associated Values in Hash Maps"
+url = "https://doc.rust-lang.org/book/ch08-03-hash-maps.html"
+
+[[links.maps]]
+kind = "docs"
+title = "std docs: HashMap::entry"
+url = "https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.entry"
+
+[[links.maps]]
+kind = "lings"
+title = "Rustlings: 11_hashmaps"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/11_hashmaps"
+
+[[links.maps]]
+kind = "exercism"
+title = "Exercism Rust: HashMap"
+url = "https://exercism.org/tracks/rust/concepts/hashmap"
+
+# errors (parse-port)
+[[links.errors]]
+kind = "docs"
+title = "The Rust Book: 9.2 Recoverable Errors with Result"
+url = "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+
+[[links.errors]]
+kind = "docs"
+title = "Rust by Example: Result"
+url = "https://doc.rust-lang.org/rust-by-example/error/result.html"
+
+[[links.errors]]
+kind = "lings"
+title = "Rustlings: 13_error_handling"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/13_error_handling"
+
+[[links.errors]]
+kind = "exercism"
+title = "Exercism Rust: Largest Series Product (returns a Result)"
+url = "https://exercism.org/tracks/rust/exercises/largest-series-product"
+
+# collections & sorting (top-scores)
+[[links.sorting]]
+kind = "docs"
+title = "The Rust Book: 8.1 Storing Lists of Values with Vectors"
+url = "https://doc.rust-lang.org/book/ch08-01-vectors.html"
+
+[[links.sorting]]
+kind = "docs"
+title = "std docs: slice::sort_by"
+url = "https://doc.rust-lang.org/std/primitive.slice.html#method.sort_by"
+
+[[links.sorting]]
+kind = "lings"
+title = "Rustlings: 05_vecs"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/05_vecs"
+
+[[links.sorting]]
+kind = "exercism"
+title = "Exercism Rust: High Scores"
+url = "https://exercism.org/tracks/rust/exercises/high-scores"
+
+# structs (order-total)
+[[links.structs]]
+kind = "docs"
+title = "The Rust Book: 5.1 Defining and Instantiating Structs"
+url = "https://doc.rust-lang.org/book/ch05-01-defining-structs.html"
+
+[[links.structs]]
+kind = "docs"
+title = "The Rust Book: 5.3 Methods"
+url = "https://doc.rust-lang.org/book/ch05-03-method-syntax.html"
+
+[[links.structs]]
+kind = "lings"
+title = "Rustlings: 07_structs"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/07_structs"
+
+[[links.structs]]
+kind = "exercism"
+title = "Exercism Rust: Structs"
+url = "https://exercism.org/tracks/rust/concepts/structs"
+
+# traits (shapes)
+[[links.interfaces]]
+kind = "docs"
+title = "The Rust Book: 10.2 Defining Shared Behavior with Traits"
+url = "https://doc.rust-lang.org/book/ch10-02-traits.html"
+
+[[links.interfaces]]
+kind = "docs"
+title = "The Rust Book: 18.2 Using Trait Objects to Abstract over Shared Behavior"
+url = "https://doc.rust-lang.org/book/ch18-02-trait-objects.html"
+
+[[links.interfaces]]
+kind = "lings"
+title = "Rustlings: 15_traits"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/15_traits"
+
+[[links.interfaces]]
+kind = "exercism"
+title = "Exercism Rust: Space Age (implement a trait)"
+url = "https://exercism.org/tracks/rust/exercises/space-age"
+
+# closures (make-counter); Rustlings has no closures folder
+[[links.closures]]
+kind = "docs"
+title = "The Rust Book: 13.1 Closures"
+url = "https://doc.rust-lang.org/book/ch13-01-closures.html"
+
+[[links.closures]]
+kind = "docs"
+title = "Rust by Example: Closures"
+url = "https://doc.rust-lang.org/rust-by-example/fn/closures.html"
+
+[[links.closures]]
+kind = "exercism"
+title = "Exercism Rust: Accumulate (take a closure)"
+url = "https://exercism.org/tracks/rust/exercises/accumulate"
+
+# iterators (top-words)
+[[links.iterators]]
+kind = "docs"
+title = "The Rust Book: 13.2 Processing a Series of Items with Iterators"
+url = "https://doc.rust-lang.org/book/ch13-02-iterators.html"
+
+[[links.iterators]]
+kind = "docs"
+title = "std docs: Iterator"
+url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html"
+
+[[links.iterators]]
+kind = "lings"
+title = "Rustlings: 18_iterators"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/18_iterators"
+
+[[links.iterators]]
+kind = "exercism"
+title = "Exercism Rust: Iterators"
+url = "https://exercism.org/tracks/rust/concepts/iterators"
+
+# modules (slugify); Exercism Rust has no modules concept or exercise
+[[links.modules]]
+kind = "docs"
+title = "The Rust Book: 7.2 Control Scope and Privacy with Modules"
+url = "https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html"
+
+[[links.modules]]
+kind = "docs"
+title = "The Rust Book: 7.5 Separating Modules into Different Files"
+url = "https://doc.rust-lang.org/book/ch07-05-separating-modules-into-different-files.html"
+
+[[links.modules]]
+kind = "lings"
+title = "Rustlings: 10_modules"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/10_modules"
+
+# concurrency (run-all)
+[[links.concurrency]]
+kind = "docs"
+title = "The Rust Book: 16.1 Using Threads to Run Code Simultaneously"
+url = "https://doc.rust-lang.org/book/ch16-01-threads.html"
+
+[[links.concurrency]]
+kind = "docs"
+title = "std docs: thread::scope"
+url = "https://doc.rust-lang.org/std/thread/fn.scope.html"
+
+[[links.concurrency]]
+kind = "lings"
+title = "Rustlings: 20_threads"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/20_threads"
+
+[[links.concurrency]]
+kind = "exercism"
+title = "Exercism Rust: Parallel Letter Frequency"
+url = "https://exercism.org/tracks/rust/exercises/parallel-letter-frequency"

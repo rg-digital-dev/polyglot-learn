@@ -1,0 +1,148 @@
+/* Copied from the production site (rg-digital-dev/site, src/styles/global.css). Do not fork values: change the site, then copy here. */
+/* ── Theme ───────────────────────────────────────────────────
+   Every colour token is a light-dark() pair, resolved against the colour
+   scheme of the element that uses it:
+   - by default the scheme follows the visitor's OS setting,
+   - [data-theme] on <html> (set by ThemeToggle, persisted) pins it,
+   - .theme-inverse forces dark for bands that stay dark in both themes.
+   Neutrals are true greys — lime is the only hue in the palette. */
+
+/* The inverse band's own greys. Registered so they resolve at :root (the page
+   theme) and inherit as colours, instead of re-resolving inside the band, which
+   is always forced dark. That is what lets a band *lift* in dark mode: on a
+   light page it is near-black, on a dark page it steps up to a lighter grey
+   than both the page and a raised band, so the rhythm survives either theme. */
+@property --inverse-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0b0b0b;
+}
+@property --inverse-surface {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #151515;
+}
+@property --inverse-surface-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #1f1f1f;
+}
+@property --inverse-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #2b2b2b;
+}
+@property --inverse-edge {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+:root {
+  color-scheme: light dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+
+:root {
+  /* Brand */
+  --lime:    #ccff00;   /* fills only: buttons, highlights, the ghost */
+  --on-lime: #0b0b0b;
+
+  /* Surfaces */
+  --bg:            light-dark(#f6f6f6, #0b0b0b);
+  --surface:       light-dark(#ffffff, #151515);
+  --surface-2:     light-dark(#eeeeee, #1f1f1f);
+  --border:        light-dark(#e0e0e0, #2b2b2b);
+  --border-strong: light-dark(#c6c6c6, #3a3a3a);
+  /* Inverse bands: near-black on a light page; lifted above page and raised
+     bands on a dark one, with a faint edge so the step reads. */
+  --inverse-bg:        light-dark(#0b0b0b, #242424);
+  --inverse-surface:   light-dark(#151515, #2e2e2e);
+  --inverse-surface-2: light-dark(#1f1f1f, #383838);
+  --inverse-border:    light-dark(#2b2b2b, #404040);
+  --inverse-edge:      light-dark(transparent, #3a3a3a);
+
+  /* Text */
+  --text:           light-dark(#111111, #fafafa);
+  --text-secondary: light-dark(#5c5c5c, #a6a6a6);
+  --text-muted:     light-dark(#6b6b6b, #8c8c8c);  /* AA on --bg and --surface in both themes */
+
+  /* Accent: readable lime-family colour for text, icons and rules */
+  --accent:        light-dark(#4b5f00, #ccff00);
+  --accent-wash:   light-dark(#eef6c8, rgba(204, 255, 0, .10));
+  --accent-border: light-dark(#cfe07e, rgba(204, 255, 0, .22));
+
+  /* Inverted fill for primary buttons and highlighted markers */
+  --ink:    light-dark(#111111, #fafafa);
+  --on-ink: light-dark(#fafafa, #111111);
+  --ink-accent: light-dark(#ccff00, #111111);  /* accent detail on --ink (button arrows, step numbers) */
+
+  /* Feedback */
+  --danger:      light-dark(#c0341d, #ff5050);
+  --danger-text: light-dark(#b3301b, #ff6464);
+  --warn:        light-dark(#8a4b00, #ffa03c);
+
+  --focus-ring: var(--accent);
+
+  /* Highlighter under key words in headings: a lime marker on light, lime text on dark */
+  --mark-fill: light-dark(#ccff00, transparent);
+  --mark-text: light-dark(#111111, #ccff00);
+
+  /* Feasibility pills (Quickscan report): Goed / Beperkt / Onzeker / n.v.t. */
+  --pill-good-bg:     light-dark(#e3f2c0, rgba(204, 255, 0, .14));
+  --pill-good-text:   light-dark(#33430a, #d9ff66);
+  --pill-limited-bg:  light-dark(#fbead3, rgba(255, 160, 60, .16));
+  --pill-limited-text:light-dark(#7a4300, #ffbe7a);
+  --pill-unsure-bg:   light-dark(#f6dcd8, rgba(255, 90, 70, .16));
+  --pill-unsure-text: light-dark(#8a2a1c, #ff9a8a);
+}
+
+
+/* Bands that stay dark in both themes (recognition section, closing CTA, footer).
+   The dark values are re-declared here instead of relying on light-dark(): a
+   token declared at :root keeps the page theme's value inside the band, which
+   put dark text on a dark ground whenever the theme was pinned to light. */
+.theme-inverse {
+  color-scheme: dark;
+
+  --bg:            var(--inverse-bg);
+  --surface:       var(--inverse-surface);
+  --surface-2:     var(--inverse-surface-2);
+  --border:        var(--inverse-border);
+  --border-strong: #4a4a4a;
+
+  --text:           #fafafa;
+  --text-secondary: #a6a6a6;
+  --text-muted:     #8c8c8c;
+
+  --accent:        #ccff00;
+  --accent-wash:   rgba(204, 255, 0, .10);
+  --accent-border: rgba(204, 255, 0, .22);
+
+  --ink:        #fafafa;
+  --on-ink:     #111111;
+  --ink-accent: #111111;
+
+  --danger:      #ff5050;
+  --danger-text: #ff6464;
+  --warn:        #ffa03c;
+
+  --mark-fill: transparent;
+  --mark-text: #ccff00;
+
+  --pill-good-bg:      rgba(204, 255, 0, .14);
+  --pill-good-text:    #d9ff66;
+  --pill-limited-bg:   rgba(255, 160, 60, .16);
+  --pill-limited-text: #ffbe7a;
+  --pill-unsure-bg:    rgba(255, 90, 70, .16);
+  --pill-unsure-text:  #ff9a8a;
+
+  background: var(--inverse-bg);
+  color: var(--text);
+}
+/* A band, not a card inside one: only bands get the dark-mode edge. */
+.band-inverse,
+section.theme-inverse,
+footer.theme-inverse { border-block: 1px solid var(--inverse-edge); }

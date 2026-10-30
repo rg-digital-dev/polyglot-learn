@@ -1,0 +1,49 @@
+{
+  "slug": "shapes",
+  "title": "Shapes",
+  "concept": "interfaces",
+  "summary": "Implement the shape interface for rect and square, then describe a list of shapes as \"<label>: <area>\", largest area first. Shapes with equal areas keep their input order.",
+  "types": [
+    {
+      "name": "shape",
+      "kind": "interface",
+      "methods": [
+        { "name": "area", "params": [], "returns": "int" },
+        { "name": "label", "params": [], "returns": "string" }
+      ]
+    },
+    {
+      "name": "rect",
+      "kind": "class",
+      "implements": ["shape"],
+      "fields": [
+        { "name": "width", "type": "int" },
+        { "name": "height", "type": "int" }
+      ]
+    },
+    {
+      "name": "square",
+      "kind": "class",
+      "implements": ["shape"],
+      "fields": [{ "name": "side", "type": "int" }]
+    }
+  ],
+  "function": "describe_all",
+  "params": [{ "name": "shapes", "type": "list<shape>" }],
+  "returns": "list<string>",
+  "hints": [
+    "A rect's label is \"rect WxH\" (e.g. \"rect 2x3\"); a square's is \"square S\" (e.g. \"square 4\").",
+    "describe_all should only call area() and label(); it must not care which concrete type each shape is.",
+    "Sort by area, largest first, with a stable sort so equal areas keep their order. Not every language's default sort is stable."
+  ],
+  "cases": [
+    { "description": "one rect", "input": [[{ "type": "rect", "width": 2, "height": 3 }]], "expected": ["rect 2x3: 6"] },
+    { "description": "one square", "input": [[{ "type": "square", "side": 4 }]], "expected": ["square 4: 16"] },
+    { "description": "largest area first", "input": [[{ "type": "rect", "width": 2, "height": 3 }, { "type": "square", "side": 4 }, { "type": "rect", "width": 1, "height": 10 }]], "expected": ["square 4: 16", "rect 1x10: 10", "rect 2x3: 6"] },
+    { "description": "no shapes", "input": [[]], "expected": [] },
+    { "description": "equal areas keep their order", "input": [[{ "type": "square", "side": 2 }, { "type": "rect", "width": 1, "height": 4 }, { "type": "rect", "width": 4, "height": 1 }]], "expected": ["square 2: 4", "rect 1x4: 4", "rect 4x1: 4"] },
+    { "description": "zero-width rect", "input": [[{ "type": "rect", "width": 0, "height": 5 }]], "expected": ["rect 0x5: 0"] },
+    { "description": "squares only", "input": [[{ "type": "square", "side": 1 }, { "type": "square", "side": 3 }]], "expected": ["square 3: 9", "square 1: 1"] },
+    { "description": "many equal shapes stay in order", "input": [[{ "type": "rect", "width": 1, "height": 6 }, { "type": "rect", "width": 6, "height": 1 }, { "type": "rect", "width": 2, "height": 3 }, { "type": "rect", "width": 3, "height": 2 }, { "type": "square", "side": 3 }]], "expected": ["square 3: 9", "rect 1x6: 6", "rect 6x1: 6", "rect 2x3: 6", "rect 3x2: 6"] }
+  ]
+}

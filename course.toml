@@ -1,0 +1,28 @@
+# The course: modules in order, each listing exercise slugs in order.
+# Every slug must have a matching specs/<slug>.json.
+
+title = "polyglot-learn"
+
+[[module]]
+id = "foundations"
+title = "Foundations"
+exercises = [
+  "hello",
+  "leap-year",
+  "sum-of-multiples",
+  "word-count",
+  "parse-port",
+  "top-scores",
+]
+
+[[module]]
+id = "building-blocks"
+title = "Building Blocks"
+exercises = [
+  "order-total",
+  "shapes",
+  "make-counter",
+  "top-words",
+  "slugify",
+  "run-all",
+]

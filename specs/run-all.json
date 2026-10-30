@@ -1,0 +1,23 @@
+{
+  "slug": "run-all",
+  "title": "Run All",
+  "concept": "concurrency",
+  "summary": "Run task(d) for every delay at the same time and return the results in input order. The whole call should take about as long as the slowest task, not the sum of all of them.",
+  "concurrency": true,
+  "function": "run_all",
+  "params": [{ "name": "delays", "type": "list<int>" }],
+  "returns": "list<int>",
+  "hints": [
+    "task is provided in your file. Calling it once per delay in a plain loop gives the right results but takes the sum of all delays.",
+    "Start every task before waiting for any of them, then collect the results. Store each result at its index so the order matches the input.",
+    "Look up your track note: depending on the language this means threads, goroutines, promises, coroutines, fibers or generators."
+  ],
+  "cases": [
+    { "description": "three tasks", "input": [[300, 100, 200]], "expected": [300, 100, 200] },
+    { "description": "one task", "input": [[150]], "expected": [150] },
+    { "description": "no tasks", "input": [[]], "expected": [] },
+    { "description": "equal tasks", "input": [[200, 200, 200, 200]], "expected": [200, 200, 200, 200] },
+    { "description": "results keep input order", "input": [[100, 300, 200]], "expected": [100, 300, 200] },
+    { "description": "many short tasks", "input": [[100, 100, 100, 100, 100, 100, 100, 100]], "expected": [100, 100, 100, 100, 100, 100, 100, 100] }
+  ]
+}

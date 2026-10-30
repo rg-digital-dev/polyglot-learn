@@ -1,0 +1,27 @@
+name: New exercise
+description: Propose an exercise for an existing or new module
+labels: [exercise]
+body:
+  - type: input
+    id: slug
+    attributes:
+      label: Slug and concept
+      placeholder: "run-length-encoding / strings"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What should the learner implement?
+      description: The function signature in spec types (int, bool, string, list<T>, map<string,T>) and the rules.
+    validations:
+      required: true
+  - type: textarea
+    id: cases
+    attributes:
+      label: Example cases
+      description: A few inputs and expected outputs, including edge cases.
+  - type: textarea
+    id: why
+    attributes:
+      label: What does it teach that existing exercises don't?

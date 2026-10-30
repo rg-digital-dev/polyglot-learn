@@ -1,0 +1,28 @@
+{
+  "slug": "parse-port",
+  "title": "Parse Port",
+  "concept": "errors",
+  "summary": "Parse a TCP port number from input. Surrounding whitespace is allowed; the rest must be ASCII digits only, and the value must be in 1-65535. Anything else is an error.",
+  "function": "parse_port",
+  "params": [{ "name": "input", "type": "string" }],
+  "returns": "int",
+  "fallible": true,
+  "hints": [
+    "Trim, then reject the input unless it is non-empty and every character is a digit. Most built-in number parsers accept '+' or '-', so check the characters yourself.",
+    "A string of digits can still overflow a native integer. Check the length, or parse into something wide enough before range-checking.",
+    "Return an error with a helpful message: 'not a number' and 'out of range' are different problems."
+  ],
+  "cases": [
+    { "description": "common port", "input": ["80"], "expected": 80 },
+    { "description": "highest port", "input": ["65535"], "expected": 65535 },
+    { "description": "surrounding whitespace is allowed", "input": ["  8080 "], "expected": 8080 },
+    { "description": "leading zeros are fine", "input": ["0080"], "expected": 80 },
+    { "description": "zero is out of range", "input": ["0"], "error": true },
+    { "description": "one past the highest port", "input": ["65536"], "error": true },
+    { "description": "plus sign is rejected", "input": ["+80"], "error": true },
+    { "description": "negative number is rejected", "input": ["-1"], "error": true },
+    { "description": "empty input", "input": [""], "error": true },
+    { "description": "trailing letters", "input": ["80a"], "error": true },
+    { "description": "digits that overflow a 64-bit integer", "input": ["99999999999999999999"], "error": true }
+  ]
+}

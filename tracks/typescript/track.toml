@@ -1,0 +1,186 @@
+id = "typescript"
+name = "TypeScript"
+
+# No [lings] table: no maintained rustlings-style TypeScript repo was found.
+
+[install]
+windows = ["winget install --id OpenJS.NodeJS.LTS -e"]
+macos = ["brew install node"]
+arch = ["sudo pacman -S nodejs"]
+debian = [
+  "sudo apt install curl unzip",
+  "curl -fsSL https://fnm.vercel.app/install | bash",
+  "source ~/.bashrc",
+  "fnm install --lts",
+]
+fedora = [
+  "sudo dnf install curl unzip",
+  "curl -fsSL https://fnm.vercel.app/install | bash",
+  "source ~/.bashrc",
+  "fnm install --lts",
+]
+
+[[links.functions]]
+kind = "docs"
+title = "TypeScript Handbook: More on Functions"
+url = "https://www.typescriptlang.org/docs/handbook/2/functions.html"
+
+[[links.functions]]
+kind = "docs"
+title = "MDN: Template literals"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals"
+
+[[links.functions]]
+kind = "exercism"
+title = "Exercism TypeScript: Two Fer"
+url = "https://exercism.org/tracks/typescript/exercises/two-fer"
+
+[[links.conditionals]]
+kind = "docs"
+title = "TypeScript Handbook: Narrowing"
+url = "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+
+[[links.conditionals]]
+kind = "docs"
+title = "MDN: Remainder (%)"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder"
+
+[[links.conditionals]]
+kind = "exercism"
+title = "Exercism TypeScript: Raindrops"
+url = "https://exercism.org/tracks/typescript/exercises/raindrops"
+
+[[links.loops]]
+kind = "docs"
+title = "MDN: Loops and iteration"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration"
+
+[[links.loops]]
+kind = "docs"
+title = "MDN: for...of"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of"
+
+[[links.loops]]
+kind = "exercism"
+title = "Exercism TypeScript: Difference of Squares"
+url = "https://exercism.org/tracks/typescript/exercises/difference-of-squares"
+
+[[links.maps]]
+kind = "docs"
+title = "TypeScript Handbook: Record<Keys, Type>"
+url = "https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type"
+
+[[links.maps]]
+kind = "docs"
+title = "MDN: Map"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map"
+
+[[links.maps]]
+kind = "exercism"
+title = "Exercism TypeScript: Nucleotide Count"
+url = "https://exercism.org/tracks/typescript/exercises/nucleotide-count"
+
+[[links.errors]]
+kind = "docs"
+title = "TSConfig: useUnknownInCatchVariables"
+url = "https://www.typescriptlang.org/tsconfig/useUnknownInCatchVariables.html"
+
+[[links.errors]]
+kind = "docs"
+title = "MDN: try...catch"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch"
+
+[[links.errors]]
+kind = "exercism"
+title = "Exercism TypeScript: Phone Number"
+url = "https://exercism.org/tracks/typescript/exercises/phone-number"
+
+[[links.sorting]]
+kind = "docs"
+title = "MDN: Array.prototype.toSorted()"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted"
+
+[[links.sorting]]
+kind = "docs"
+title = "TypeScript Handbook: The ReadonlyArray type"
+url = "https://www.typescriptlang.org/docs/handbook/2/objects.html#the-readonlyarray-type"
+
+[[links.sorting]]
+kind = "exercism"
+title = "Exercism TypeScript: Grade School"
+url = "https://exercism.org/tracks/typescript/exercises/grade-school"
+
+[[links.structs]]
+kind = "docs"
+title = "TypeScript Handbook: Object Types"
+url = "https://www.typescriptlang.org/docs/handbook/2/objects.html"
+
+[[links.structs]]
+kind = "exercism"
+title = "Exercism TypeScript: D&D Character"
+url = "https://exercism.org/tracks/typescript/exercises/dnd-character"
+
+[[links.interfaces]]
+kind = "docs"
+title = "TypeScript Handbook: implements clauses"
+url = "https://www.typescriptlang.org/docs/handbook/2/classes.html#implements-clauses"
+
+[[links.interfaces]]
+kind = "exercism"
+title = "Exercism TypeScript: Clock"
+url = "https://exercism.org/tracks/typescript/exercises/clock"
+
+[[links.closures]]
+kind = "docs"
+title = "MDN: Closures"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures"
+
+[[links.closures]]
+kind = "docs"
+title = "TypeScript Handbook: Function Type Expressions"
+url = "https://www.typescriptlang.org/docs/handbook/2/functions.html#function-type-expressions"
+
+[[links.closures]]
+kind = "exercism"
+title = "Exercism JavaScript: Closures"
+url = "https://exercism.org/tracks/javascript/concepts/closures"
+
+[[links.iterators]]
+kind = "docs"
+title = "MDN: Iteration protocols"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols"
+
+[[links.iterators]]
+kind = "docs"
+title = "MDN: Object.entries()"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries"
+
+[[links.iterators]]
+kind = "exercism"
+title = "Exercism TypeScript: ETL"
+url = "https://exercism.org/tracks/typescript/exercises/etl"
+
+[[links.modules]]
+kind = "docs"
+title = "TypeScript Handbook: Modules"
+url = "https://www.typescriptlang.org/docs/handbook/2/modules.html"
+
+[[links.modules]]
+kind = "docs"
+title = "Node.js: Type stripping"
+url = "https://nodejs.org/api/typescript.html#type-stripping"
+
+[[links.concurrency]]
+kind = "docs"
+title = "MDN: Promise.all()"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all"
+
+[[links.concurrency]]
+kind = "docs"
+title = "MDN: JavaScript execution model"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model"
+
+[[links.concurrency]]
+kind = "exercism"
+title = "Exercism JavaScript: Promises"
+url = "https://exercism.org/tracks/javascript/concepts/promises"

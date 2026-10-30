@@ -1,0 +1,196 @@
+id = "lua"
+name = "Lua 5.4"
+
+# No [lings] table: the "lualings" repos on GitHub (checked 2026-10-30) are
+# single-author projects with 0-1 stars, a handful of commits, or an
+# "actively in development" notice, so none counts as maintained yet.
+
+[install]
+windows = ["winget install --id DEVCOM.Lua -e"]
+macos = [
+  "brew install lua@5.4",
+  "export PATH=\"$(brew --prefix lua@5.4)/bin:$PATH\"",
+]
+arch = ["sudo pacman -S lua54"]
+debian = ["sudo apt install lua5.4"]
+fedora = ["sudo dnf install lua"]
+
+[[links.functions]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 3.4.11 Function Definitions"
+url = "https://www.lua.org/manual/5.4/manual.html#3.4.11"
+
+[[links.functions]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 6.4 String Manipulation"
+url = "https://www.lua.org/manual/5.4/manual.html#6.4"
+
+[[links.functions]]
+kind = "exercism"
+title = "Exercism Lua: Two Fer"
+url = "https://exercism.org/tracks/lua/exercises/two-fer"
+
+[[links.conditionals]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 3.3.4 Control Structures"
+url = "https://www.lua.org/manual/5.4/manual.html#3.3.4"
+
+[[links.conditionals]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 3.3 Logical Operators"
+url = "https://www.lua.org/pil/3.3.html"
+
+[[links.conditionals]]
+kind = "exercism"
+title = "Exercism Lua: Raindrops"
+url = "https://exercism.org/tracks/lua/exercises/raindrops"
+
+[[links.loops]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 3.3.5 For Statement"
+url = "https://www.lua.org/manual/5.4/manual.html#3.3.5"
+
+[[links.loops]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 4.3.4 Numeric for"
+url = "https://www.lua.org/pil/4.3.4.html"
+
+[[links.loops]]
+kind = "exercism"
+title = "Exercism Lua: Difference of Squares"
+url = "https://exercism.org/tracks/lua/exercises/difference-of-squares"
+
+[[links.maps]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 2.1 Values and Types"
+url = "https://www.lua.org/manual/5.4/manual.html#2.1"
+
+[[links.maps]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 2.5 Tables"
+url = "https://www.lua.org/pil/2.5.html"
+
+[[links.maps]]
+kind = "exercism"
+title = "Exercism Lua: Nucleotide Count"
+url = "https://exercism.org/tracks/lua/exercises/nucleotide-count"
+
+[[links.errors]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 2.3 Error Handling"
+url = "https://www.lua.org/manual/5.4/manual.html#2.3"
+
+[[links.errors]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 8.3 Errors"
+url = "https://www.lua.org/pil/8.3.html"
+
+[[links.errors]]
+kind = "exercism"
+title = "Exercism Lua: Phone Number"
+url = "https://exercism.org/tracks/lua/exercises/phone-number"
+
+[[links.sorting]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: table.sort"
+url = "https://www.lua.org/manual/5.4/manual.html#pdf-table.sort"
+
+[[links.sorting]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 19.3 Sort"
+url = "https://www.lua.org/pil/19.3.html"
+
+[[links.sorting]]
+kind = "exercism"
+title = "Exercism Lua: Grade School"
+url = "https://exercism.org/tracks/lua/exercises/grade-school"
+
+[[links.structs]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 3.4.9 Table Constructors"
+url = "https://www.lua.org/manual/5.4/manual.html#3.4.9"
+
+[[links.structs]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 3.6 Table Constructors"
+url = "https://www.lua.org/pil/3.6.html"
+
+[[links.structs]]
+kind = "exercism"
+title = "Exercism Lua: Robot Simulator"
+url = "https://exercism.org/tracks/lua/exercises/robot-simulator"
+
+[[links.interfaces]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 2.4 Metatables and Metamethods"
+url = "https://www.lua.org/manual/5.4/manual.html#2.4"
+
+[[links.interfaces]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 16.1 Classes"
+url = "https://www.lua.org/pil/16.1.html"
+
+[[links.interfaces]]
+kind = "exercism"
+title = "Exercism Lua: Clock"
+url = "https://exercism.org/tracks/lua/exercises/clock"
+
+[[links.closures]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 3.5 Visibility Rules"
+url = "https://www.lua.org/manual/5.4/manual.html#3.5"
+
+[[links.closures]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 6.1 Closures"
+url = "https://www.lua.org/pil/6.1.html"
+
+[[links.iterators]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 3.3.5 For Statement"
+url = "https://www.lua.org/manual/5.4/manual.html#3.3.5"
+
+[[links.iterators]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 7.1 Iterators and Closures"
+url = "https://www.lua.org/pil/7.1.html"
+
+[[links.iterators]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 7.3 Stateless Iterators"
+url = "https://www.lua.org/pil/7.3.html"
+
+[[links.iterators]]
+kind = "exercism"
+title = "Exercism Lua: Tournament"
+url = "https://exercism.org/tracks/lua/exercises/tournament"
+
+[[links.modules]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 6.3 Modules"
+url = "https://www.lua.org/manual/5.4/manual.html#6.3"
+
+[[links.modules]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 8.1 The require Function"
+url = "https://www.lua.org/pil/8.1.html"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 2.6 Coroutines"
+url = "https://www.lua.org/manual/5.4/manual.html#2.6"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 9.4 Non-Preemptive Multithreading"
+url = "https://www.lua.org/pil/9.4.html"
+
+[[links.concurrency]]
+kind = "docs"
+title = "FiveM: Citizen.CreateThread"
+url = "https://docs.fivem.net/docs/scripting-reference/runtimes/lua/functions/Citizen.CreateThread/"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Neovim: Luv reference manual (vim.uv)"
+url = "https://neovim.io/doc/user/luvref/"

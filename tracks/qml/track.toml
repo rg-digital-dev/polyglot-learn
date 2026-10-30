@@ -1,0 +1,153 @@
+id = "qml"
+name = "QML (Qt 6)"
+
+# No [lings] table: no rustlings-style QML repo exists on GitHub (searched
+# 2026-10-30). There is no Exercism QML track either, so the links below are
+# Qt and Quickshell documentation only.
+
+[install]
+windows = [
+  "pip install aqtinstall",
+  'aqt install-qt windows desktop 6.10.3 win64_msvc2022_64 -O C:\Qt',
+  "# aqtinstall 3.3.0 cannot install Qt 6.11+ (Qt changed its repository layout).",
+  "# Alternative: the Qt Online Installer, https://www.qt.io/download-qt-installer-oss (free Qt account; pick Qt 6.x > MSVC 2022 64-bit)",
+]
+macos = ["brew install qt"]
+arch = ["sudo pacman -S qt6-declarative"]
+debian = ["sudo apt install qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick"]
+fedora = ["sudo dnf install qt6-qtdeclarative-devel"]
+
+[[links.functions]]
+kind = "docs"
+title = "Qt 6: JavaScript Expressions in QML Documents (custom methods)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-expressions.html#javascript-in-custom-methods"
+
+[[links.functions]]
+kind = "docs"
+title = "Qt 6: QML Object Attributes (method attributes)"
+url = "https://doc.qt.io/qt-6/qtqml-syntax-objectattributes.html#method-attributes"
+
+[[links.functions]]
+kind = "docs"
+title = "Quickshell guide: QML Language (functions)"
+url = "https://quickshell.org/docs/v0.3.2/guide/qml-language/#functions"
+
+[[links.conditionals]]
+kind = "docs"
+title = "Qt 6: JavaScript Expressions in QML Documents (property bindings)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-expressions.html#javascript-in-property-bindings"
+
+[[links.conditionals]]
+kind = "docs"
+title = "Quickshell guide: QML Language (property bindings)"
+url = "https://quickshell.org/docs/v0.3.2/guide/qml-language/#property-bindings"
+
+[[links.loops]]
+kind = "docs"
+title = "Qt 6: List of JavaScript Objects and Functions (Array)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-functionlist.html#array-objects"
+
+[[links.loops]]
+kind = "docs"
+title = "Qt 6: JavaScript Host Environment (environment restrictions)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html#javascript-environment-restrictions"
+
+[[links.maps]]
+kind = "docs"
+title = "Qt 6: var QML Value Type"
+url = "https://doc.qt.io/qt-6/qml-var.html"
+
+[[links.maps]]
+kind = "docs"
+title = "Qt 6: List of JavaScript Objects and Functions (Object)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-functionlist.html#the-object-object"
+
+[[links.errors]]
+kind = "docs"
+title = "Qt 6: JavaScript Host Environment (type annotations and assertions)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html#type-annotations-and-assertions"
+
+[[links.errors]]
+kind = "docs"
+title = "Qt 6: TestCase QML Type"
+url = "https://doc.qt.io/qt-6/qml-qttest-testcase.html"
+
+[[links.sorting]]
+kind = "docs"
+title = "Qt 6: QML Sequence Types"
+url = "https://doc.qt.io/qt-6/qtqml-typesystem-sequencetypes.html"
+
+[[links.sorting]]
+kind = "docs"
+title = "Qt 6: List of JavaScript Objects and Functions (Array)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-functionlist.html#array-objects"
+
+[[links.structs]]
+kind = "docs"
+title = "Qt 6: QML Object Types"
+url = "https://doc.qt.io/qt-6/qtqml-typesystem-objecttypes.html"
+
+[[links.structs]]
+kind = "docs"
+title = "Qt 6: QtObject QML Type"
+url = "https://doc.qt.io/qt-6/qml-qtqml-qtobject.html"
+
+[[links.interfaces]]
+kind = "docs"
+title = "Qt 6: Defining Object Types through QML Documents"
+url = "https://doc.qt.io/qt-6/qtqml-documents-definetypes.html"
+
+[[links.interfaces]]
+kind = "docs"
+title = "Quickshell guide: QML Language (creating types)"
+url = "https://quickshell.org/docs/v0.3.2/guide/qml-language/#creating-types"
+
+[[links.closures]]
+kind = "docs"
+title = "Qt 6: Scope and Naming Resolution (JavaScript scope)"
+url = "https://doc.qt.io/qt-6/qtqml-documents-scope.html#javascript-scope"
+
+[[links.closures]]
+kind = "docs"
+title = "Quickshell guide: QML Language (lambdas)"
+url = "https://quickshell.org/docs/v0.3.2/guide/qml-language/#lambdas"
+
+[[links.iterators]]
+kind = "docs"
+title = "Qt 6: List of JavaScript Objects and Functions (Array prototype)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-functionlist.html#array-prototype-object"
+
+[[links.iterators]]
+kind = "docs"
+title = "Qt 6: JavaScript Host Environment (JavaScript objects and functions)"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html#javascript-objects-and-functions"
+
+[[links.modules]]
+kind = "docs"
+title = "Qt 6: Importing JavaScript Resources in QML"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-imports.html"
+
+[[links.modules]]
+kind = "docs"
+title = "Qt 6: Module Definition qmldir Files"
+url = "https://doc.qt.io/qt-6/qtqml-modules-qmldir.html"
+
+[[links.modules]]
+kind = "docs"
+title = "Quickshell guide: QML Language (imports)"
+url = "https://quickshell.org/docs/v0.3.2/guide/qml-language/#imports"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Qt 6: Timer QML Type"
+url = "https://doc.qt.io/qt-6/qml-qtqml-timer.html"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Qt 6: WorkerScript QML Type"
+url = "https://doc.qt.io/qt-6/qml-qtqml-workerscript-workerscript.html"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Quickshell: Process"
+url = "https://quickshell.org/docs/v0.3.2/types/Quickshell.Io/Process"

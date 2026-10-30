@@ -1,0 +1,27 @@
+{
+  "slug": "top-words",
+  "title": "Top Words",
+  "concept": "iterators",
+  "summary": "Return the n most frequent words in text, most frequent first; ties are broken alphabetically. Words are runs of ASCII letters and digits, compared case-insensitively (as in word-count).",
+  "function": "top_words",
+  "params": [
+    { "name": "text", "type": "string" },
+    { "name": "n", "type": "int" }
+  ],
+  "returns": "list<string>",
+  "hints": [
+    "Count the words first (you did this in word-count), then work on the (word, count) pairs.",
+    "Sort by count descending, then by word ascending: one comparator that checks both keys.",
+    "Take the first n and keep only the words. Try writing it as a chain: entries -> sort -> take -> map."
+  ],
+  "cases": [
+    { "description": "most frequent first", "input": ["b a b c b a", 2], "expected": ["b", "a"] },
+    { "description": "ties are alphabetical", "input": ["pear apple fig", 3], "expected": ["apple", "fig", "pear"] },
+    { "description": "fewer words than n", "input": ["one two two", 5], "expected": ["two", "one"] },
+    { "description": "empty text", "input": ["", 3], "expected": [] },
+    { "description": "n is zero", "input": ["a a b", 0], "expected": [] },
+    { "description": "case-insensitive", "input": ["Go go GO rust Rust", 1], "expected": ["go"] },
+    { "description": "punctuation separates words", "input": ["it's a test, a TEST!", 2], "expected": ["a", "test"] },
+    { "description": "digits count as words", "input": ["1 2 2 3 3 3", 3], "expected": ["3", "2", "1"] }
+  ]
+}

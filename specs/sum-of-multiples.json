@@ -1,0 +1,30 @@
+{
+  "slug": "sum-of-multiples",
+  "title": "Sum of Multiples",
+  "concept": "loops",
+  "summary": "Sum every unique number below limit that is a multiple of at least one of the factors. A factor of 0 is ignored.",
+  "function": "sum_of_multiples",
+  "params": [
+    { "name": "factors", "type": "list<int>" },
+    { "name": "limit", "type": "int" }
+  ],
+  "returns": "int",
+  "fallible": false,
+  "hints": [
+    "Loop over every candidate number from 1 up to (but not including) limit.",
+    "A number counts once, even if several factors divide it: stop checking factors as soon as one matches.",
+    "Skip a factor of 0 before using it with the remainder operator."
+  ],
+  "cases": [
+    { "description": "two factors", "input": [[3, 5], 10], "expected": 23 },
+    { "description": "limit too small for any multiple", "input": [[3, 5], 1], "expected": 0 },
+    { "description": "single multiple below limit", "input": [[3, 5], 4], "expected": 3 },
+    { "description": "one factor", "input": [[3], 7], "expected": 9 },
+    { "description": "shared multiples are counted once", "input": [[4, 6], 15], "expected": 30 },
+    { "description": "factor of 0 is ignored", "input": [[0, 3], 10], "expected": 18 },
+    { "description": "no factors", "input": [[], 10000], "expected": 0 },
+    { "description": "factor 1 sums everything below the limit", "input": [[1], 5], "expected": 10 },
+    { "description": "limit equal to a multiple is excluded", "input": [[5, 25], 50], "expected": 225 },
+    { "description": "large limit", "input": [[43, 47], 10000], "expected": 2203160 }
+  ]
+}

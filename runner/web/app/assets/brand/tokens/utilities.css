@@ -1,0 +1,299 @@
+/* Copied from the production site (rg-digital-dev/site, src/styles/global.css). Do not fork values: change the site, then copy here. */
+/* The shared utility classes every page and component is built from. */
+
+/* ── Layout ──────────────────────────────────────────────── */
+/* .wrap sets the page width and side gutter; .band is a full-width section
+   with the standard vertical rhythm. Variants change only the ground. */
+.wrap {
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+.band { padding-block: var(--band-y); }
+
+/* ── Page rhythm: three grounds ─────────────────────────────
+   Every section sits on one of three grounds, and no two neighbours share one:
+   - base:    the page itself (no class needed, or .band--base)
+   - raised:  .band--surface (white on light, #151515 on dark)
+   - inverse: .theme-inverse (near-black on light, lifted grey on dark)
+   The closing CTA and footer together form one inverse end block, so the
+   section just before them is never inverse. See docs/routing-pages-and-components.md. */
+.band--base { background: var(--bg); }
+.band--surface {
+  background: var(--surface);
+  border-block: 1px solid var(--border);
+}
+.band--line { border-top: 1px solid var(--border); }
+
+/* A section that fills most of the screen, so scrolling lands on one at a time
+   with the next just showing beneath it. The nav is sticky, so it comes off the
+   height; the extra 2rem is what makes it "just under" rather than exactly one
+   screen. A section with more content than that simply grows past it.
+
+   From tablet up only: on a phone the same rule turns a short section into a
+   screen of empty space. Centring is split because these sections are variously
+   block, flex and grid, and a blanket display would break the grid ones. */
+@media (min-width: 900px) {
+  .band--screen {
+    min-height: calc(100vh - var(--nav-h) - 2rem);
+    min-height: calc(100svh - var(--nav-h) - 2rem);
+  }
+  .band--screen:not(.band--own-layout) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  /* A flex item with auto side margins is sized to its content rather than
+     stretched, so a .wrap in here would sit narrower than --max-w without this. */
+  .band--screen:not(.band--own-layout) > * { width: 100%; }
+  .band--screen.band--own-layout { align-content: center; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Section title block; --row puts a link on the right from tablet width up */
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: clamp(36px, 5vw, 64px);
+}
+.section-head--row { margin-bottom: clamp(32px, 4vw, 48px); }
+@media (min-width: 760px) {
+  .section-head--row {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.grid-2, .grid-3 { display: grid; gap: var(--space-5); }
+.grid-2 { gap: var(--space-12); }
+@media (min-width: 900px) {
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ── Type ────────────────────────────────────────────────── */
+/* Headings take the display face; with the default token that is the body face. */
+h1, h2, h3, .h-hero, .h-title, .h-section, .h-card, .h-card-lg, .h-feature { font-family: var(--font-display); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--track-loose);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* Mono labels come in two sizes only: .eyebrow above a heading, and .tag for
+   a label inside a card (a topic, a fact's name, a step's kicker). Both are
+   muted by default; --accent marks the one that should catch the eye. */
+.tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--track-loose);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.eyebrow--accent, .tag--accent { color: var(--accent); }
+.h-hero {
+  font-size: var(--fs-hero);
+  font-weight: var(--fw-extrabold);
+  line-height: 1.04;
+  letter-spacing: var(--track-tight);
+  text-wrap: balance;
+}
+/* The h1 of every page except the homepage: the hero's treatment, a step down. */
+.h-title {
+  font-size: var(--fs-title);
+  font-weight: var(--fw-extrabold);
+  line-height: 1.06;
+  letter-spacing: var(--track-tight);
+  text-wrap: balance;
+}
+.h-section {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-extrabold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-display);
+  text-wrap: balance;
+}
+.h-card {
+  font-size: var(--fs-card);
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+/* A card in a 2- or 3-column grid, or a tab that opens a panel. */
+.h-card-lg {
+  font-size: var(--fs-card-lg);
+  font-weight: var(--fw-extrabold);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+/* The one big card or row a section is built around. */
+.h-feature {
+  font-size: var(--fs-step);
+  font-weight: var(--fw-extrabold);
+  line-height: 1.1;
+  letter-spacing: var(--track-display);
+  text-wrap: balance;
+}
+.lead {
+  font-size: var(--fs-lead);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 36rem;
+  text-wrap: pretty;
+}
+.mark {
+  background: linear-gradient(transparent 62%, var(--mark-fill) 62%);
+  /* Sized and pinned so the band can be swiped on from nothing like a marker
+     pen — the hero does it in @keyframes below, the rest in motion.ts. */
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: var(--mark-text);
+  padding-inline: 0.12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.theme-inverse .mark { color: var(--accent); }
+
+/* Text link with a trailing arrow ("Bekijk al mijn werk →") */
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  font-weight: var(--fw-semibold);
+  color: var(--accent);
+}
+.text-link svg { transition: transform var(--dur-fast) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .text-link:hover svg { transform: translateX(3px); }
+}
+
+/* ── Small parts ─────────────────────────────────────────── */
+/* Lime circle with a dark check: fit lists, guarantees, finished steps */
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--lime);
+  color: var(--on-lime);
+}
+.check--sm { width: 20px; height: 20px; }
+
+/* Rounded square behind a service icon */
+.icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-control);
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+
+/* Label chip, e.g. "Tool op maat" on a case */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--accent-wash);
+  font-size: 0.8125rem;
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+.pill--good    { background: var(--pill-good-bg);    color: var(--pill-good-text); }
+.pill--limited { background: var(--pill-limited-bg); color: var(--pill-limited-text); }
+.pill--unsure  { background: var(--pill-unsure-bg);  color: var(--pill-unsure-text); }
+.pill--na      { background: var(--surface-2);       color: var(--text-secondary); }
+
+/* White card with a hairline border */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* ── Button ──────────────────────────────────────────────── */
+/* Variants: primary (ink fill, the main action), secondary (outline),
+   lime (main action inside .theme-inverse bands). Render via Button.astro. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 var(--space-6);
+  min-height: 3rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity var(--dur-fast), transform var(--dur-fast);
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+}
+.btn:active { transform: translateY(0); }
+.btn--block { display: flex; width: 100%; }
+
+.btn--primary {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+.btn--primary .btn__arrow { color: var(--ink-accent); }
+
+.btn--secondary {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.btn--lime {
+  background: var(--lime);
+  color: var(--on-lime);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn:hover { transition: none; transform: none; }
+}

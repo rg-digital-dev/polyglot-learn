@@ -1,0 +1,14 @@
+# Learner data: never part of the repo
+/workspace/
+/.learn/
+
+# Build output
+target/
+node_modules/
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

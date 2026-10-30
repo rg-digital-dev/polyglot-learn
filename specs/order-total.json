@@ -1,0 +1,48 @@
+{
+  "slug": "order-total",
+  "title": "Order Total",
+  "concept": "structs",
+  "summary": "Summarise an order: the number of items (sum of quantities), the subtotal, the discount (discount_percent of the subtotal, rounded down) and the total after the discount.",
+  "types": [
+    {
+      "name": "line_item",
+      "kind": "record",
+      "fields": [
+        { "name": "sku", "type": "string" },
+        { "name": "qty", "type": "int" },
+        { "name": "unit_cents", "type": "int" }
+      ]
+    },
+    {
+      "name": "order_summary",
+      "kind": "record",
+      "fields": [
+        { "name": "item_count", "type": "int" },
+        { "name": "subtotal_cents", "type": "int" },
+        { "name": "discount_cents", "type": "int" },
+        { "name": "total_cents", "type": "int" }
+      ]
+    }
+  ],
+  "function": "order_total",
+  "params": [
+    { "name": "items", "type": "list<line_item>" },
+    { "name": "discount_percent", "type": "int" }
+  ],
+  "returns": "order_summary",
+  "hints": [
+    "Loop over the items once, adding to two running totals: the item count and the subtotal.",
+    "Each line costs qty × unit_cents. Money is kept in whole cents so integer maths stays exact.",
+    "Discount = subtotal × percent / 100 with integer division (use floor in languages without an integer type). Build the summary record at the end."
+  ],
+  "cases": [
+    { "description": "single line, no discount", "input": [[{ "sku": "tea", "qty": 2, "unit_cents": 150 }], 0], "expected": { "item_count": 2, "subtotal_cents": 300, "discount_cents": 0, "total_cents": 300 } },
+    { "description": "several lines", "input": [[{ "sku": "mug", "qty": 1, "unit_cents": 1000 }, { "sku": "tea", "qty": 3, "unit_cents": 250 }], 0], "expected": { "item_count": 4, "subtotal_cents": 1750, "discount_cents": 0, "total_cents": 1750 } },
+    { "description": "ten percent off", "input": [[{ "sku": "mug", "qty": 1, "unit_cents": 1000 }, { "sku": "tea", "qty": 3, "unit_cents": 250 }], 10], "expected": { "item_count": 4, "subtotal_cents": 1750, "discount_cents": 175, "total_cents": 1575 } },
+    { "description": "discount rounds down", "input": [[{ "sku": "pen", "qty": 1, "unit_cents": 999 }], 10], "expected": { "item_count": 1, "subtotal_cents": 999, "discount_cents": 99, "total_cents": 900 } },
+    { "description": "empty order", "input": [[], 25], "expected": { "item_count": 0, "subtotal_cents": 0, "discount_cents": 0, "total_cents": 0 } },
+    { "description": "everything free", "input": [[{ "sku": "gift", "qty": 2, "unit_cents": 500 }], 100], "expected": { "item_count": 2, "subtotal_cents": 1000, "discount_cents": 1000, "total_cents": 0 } },
+    { "description": "zero quantity line", "input": [[{ "sku": "mug", "qty": 0, "unit_cents": 500 }, { "sku": "pen", "qty": 1, "unit_cents": 100 }], 0], "expected": { "item_count": 1, "subtotal_cents": 100, "discount_cents": 0, "total_cents": 100 } },
+    { "description": "large order", "input": [[{ "sku": "chair", "qty": 1000, "unit_cents": 1999 }], 15], "expected": { "item_count": 1000, "subtotal_cents": 1999000, "discount_cents": 299850, "total_cents": 1699150 } }
+  ]
+}

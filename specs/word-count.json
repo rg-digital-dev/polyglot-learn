@@ -1,0 +1,27 @@
+{
+  "slug": "word-count",
+  "title": "Word Count",
+  "concept": "maps",
+  "summary": "Count how often each word occurs in text, case-insensitively. A word is a run of ASCII letters and digits; every other character separates words.",
+  "function": "word_count",
+  "params": [{ "name": "text", "type": "string" }],
+  "returns": "map<string,int>",
+  "fallible": false,
+  "hints": [
+    "Walk the text one character at a time and build up the current word.",
+    "When you hit a separator, add the finished word to the map (if it isn't empty) and start a new one. Don't forget the last word.",
+    "Lowercase each word before counting it. Look up the language's 'get or default' idiom for incrementing a count."
+  ],
+  "cases": [
+    { "description": "one word", "input": ["word"], "expected": { "word": 1 } },
+    { "description": "one of each", "input": ["one of each"], "expected": { "one": 1, "of": 1, "each": 1 } },
+    { "description": "repeated words", "input": ["one fish two fish red fish blue fish"], "expected": { "one": 1, "fish": 4, "two": 1, "red": 1, "blue": 1 } },
+    { "description": "case-insensitive", "input": ["Go go GO"], "expected": { "go": 3 } },
+    { "description": "punctuation separates words", "input": ["car: carpet as java: javascript!!&@$%^&"], "expected": { "car": 1, "carpet": 1, "as": 1, "java": 1, "javascript": 1 } },
+    { "description": "digits are part of words", "input": ["testing, 1, 2 testing"], "expected": { "testing": 2, "1": 1, "2": 1 } },
+    { "description": "empty text", "input": [""], "expected": {} },
+    { "description": "multiple whitespace characters", "input": ["  multiple   whitespaces\n\tand\ttabs "], "expected": { "multiple": 1, "whitespaces": 1, "and": 1, "tabs": 1 } },
+    { "description": "apostrophes separate words too", "input": ["don't stop"], "expected": { "don": 1, "t": 1, "stop": 1 } },
+    { "description": "non-ASCII letters separate words", "input": ["café 42"], "expected": { "caf": 1, "42": 1 } }
+  ]
+}

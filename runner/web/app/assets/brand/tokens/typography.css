@@ -1,0 +1,50 @@
+/* Copied from the production site (rg-digital-dev/site, src/styles/global.css). Do not fork values: change the site, then copy here. */
+:root {
+  /* Typography — three roles, three faces.
+     Archivo is wide and sturdy at hero weight; Geist stays quiet underneath it;
+     Martian Mono is broad, so labels carry far less tracking than a narrow mono
+     would need (see --track-label / --track-loose below). */
+  --font-display: var(--font-archivo);
+  --font:         var(--font-geist);
+  --font-mono:    var(--font-martian);
+
+  /* Font weights */
+  --fw-regular:   400;
+  --fw-medium:    500;
+  --fw-semibold:  600;
+  --fw-bold:      700;
+  --fw-extrabold: 800;
+
+  /* Type scale — rem, so text follows the visitor's browser font size */
+  /* The mock-ups these came from were only ever looked at zoomed out on a
+     design canvas, where 60px reads as a comfortable heading; at 1:1 on a real
+     screen the same numbers shout. The whole display end came down roughly a
+     quarter, against an unchanged 16px body. */
+  --fs-hero:       clamp(2.125rem, 1.7562rem + 1.529vw, 2.875rem);  /* 34 → 46px, home only */
+  --fs-title:      clamp(1.875rem, 1.6rem + 1.15vw, 2.5rem);        /* 30 → 40px, every other page's h1 */
+  --fs-section:    clamp(1.75rem, 1.5916rem + 0.634vw, 2.125rem);   /* 28 → 34px */
+  --fs-heading:    1.5rem;                                          /* 24px, headings inside a page */
+  --fs-step:       clamp(1.375rem, 1.2556rem + 0.493vw, 1.625rem);  /* 22 → 26px, one big feature card or row per section */
+  /* Card titles: two sizes only. Small = a compact card in a dense list or a
+     sidebar; large = a card in a 2- or 3-column grid. Use .h-card / .h-card-lg. */
+  --fs-card:       clamp(1.0625rem, 1.025rem + 0.125vw, 1.125rem);  /* 17 → 18px */
+  --fs-card-lg:    clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem);          /* 20 → 24px */
+  --fs-lead:       clamp(0.9375rem, 0.9062rem + 0.125vw, 1rem);     /* 15 → 16px */
+  --fs-subheading: 0.9375rem;
+  --fs-body:       0.9375rem;
+  --fs-body-sm:    0.8125rem;
+  --fs-label:      0.75rem;
+  --fs-meta:       0.6875rem;
+
+  /* Line heights */
+  --lh-tight:   1.05;
+  --lh-heading: 1.2;
+  --lh-body:    1.6;
+  --lh-relaxed: 1.75;
+
+  /* Letter spacing */
+  --track-tight:   -0.035em;
+  --track-display: -0.03em;
+  --track-label:    0.01em;   /* Martian Mono is wide enough on its own */
+  --track-loose:    0.02em;
+}

@@ -1,0 +1,28 @@
+{
+  "slug": "top-scores",
+  "title": "Top Scores",
+  "concept": "sorting",
+  "summary": "Return the n highest scores, highest first, or all of them (sorted) if there are fewer than n. Do not modify the input.",
+  "function": "top_scores",
+  "params": [
+    { "name": "scores", "type": "list<int>" },
+    { "name": "n", "type": "int" }
+  ],
+  "returns": "list<int>",
+  "fallible": false,
+  "hints": [
+    "Copy the scores first so the caller's list isn't changed.",
+    "Sort descending: either sort ascending and reverse, or pass a comparator.",
+    "Take the first n items, but don't go past the end of the list."
+  ],
+  "cases": [
+    { "description": "top two of three", "input": [[10, 30, 20], 2], "expected": [30, 20] },
+    { "description": "n equals the length", "input": [[10, 30, 20], 3], "expected": [30, 20, 10] },
+    { "description": "fewer scores than n", "input": [[5], 3], "expected": [5] },
+    { "description": "no scores", "input": [[], 3], "expected": [] },
+    { "description": "duplicates are kept", "input": [[40, 40, 10, 40], 2], "expected": [40, 40] },
+    { "description": "n is zero", "input": [[3, 1, 2], 0], "expected": [] },
+    { "description": "negative scores", "input": [[-5, 0, -1], 2], "expected": [0, -1] },
+    { "description": "unsorted input with ties", "input": [[70, 50, 90, 30, 90, 100], 3], "expected": [100, 90, 90] }
+  ]
+}

@@ -1,0 +1,169 @@
+id = "php"
+name = "PHP"
+
+# No [lings] table: no maintained rustlings-style PHP repo was found.
+
+[install]
+windows = [
+  "winget install --id PHP.PHP.8.5 -e",
+  "To enable extensions later, copy php.ini-development to php.ini in the folder that holds php.exe and edit it.",
+]
+macos = ["brew install php"]
+arch = ["sudo pacman -S php"]
+debian = ["sudo apt install php-cli"]
+fedora = ["sudo dnf install php-cli"]
+
+[[links.functions]]
+kind = "docs"
+title = "PHP manual: User-defined functions"
+url = "https://www.php.net/manual/en/functions.user-defined.php"
+
+[[links.functions]]
+kind = "docs"
+title = "PHP manual: Strings"
+url = "https://www.php.net/manual/en/language.types.string.php"
+
+[[links.functions]]
+kind = "exercism"
+title = "Exercism PHP: User Defined Functions"
+url = "https://exercism.org/tracks/php/concepts/user-defined-functions"
+
+[[links.conditionals]]
+kind = "docs"
+title = "PHP manual: if"
+url = "https://www.php.net/manual/en/control-structures.if.php"
+
+[[links.conditionals]]
+kind = "docs"
+title = "PHP manual: match"
+url = "https://www.php.net/manual/en/control-structures.match.php"
+
+[[links.conditionals]]
+kind = "exercism"
+title = "Exercism PHP: If, Else, Elseif"
+url = "https://exercism.org/tracks/php/concepts/if-control-structures"
+
+[[links.loops]]
+kind = "docs"
+title = "PHP manual: foreach"
+url = "https://www.php.net/manual/en/control-structures.foreach.php"
+
+[[links.loops]]
+kind = "docs"
+title = "PHP manual: for"
+url = "https://www.php.net/manual/en/control-structures.for.php"
+
+[[links.loops]]
+kind = "exercism"
+title = "Exercism PHP: For Loops"
+url = "https://exercism.org/tracks/php/concepts/for-loops"
+
+[[links.maps]]
+kind = "docs"
+title = "PHP manual: Arrays"
+url = "https://www.php.net/manual/en/language.types.array.php"
+
+[[links.maps]]
+kind = "exercism"
+title = "Exercism PHP: Arrays"
+url = "https://exercism.org/tracks/php/concepts/arrays"
+
+[[links.errors]]
+kind = "docs"
+title = "PHP manual: Error Handling"
+url = "https://www.php.net/manual/en/language.error-handling.php"
+
+[[links.errors]]
+kind = "docs"
+title = "PHP manual: InvalidArgumentException"
+url = "https://www.php.net/manual/en/class.invalidargumentexception.php"
+
+[[links.errors]]
+kind = "exercism"
+title = "Exercism PHP: Phone Number"
+url = "https://exercism.org/tracks/php/exercises/phone-number"
+
+[[links.sorting]]
+kind = "docs"
+title = "PHP manual: Sorting Arrays"
+url = "https://www.php.net/manual/en/array.sorting.php"
+
+[[links.sorting]]
+kind = "docs"
+title = "PHP manual: usort"
+url = "https://www.php.net/manual/en/function.usort.php"
+
+[[links.sorting]]
+kind = "exercism"
+title = "Exercism PHP: High Scores"
+url = "https://exercism.org/tracks/php/exercises/high-scores"
+
+[[links.structs]]
+kind = "docs"
+title = "PHP manual: Constructor promotion"
+url = "https://www.php.net/manual/en/language.oop5.decon.php#language.oop5.decon.constructor.promotion"
+
+[[links.structs]]
+kind = "docs"
+title = "PHP manual: Readonly properties"
+url = "https://www.php.net/manual/en/language.oop5.properties.php#language.oop5.properties.readonly-properties"
+
+[[links.structs]]
+kind = "exercism"
+title = "Exercism PHP: Class Basics"
+url = "https://exercism.org/tracks/php/concepts/class-basics"
+
+[[links.interfaces]]
+kind = "docs"
+title = "PHP manual: Object Interfaces"
+url = "https://www.php.net/manual/en/language.oop5.interfaces.php"
+
+[[links.closures]]
+kind = "docs"
+title = "PHP manual: Anonymous functions"
+url = "https://www.php.net/manual/en/functions.anonymous.php"
+
+[[links.closures]]
+kind = "docs"
+title = "PHP manual: Arrow Functions"
+url = "https://www.php.net/manual/en/functions.arrow.php"
+
+[[links.closures]]
+kind = "exercism"
+title = "Exercism PHP: Strain"
+url = "https://exercism.org/tracks/php/exercises/strain"
+
+[[links.iterators]]
+kind = "docs"
+title = "PHP manual: Generators overview"
+url = "https://www.php.net/manual/en/language.generators.overview.php"
+
+[[links.iterators]]
+kind = "docs"
+title = "PHP manual: Array Functions"
+url = "https://www.php.net/manual/en/ref.array.php"
+
+[[links.iterators]]
+kind = "exercism"
+title = "Exercism PHP: ETL"
+url = "https://exercism.org/tracks/php/exercises/etl"
+
+[[links.modules]]
+kind = "docs"
+title = "PHP manual: Namespaces: importing and aliasing"
+url = "https://www.php.net/manual/en/language.namespaces.importing.php"
+
+[[links.modules]]
+kind = "docs"
+title = "PHP manual: require_once"
+url = "https://www.php.net/manual/en/function.require-once.php"
+
+[[links.concurrency]]
+kind = "docs"
+title = "PHP manual: Fibers"
+url = "https://www.php.net/manual/en/language.fibers.php"
+
+[[links.concurrency]]
+kind = "docs"
+title = "PHP manual: The Fiber class"
+url = "https://www.php.net/manual/en/class.fiber.php"

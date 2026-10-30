@@ -1,0 +1,26 @@
+{
+  "slug": "leap-year",
+  "title": "Leap Year",
+  "concept": "conditionals",
+  "summary": "Report whether year is a leap year in the Gregorian calendar: divisible by 4, except centuries, except every 400 years.",
+  "function": "leap_year",
+  "params": [{ "name": "year", "type": "int" }],
+  "returns": "bool",
+  "fallible": false,
+  "hints": [
+    "Use the remainder operator to test divisibility.",
+    "Check the most specific rule (divisible by 400) first, or combine all three with && and ||.",
+    "The whole function fits in a single boolean expression."
+  ],
+  "cases": [
+    { "description": "not divisible by 4", "input": [2015], "expected": false },
+    { "description": "divisible by 4, not by 100", "input": [1996], "expected": true },
+    { "description": "recent leap year", "input": [2024], "expected": true },
+    { "description": "divisible by 100, not by 400", "input": [2100], "expected": false },
+    { "description": "divisible by 400", "input": [2000], "expected": true },
+    { "description": "century before 1900", "input": [1800], "expected": false },
+    { "description": "another century", "input": [1900], "expected": false },
+    { "description": "divisible by 400 in the future", "input": [2400], "expected": true },
+    { "description": "very early year", "input": [4], "expected": true }
+  ]
+}

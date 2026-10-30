@@ -1,0 +1,26 @@
+{
+  "slug": "make-counter",
+  "title": "Make Counter",
+  "concept": "closures",
+  "summary": "Return a counter function. Each call returns the current value, starting at start, then advances it by step. Every counter keeps its own state.",
+  "function": "make_counter",
+  "params": [
+    { "name": "start", "type": "int" },
+    { "name": "step", "type": "int" }
+  ],
+  "returns": "fn() -> int",
+  "hints": [
+    "Keep the current value in a variable inside make_counter, and return a function that reads and updates it.",
+    "Return the value first, then add step, so the first call returns start.",
+    "Each call to make_counter must create a fresh variable, or two counters will share state. Some languages need the closure to explicitly capture or move the variable."
+  ],
+  "cases": [
+    { "description": "counts up by one", "create": [[0, 1]], "calls": [{ "expected": 0 }, { "expected": 1 }, { "expected": 2 }] },
+    { "description": "custom start and step", "create": [[10, 5]], "calls": [{ "expected": 10 }, { "expected": 15 }, { "expected": 20 }, { "expected": 25 }] },
+    { "description": "negative step", "create": [[3, -2]], "calls": [{ "expected": 3 }, { "expected": 1 }, { "expected": -1 }] },
+    { "description": "zero step", "create": [[7, 0]], "calls": [{ "expected": 7 }, { "expected": 7 }, { "expected": 7 }] },
+    { "description": "counters are independent", "create": [[0, 1], [100, 10]], "calls": [{ "on": 0, "expected": 0 }, { "on": 1, "expected": 100 }, { "on": 0, "expected": 1 }, { "on": 1, "expected": 110 }, { "on": 0, "expected": 2 }] },
+    { "description": "first call returns start", "create": [[42, 1]], "calls": [{ "expected": 42 }] },
+    { "description": "many calls", "create": [[0, 3]], "calls": [{ "expected": 0 }, { "expected": 3 }, { "expected": 6 }, { "expected": 9 }, { "expected": 12 }] }
+  ]
+}

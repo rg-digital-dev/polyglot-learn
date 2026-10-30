@@ -1,0 +1,250 @@
+id = "go"
+name = "Go"
+
+[lings]
+name = "golings"
+url = "https://github.com/mauricioabreu/golings"
+
+[install]
+windows = ["winget install --id GoLang.Go -e"]
+macos = ["brew install go"]
+arch = ["sudo pacman -S go"]
+debian = ["sudo apt install golang-go   # Debian 13+ / Ubuntu 24.04+; older releases: use the tarball from https://go.dev/doc/install"]
+fedora = ["sudo dnf install golang"]
+
+# functions & strings (hello)
+[[links.functions]]
+kind = "docs"
+title = "A Tour of Go: Functions"
+url = "https://go.dev/tour/basics/4"
+
+[[links.functions]]
+kind = "docs"
+title = "Package strings"
+url = "https://pkg.go.dev/strings"
+
+[[links.functions]]
+kind = "lings"
+title = "golings: functions"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/functions"
+
+[[links.functions]]
+kind = "exercism"
+title = "Exercism Go: Functions"
+url = "https://exercism.org/tracks/go/concepts/functions"
+
+# conditionals (leap-year)
+[[links.conditionals]]
+kind = "docs"
+title = "A Tour of Go: If"
+url = "https://go.dev/tour/flowcontrol/5"
+
+[[links.conditionals]]
+kind = "docs"
+title = "Go by Example: If/Else"
+url = "https://gobyexample.com/if-else"
+
+[[links.conditionals]]
+kind = "lings"
+title = "golings: if"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/if"
+
+[[links.conditionals]]
+kind = "exercism"
+title = "Exercism Go: Conditionals If"
+url = "https://exercism.org/tracks/go/concepts/conditionals-if"
+
+# loops (sum-of-multiples)
+[[links.loops]]
+kind = "docs"
+title = "A Tour of Go: For"
+url = "https://go.dev/tour/flowcontrol/1"
+
+[[links.loops]]
+kind = "docs"
+title = "Go by Example: Range over Built-in Types"
+url = "https://gobyexample.com/range-over-built-in-types"
+
+[[links.loops]]
+kind = "lings"
+title = "golings: range"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/range"
+
+[[links.loops]]
+kind = "exercism"
+title = "Exercism Go: For Loops"
+url = "https://exercism.org/tracks/go/concepts/for-loops"
+
+# maps (word-count)
+[[links.maps]]
+kind = "docs"
+title = "A Tour of Go: Maps"
+url = "https://go.dev/tour/moretypes/19"
+
+[[links.maps]]
+kind = "docs"
+title = "Go by Example: Maps"
+url = "https://gobyexample.com/maps"
+
+[[links.maps]]
+kind = "lings"
+title = "golings: maps"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/maps"
+
+[[links.maps]]
+kind = "exercism"
+title = "Exercism Go: Maps"
+url = "https://exercism.org/tracks/go/concepts/maps"
+
+# errors (parse-port); golings has no error-handling exercises
+[[links.errors]]
+kind = "docs"
+title = "A Tour of Go: Errors"
+url = "https://go.dev/tour/methods/19"
+
+[[links.errors]]
+kind = "docs"
+title = "Go by Example: Errors"
+url = "https://gobyexample.com/errors"
+
+[[links.errors]]
+kind = "exercism"
+title = "Exercism Go: Errors"
+url = "https://exercism.org/tracks/go/concepts/errors"
+
+# collections & sorting (top-scores)
+[[links.sorting]]
+kind = "docs"
+title = "Go by Example: Sorting"
+url = "https://gobyexample.com/sorting"
+
+[[links.sorting]]
+kind = "docs"
+title = "Package slices: SortFunc"
+url = "https://pkg.go.dev/slices#SortFunc"
+
+[[links.sorting]]
+kind = "lings"
+title = "golings: slices"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/slices"
+
+[[links.sorting]]
+kind = "exercism"
+title = "Exercism Go: High Scores"
+url = "https://exercism.org/tracks/go/exercises/high-scores"
+
+# structs (order-total)
+[[links.structs]]
+kind = "docs"
+title = "A Tour of Go: Structs"
+url = "https://go.dev/tour/moretypes/2"
+
+[[links.structs]]
+kind = "docs"
+title = "Go by Example: Methods"
+url = "https://gobyexample.com/methods"
+
+[[links.structs]]
+kind = "lings"
+title = "golings: structs"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/structs"
+
+[[links.structs]]
+kind = "exercism"
+title = "Exercism Go: Structs"
+url = "https://exercism.org/tracks/go/concepts/structs"
+
+# interfaces (shapes); golings has no interface exercises
+[[links.interfaces]]
+kind = "docs"
+title = "A Tour of Go: Interfaces"
+url = "https://go.dev/tour/methods/9"
+
+[[links.interfaces]]
+kind = "docs"
+title = "Go by Example: Interfaces"
+url = "https://gobyexample.com/interfaces"
+
+[[links.interfaces]]
+kind = "exercism"
+title = "Exercism Go: Interfaces"
+url = "https://exercism.org/tracks/go/concepts/interfaces"
+
+# closures (make-counter)
+[[links.closures]]
+kind = "docs"
+title = "A Tour of Go: Function closures"
+url = "https://go.dev/tour/moretypes/25"
+
+[[links.closures]]
+kind = "docs"
+title = "Go by Example: Closures"
+url = "https://gobyexample.com/closures"
+
+[[links.closures]]
+kind = "lings"
+title = "golings: anonymous_functions"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/anonymous_functions"
+
+[[links.closures]]
+kind = "exercism"
+title = "Exercism Go: First-Class Functions"
+url = "https://exercism.org/tracks/go/concepts/first-class-functions"
+
+# iteration pipelines (top-words)
+[[links.iterators]]
+kind = "docs"
+title = "Go by Example: Sorting by Functions"
+url = "https://gobyexample.com/sorting-by-functions"
+
+[[links.iterators]]
+kind = "docs"
+title = "Package cmp: Or"
+url = "https://pkg.go.dev/cmp#Or"
+
+[[links.iterators]]
+kind = "lings"
+title = "golings: range"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/range"
+
+[[links.iterators]]
+kind = "exercism"
+title = "Exercism Go: Range Iteration"
+url = "https://exercism.org/tracks/go/concepts/range-iteration"
+
+# packages (slugify); golings has no package exercises
+[[links.modules]]
+kind = "docs"
+title = "How to Write Go Code"
+url = "https://go.dev/doc/code"
+
+[[links.modules]]
+kind = "docs"
+title = "A Tour of Go: Exported names"
+url = "https://go.dev/tour/basics/3"
+
+[[links.modules]]
+kind = "exercism"
+title = "Exercism Go: Packages"
+url = "https://exercism.org/tracks/go/concepts/packages"
+
+# concurrency (run-all)
+[[links.concurrency]]
+kind = "docs"
+title = "A Tour of Go: Goroutines"
+url = "https://go.dev/tour/concurrency/1"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Go by Example: WaitGroups"
+url = "https://gobyexample.com/waitgroups"
+
+[[links.concurrency]]
+kind = "lings"
+title = "golings: concurrent"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/concurrent"
+
+[[links.concurrency]]
+kind = "exercism"
+title = "Exercism Go: Parallel Letter Frequency"
+url = "https://exercism.org/tracks/go/exercises/parallel-letter-frequency"

@@ -1,0 +1,1 @@
+import{U as e,tt as t,w as n,x as r}from"./D9BGcLBj.js";var i={viewBox:`0 0 24 24`,width:`1em`,height:`1em`};function a(t,a){return e(),n(`svg`,i,[...a[0]||=[r(`path`,{fill:`none`,stroke:`currentColor`,"stroke-linecap":`round`,"stroke-linejoin":`round`,"stroke-width":`2`,d:`M5 12h14m-7-7l7 7l-7 7`},null,-1)]])}var o=t({name:`lucide-arrow-right`,render:a});export{o as t};

@@ -1,0 +1,38 @@
+{
+  "slug": "slugify",
+  "title": "Slugify",
+  "concept": "modules",
+  "summary": "Turn a title into a URL slug: its words, lowercased, joined with \"-\". Use split from the words module instead of re-implementing it.",
+  "helpers": [
+    {
+      "module": "words",
+      "function": "split",
+      "summary": "Split text into lowercase words, where a word is a run of ASCII letters and digits.",
+      "params": [{ "name": "text", "type": "string" }],
+      "returns": "list<string>",
+      "cases": [
+        { "description": "split two words", "input": ["Hello World"], "expected": ["hello", "world"] },
+        { "description": "split drops punctuation", "input": ["  Rust & Go: 2026 "], "expected": ["rust", "go", "2026"] },
+        { "description": "split empty text", "input": [""], "expected": [] },
+        { "description": "split on hyphens and underscores", "input": ["already-slugged_text"], "expected": ["already", "slugged", "text"] },
+        { "description": "split keeps camelCase together", "input": ["CamelCase"], "expected": ["camelcase"] }
+      ]
+    }
+  ],
+  "function": "slugify",
+  "params": [{ "name": "title", "type": "string" }],
+  "returns": "string",
+  "hints": [
+    "Implement split in the words module first: its cases run before slugify's.",
+    "Export split from the words module and import it in the slugify file. Look up how your language makes a name public and how one file imports another.",
+    "slugify is then one line: split the title and join the words with \"-\"."
+  ],
+  "cases": [
+    { "description": "slugify two words", "input": ["Hello World"], "expected": "hello-world" },
+    { "description": "slugify drops punctuation", "input": ["  Rust & Go: 2026 "], "expected": "rust-go-2026" },
+    { "description": "slugify empty title", "input": [""], "expected": "" },
+    { "description": "slugify only punctuation", "input": ["!!!"], "expected": "" },
+    { "description": "slugify keeps digits", "input": ["Polyglot Learn 101"], "expected": "polyglot-learn-101" },
+    { "description": "slugify mixed whitespace", "input": ["multiple   spaces\tand\nlines"], "expected": "multiple-spaces-and-lines" }
+  ]
+}

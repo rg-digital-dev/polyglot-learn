@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  runner:
+    name: Unit tests and track selftest
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install PHP, Lua 5.4 and Qt 6 test runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            php-cli lua5.4 \
+            qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick
+
+      - name: Unit tests (spec parser, naming, literals, notes)
+        run: cargo test --manifest-path runner/Cargo.toml
+
+      - name: Build learn
+        run: cargo build --release --manifest-path runner/Cargo.toml
+
+      - name: Toolchains
+        run: runner/target/release/learn doctor
+
+      # Every untouched stub must fail on every track.
+      - name: Selftest (stubs fail)
+        run: runner/target/release/learn selftest --require-all
+
+      # The embedded UI (runner/web/dist) must match its sources.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - name: Web UI is built and committed
+        run: |
+          cd runner/web
+          pnpm install --frozen-lockfile
+          pnpm build
+          git diff --exit-code -- dist || (echo "runner/web/dist is out of date: run 'pnpm build' in runner/web and commit it" && exit 1)
+
+      # Reference solutions live outside this repo so they don't spoil the
+      # exercises. Once their location is decided, check them out here and run:
+      #   runner/target/release/learn selftest --require-all --solutions <dir>

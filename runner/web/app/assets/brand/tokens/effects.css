@@ -1,0 +1,20 @@
+/* Copied from the production site (rg-digital-dev/site, src/styles/global.css). Do not fork values: change the site, then copy here. */
+:root {
+  /* Shadows — soft on light, deep on dark */
+  --shadow-card-hover: 0 8px 32px light-dark(rgba(17, 17, 17, .08), rgba(0, 0, 0, .45));
+  --shadow-nav:        0 1px 0 var(--border), 0 8px 32px light-dark(rgba(17, 17, 17, .06), rgba(0, 0, 0, .6));
+  --shadow-swatch:     0 4px 16px light-dark(rgba(17, 17, 17, .10), rgba(0, 0, 0, .5));
+  --shadow-float:      0 16px 40px light-dark(rgba(17, 17, 17, .10), rgba(0, 0, 0, .5));
+  --ring-accent:       0 0 0 1px var(--accent-border);
+
+  /* Motion */
+  --dur-fast:  0.15s;
+  --dur-base:  0.2s;
+  --dur-slow:  0.3s;
+  --dur-enter: 0.65s;
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:    cubic-bezier(0.4, 0, 1, 1);
+  --ease-decel: cubic-bezier(0, 0, 0.2, 1);
+  --blur-nav:   blur(12px);
+}

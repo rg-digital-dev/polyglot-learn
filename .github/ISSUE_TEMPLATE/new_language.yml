@@ -1,0 +1,27 @@
+name: New language
+description: Propose (or volunteer for) a new language track
+labels: [language]
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Language and version
+      placeholder: Python 3.12
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: How would tests run without extra dependencies?
+      description: For example, the built-in unittest module, or a tiny generated harness.
+  - type: textarea
+    id: mapping
+    attributes:
+      label: Type and error mapping
+      description: Native types for int, bool, string, list<T>, map<string,T>, and the idiomatic error convention.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to implement this track (see the checklist in CONTRIBUTING.md)

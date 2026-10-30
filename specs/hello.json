@@ -1,0 +1,25 @@
+{
+  "slug": "hello",
+  "title": "Hello",
+  "concept": "functions",
+  "summary": "Return a greeting for name, trimmed of surrounding whitespace, falling back to \"world\" when nothing is left.",
+  "function": "greet",
+  "params": [{ "name": "name", "type": "string" }],
+  "returns": "string",
+  "fallible": false,
+  "hints": [
+    "Build the result with your language's string interpolation or formatting instead of concatenating by hand.",
+    "Trim first, then check whether the trimmed string is empty.",
+    "Only ASCII whitespace (spaces, tabs, newlines) needs trimming here."
+  ],
+  "cases": [
+    { "description": "plain name", "input": ["Alice"], "expected": "Hello, Alice!" },
+    { "description": "name with surrounding spaces", "input": ["  Bob  "], "expected": "Hello, Bob!" },
+    { "description": "empty name", "input": [""], "expected": "Hello, world!" },
+    { "description": "whitespace only", "input": ["   "], "expected": "Hello, world!" },
+    { "description": "inner spaces are kept", "input": ["Mary Jane"], "expected": "Hello, Mary Jane!" },
+    { "description": "tabs and newlines are trimmed, non-ASCII is kept", "input": ["\tZoë\n"], "expected": "Hello, Zoë!" },
+    { "description": "punctuation in the name", "input": ["O'Brien"], "expected": "Hello, O'Brien!" },
+    { "description": "explicit world", "input": ["world"], "expected": "Hello, world!" }
+  ]
+}
