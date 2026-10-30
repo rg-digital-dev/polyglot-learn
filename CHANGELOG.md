@@ -9,7 +9,7 @@ All notable changes to this project are listed here. The format follows
 ### Added
 - One-command installers: `install.sh` (Linux, macOS) and `install.ps1`
   (Windows) download the release binary, check it against SHA256SUMS, and
-  fetch the matching version of the course.
+  fetch the matching version of the course into `./polyglot-learn`.
 
 ## [0.1.0] - 2026-10-30
 

@@ -12,7 +12,7 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 
 ## Quick start
 
-One command installs the `learn` CLI and fetches the course into `~/polyglot-learn`:
+Go to the folder where you keep your projects. One command installs the `learn` CLI and fetches the course into a `polyglot-learn` folder there:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.sh | sh
@@ -24,12 +24,12 @@ On Windows, in PowerShell:
 irm https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.ps1 | iex
 ```
 
-The installer picks the [release](https://github.com/rg-digital-dev/polyglot-learn/releases/latest) binary for your system (Linux, macOS and Windows, x86-64 and ARM), checks it against the published checksums, and ends with `learn doctor`, which lists the language toolchains to install. Run it again to update; your work stays. Read [install.sh](install.sh) or [install.ps1](install.ps1) first if you like; the top of each lists its settings, such as other install folders.
+The installer picks the [release](https://github.com/rg-digital-dev/polyglot-learn/releases/latest) binary for your system (Linux, macOS and Windows, x86-64 and ARM), checks it against the published checksums, and ends with `learn doctor`, which lists the language toolchains to install. To update, run it again from the same folder (or from inside `polyglot-learn`); your work stays. Read [install.sh](install.sh) or [install.ps1](install.ps1) first if you like; the top of each lists its settings, such as other install folders.
 
 Then:
 
 ```bash
-cd ~/polyglot-learn
+cd polyglot-learn
 learn init          # which language do you already know?
 learn start rust    # or typescript, go, php, lua, qml
 learn watch         # edit the file it shows you, then save

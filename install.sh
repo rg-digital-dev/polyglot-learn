@@ -4,19 +4,27 @@
 #   curl -fsSL https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.sh | sh
 #
 # It downloads the latest release's binary for this machine, checks it against
-# SHA256SUMS, installs it, and fetches the matching version of the course.
-# Running it again updates both; your work in the course's workspace/ stays.
+# SHA256SUMS, installs it, and fetches the matching version of the course into
+# ./polyglot-learn in the folder you run it from. Run it again from that same
+# folder, or from inside the course, to update both; your work in the course's
+# workspace/ stays.
 #
 # Settings (environment variables):
 #   LEARN_BIN_DIR     where `learn` goes          (default: ~/.local/bin)
-#   LEARN_COURSE_DIR  where the course goes       (default: ~/polyglot-learn)
+#   LEARN_COURSE_DIR  where the course goes       (default: ./polyglot-learn)
 #   LEARN_VERSION     a release such as 0.1.0     (default: the latest)
 
 set -eu
 
 REPO="rg-digital-dev/polyglot-learn"
 BIN_DIR="${LEARN_BIN_DIR:-$HOME/.local/bin}"
-COURSE_DIR="${LEARN_COURSE_DIR:-$HOME/polyglot-learn}"
+if [ -n "${LEARN_COURSE_DIR:-}" ]; then
+  COURSE_DIR="$LEARN_COURSE_DIR"
+elif [ -f "$PWD/course.toml" ]; then
+  COURSE_DIR="$PWD"   # run from inside the course: update it in place
+else
+  COURSE_DIR="$PWD/polyglot-learn"
+fi
 
 say() { printf '%s\n' "$*"; }
 die() { printf 'install.sh: %s\n' "$*" >&2; exit 1; }

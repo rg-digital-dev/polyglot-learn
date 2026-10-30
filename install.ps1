@@ -4,12 +4,13 @@
 #
 # It downloads the latest release's binary, checks it against SHA256SUMS,
 # installs it, adds it to your user PATH, and fetches the matching version of
-# the course. Running it again updates both; your work in the course's
-# workspace\ stays.
+# the course into .\polyglot-learn in the folder you run it from. Run it again
+# from that same folder, or from inside the course, to update both; your work
+# in the course's workspace\ stays.
 #
 # Settings (environment variables):
 #   LEARN_BIN_DIR          where learn.exe goes   (default: %LOCALAPPDATA%\Programs\learn)
-#   LEARN_COURSE_DIR       where the course goes  (default: %USERPROFILE%\polyglot-learn)
+#   LEARN_COURSE_DIR       where the course goes  (default: .\polyglot-learn)
 #   LEARN_VERSION          a release like 0.1.0   (default: the latest)
 #   LEARN_NO_MODIFY_PATH   set to 1 to leave your PATH alone
 
@@ -19,7 +20,19 @@
 
     $repo = 'rg-digital-dev/polyglot-learn'
     $binDir = if ($env:LEARN_BIN_DIR) { $env:LEARN_BIN_DIR } else { Join-Path $env:LOCALAPPDATA 'Programs\learn' }
-    $courseDir = if ($env:LEARN_COURSE_DIR) { $env:LEARN_COURSE_DIR } else { Join-Path $env:USERPROFILE 'polyglot-learn' }
+    $here = (Get-Location).ProviderPath
+    $courseDir = if ($env:LEARN_COURSE_DIR) {
+        $env:LEARN_COURSE_DIR
+    } elseif (Test-Path (Join-Path $here 'course.toml')) {
+        $here   # run from inside the course: update it in place
+    } else {
+        # An administrator PowerShell starts in C:\Windows\System32.
+        if ($here.StartsWith($env:windir, [StringComparison]::OrdinalIgnoreCase)) {
+            Write-Host "Run this from the folder you want the course in (for example: cd ~), not from $here." -ForegroundColor Red
+            return
+        }
+        Join-Path $here 'polyglot-learn'
+    }
 
     # x86-64 build; Windows on ARM runs it through emulation.
     $target = 'x86_64-pc-windows-msvc'
