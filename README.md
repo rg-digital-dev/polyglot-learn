@@ -12,15 +12,15 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 
 ## Quick start
 
-You need [Rust](https://rustup.rs) to build the `learn` CLI. Each track also needs its own toolchain; `learn doctor` tells you what's missing and how to install it.
+You need [Rust](https://rustup.rs) 1.88 or newer to build the `learn` CLI. Each track also needs its own toolchain; `learn doctor` tells you what's missing and how to install it.
 
 ```bash
 git clone https://github.com/rg-digital-dev/polyglot-learn
 cd polyglot-learn
-cargo install --path runner      # installs the `learn` command
-learn init                       # which language do you already know?
-learn start rust                 # or typescript, go, php, lua, qml
-learn watch                      # edit the file it shows you, then save
+cargo install --locked --path runner   # installs the `learn` command
+learn init                             # which language do you already know?
+learn start rust                       # or typescript, go, php, lua, qml
+learn watch                            # edit the file it shows you, then save
 ```
 
 `learn watch` re-runs the tests each time you save and moves on to the next exercise when they pass. The first Rust check compiles for a few seconds; after that it's quick.

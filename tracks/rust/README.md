@@ -4,7 +4,7 @@ Small exercises in idiomatic Rust: functions and strings, conditionals, loops, m
 
 ## What you need
 
-- Rust 1.85 or newer (stable), installed through `rustup`. This gives you `rustc` and `cargo`.
+- Rust 1.88 or newer (stable; the `learn` CLI needs it too), installed through `rustup`. This gives you `rustc` and `cargo`.
 - A C linker: the MSVC Build Tools on Windows, Xcode Command Line Tools on macOS, `gcc` on Linux.
 
 Check with `cargo --version`. `learn doctor` also reports a missing toolchain.

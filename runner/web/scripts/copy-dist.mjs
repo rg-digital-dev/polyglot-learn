@@ -1,5 +1,5 @@
 // Copy the static build to runner/web/dist, which rust-embed compiles into the
-// learn binary. dist/ is committed so `cargo install --path runner` works
+// learn binary. dist/ is committed so `cargo install --locked --path runner` works
 // without Node or pnpm.
 import { cpSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'

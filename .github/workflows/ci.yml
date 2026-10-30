@@ -6,6 +6,23 @@ on:
   pull_request:
 
 jobs:
+  msrv:
+    name: Builds with the declared minimum Rust
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # The version comes from `rust-version` in runner/Cargo.toml, so the two can't drift apart.
+      - id: msrv
+        run: echo "version=$(grep -m1 '^rust-version' runner/Cargo.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
+
+      - name: Build learn with Rust ${{ steps.msrv.outputs.version }}
+        run: cargo build --locked --manifest-path runner/Cargo.toml
+
   runner:
     name: Unit tests and track selftest
     runs-on: ubuntu-24.04
@@ -35,10 +52,10 @@ jobs:
           cache: true
 
       - name: Unit tests (spec parser, naming, literals, notes)
-        run: cargo test --manifest-path runner/Cargo.toml
+        run: cargo test --locked --manifest-path runner/Cargo.toml
 
       - name: Build learn
-        run: cargo build --release --manifest-path runner/Cargo.toml
+        run: cargo build --release --locked --manifest-path runner/Cargo.toml
 
       - name: Toolchains
         run: runner/target/release/learn doctor
