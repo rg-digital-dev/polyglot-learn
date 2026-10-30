@@ -175,3 +175,5 @@ learn check-links                                     # every link still resolve
 ```
 
 Reference solutions use the same layout as the workspace: `<dir>/<lang>/<stub path>`, for example `rust/hello/src/lib.rs` or `lua/leap-year/leap_year.lua`. `selftest` generates each track in a temporary folder, so your own workspace isn't touched. Tracks whose toolchain isn't installed are reported as skipped; pass `--require-all` to make that an error.
+
+The maintainers' reference solutions live in a private repository. CI checks them out with a read-only deploy key and runs `selftest --solutions` on every push to `main`; pull requests from forks only get the stub check.

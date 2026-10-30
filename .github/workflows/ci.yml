@@ -26,6 +26,9 @@ jobs:
   runner:
     name: Unit tests and track selftest
     runs-on: ubuntu-24.04
+    env:
+      # Secrets aren't available to pull requests from forks; those skip the solutions check.
+      HAS_SOLUTIONS_KEY: ${{ secrets.SOLUTIONS_DEPLOY_KEY != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -64,6 +67,20 @@ jobs:
       - name: Selftest (stubs fail)
         run: runner/target/release/learn selftest --require-all
 
+      # Reference solutions live in a private repo so they don't spoil the
+      # exercises; a read-only deploy key lets CI check them out.
+      - name: Check out reference solutions
+        if: env.HAS_SOLUTIONS_KEY == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: rg-digital-dev/polyglot-learn-solutions
+          ssh-key: ${{ secrets.SOLUTIONS_DEPLOY_KEY }}
+          path: solutions
+
+      - name: Selftest (reference solutions pass)
+        if: env.HAS_SOLUTIONS_KEY == 'true'
+        run: runner/target/release/learn selftest --require-all --solutions solutions
+
       # The embedded UI (runner/web/dist) must match its sources.
       - uses: pnpm/action-setup@v4
         with:
@@ -74,7 +91,3 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm build
           git diff --exit-code -- dist || (echo "runner/web/dist is out of date: run 'pnpm build' in runner/web and commit it" && exit 1)
-
-      # Reference solutions are kept out of this repo (and out of CI) so they
-      # don't spoil the exercises. Maintainers run, before each release:
-      #   learn selftest --require-all --solutions <dir>
