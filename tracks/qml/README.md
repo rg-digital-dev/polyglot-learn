@@ -22,8 +22,11 @@ your `PATH` and in the usual Qt install folders.
 - **macOS:** `brew install qt` (or just `brew install qtdeclarative`, which is
   the part this track needs).
 - **Arch:** `sudo pacman -S qt6-declarative`. `qmltestrunner` is in `/usr/lib/qt6/bin`.
-- **Debian / Ubuntu:** `sudo apt install qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick`.
+- **Debian / Ubuntu:** `sudo apt install qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick qml6-module-qtqml-workerscript`.
   `qmltestrunner` is in `/usr/lib/qt6/bin` (`/usr/bin/qmltestrunner` belongs to Qt 5's qtchooser).
+  Ubuntu 24.04 ships Qt 6.4; for a newer one, `pip install aqtinstall`, then
+  `aqt install-qt linux desktop 6.10.3 linux_gcc_64 -O ~/Qt` and add
+  `~/Qt/6.10.3/gcc_64/bin` to your `PATH`.
 - **Fedora:** `sudo dnf install qt6-qtdeclarative-devel`. It installs `qmltestrunner-qt6`
   in `/usr/bin`.
 
