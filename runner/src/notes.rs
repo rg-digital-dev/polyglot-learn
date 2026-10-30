@@ -13,8 +13,9 @@
 //! <!-- /from -->
 //! ```
 //!
-//! The block matching the learner's background is kept; if none matches, the
-//! `default` block is kept instead. Text outside blocks is always shown.
+//! The `default` block (the key points) is always shown, and the block matching
+//! the learner's background is shown too; other backgrounds' blocks are left
+//! out. Text outside blocks is always shown.
 
 use std::path::Path;
 
@@ -64,10 +65,8 @@ pub fn render(md: &str, from: Option<&str>) -> String {
     }
 
     let wanted = from.map(candidates).unwrap_or_default();
-    let chosen = wanted
-        .iter()
-        .find_map(|w| blocks.iter().position(|b| b.key == *w).map(|_| w.to_string()))
-        .unwrap_or_else(|| "default".to_string());
+    let matched = wanted.iter().find(|w| blocks.iter().any(|b| b.key == **w)).map(|w| w.to_string());
+    let keep = |key: &str| key == "default" || matched.as_deref() == Some(key);
 
     let mut out = Vec::new();
     let mut skip_until = None;
@@ -79,7 +78,7 @@ pub fn render(md: &str, from: Option<&str>) -> String {
             skip_until = None;
         }
         if let Some(b) = blocks.iter().find(|b| b.start == i) {
-            if b.key != chosen {
+            if !keep(&b.key) {
                 skip_until = Some(b.end);
             }
             continue;
@@ -144,11 +143,12 @@ mod tests {
     const NOTE: &str = "# Title\n\nIntro.\n\n<!-- from:typescript -->\n## Coming from TypeScript\nTS bit.\n<!-- /from -->\n\n<!-- from:python -->\n## Coming from Python\nPy bit.\n<!-- /from -->\n\n<!-- from:default -->\n## Key points\nNeutral bit.\n<!-- /from -->\n\n## Common mistake\nOops.\n";
 
     #[test]
-    fn keeps_the_matching_section() {
+    fn keeps_the_matching_section_and_the_key_points() {
         let out = render(NOTE, Some("typescript"));
         assert!(out.contains("TS bit."));
         assert!(!out.contains("Py bit."));
-        assert!(!out.contains("Neutral bit."));
+        // Key points often carry facts the exercise depends on: always shown.
+        assert!(out.contains("Neutral bit."));
         assert!(out.contains("Intro.") && out.contains("Oops."));
         assert!(!out.contains("<!--"));
         assert!(!out.contains("\n\n\n"));

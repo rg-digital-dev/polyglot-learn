@@ -20,7 +20,6 @@ func ParsePercent(input string) (int, error) {
 ## Coming from TypeScript
 - There is no `throw`/`try`/`catch` for expected failures; the error is a second return value.
 - You must check `err` yourself after every call; nothing unwinds the stack for you.
-- On failure, return a zero value alongside the error: `return 0, err`.
 - `strconv.Atoi` is stricter than `parseInt`: `"80a"` is an error. It still accepts `+80` and `-1`.
 - Out-of-range numbers return an error rather than losing precision.
 <!-- /from -->

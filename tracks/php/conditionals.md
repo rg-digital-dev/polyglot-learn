@@ -40,7 +40,7 @@ var_dump(shippingCost(1200, false)); // int(7)
 ## Key points
 - `$x % $n === 0` tests whether `$x` is divisible by `$n`.
 - `&&` and `||` short-circuit and always produce a `bool`.
-- `match` returns a value and compares strictly; `switch` compares loosely.
+- `switch` compares loosely (`==`); `match` doesn't.
 - A boolean expression can be returned as is.
 <!-- /from -->
 

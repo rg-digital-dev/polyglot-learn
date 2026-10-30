@@ -30,9 +30,8 @@ main();
 - Same event loop, same promises. TypeScript adds `Promise<T>`: awaiting a
   `Promise<number>` gives a `number`.
 - An `async` function's return type is always written `Promise<T>`.
-- `Promise.all` returns results in input order, whatever order they finish
-  in, and rejects as soon as one input rejects. `Promise.allSettled` waits for
-  every input.
+- `Promise.all` rejects as soon as one input rejects; `Promise.allSettled`
+  waits for every input.
 - CPU-heavy code still blocks the loop; real parallelism needs
   `worker_threads`.
 <!-- /from -->
@@ -41,7 +40,7 @@ main();
 ## Key points
 - Start every operation first, then wait for all of them together.
 - `await` inside a `for` loop runs the operations one after another.
-- `Promise.all` keeps the results in input order.
+- The results come back in input order, not in the order the operations finish.
 <!-- /from -->
 
 ## Common mistake

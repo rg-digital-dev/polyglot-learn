@@ -53,7 +53,6 @@ QtObject {
 <!-- from:default -->
 ## Key points
 - Change a `ListModel` only through its methods so views get notified.
-- `count` and `get(i)` read it; there is no `[]` indexing.
 - `countChanged` and `dataChanged` let you keep derived values in sync.
 - Remove while looping by walking backwards from `count - 1`.
 <!-- /from -->
