@@ -52,6 +52,11 @@ pub trait Backend: Sync {
     fn scaffold(&self, _spec: &Spec) -> Vec<(PathBuf, String)> {
         Vec::new()
     }
+    /// Track-level files the learner may change (e.g. a package.json they add
+    /// dev dependencies to). Written only when missing.
+    fn shared_scaffold(&self) -> Vec<(PathBuf, String)> {
+        Vec::new()
+    }
 
     /// How to run one exercise's tests from the track folder.
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation;
@@ -166,6 +171,12 @@ pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Resu
     let mut report = Generated::default();
     for (rel, contents) in backend.shared(specs) {
         write(&track_dir.join(rel), &contents)?;
+    }
+    for (rel, contents) in backend.shared_scaffold() {
+        let path = track_dir.join(rel);
+        if !path.exists() {
+            write(&path, &contents)?;
+        }
     }
     for spec in specs {
         if let Some(n) = &spec.native {

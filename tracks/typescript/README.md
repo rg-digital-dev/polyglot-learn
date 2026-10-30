@@ -31,6 +31,16 @@ node --test --test-reporter=tap <slug>/<slug>.test.ts
 
 You can run the same command yourself. `workspace/typescript/package.json` sets `"type": "module"`, so files use `import`/`export`, and imports must include the `.ts` extension (`from "./hello.ts"`).
 
+## Type checking in your editor
+
+The tests need no packages, but your editor needs Node's type definitions to know `node:test` and friends. Without them it reports "Cannot find type definition file for 'node'". To get full type checking, run this once in `workspace/typescript`:
+
+```sh
+npm install --save-dev @types/node
+```
+
+`learn` creates `package.json` only when it's missing, so the dependency stays. Type errors then show up in your editor (or with `npx tsc`); the tests still only check behaviour.
+
 ## What type stripping does not accept
 
 Node only erases types; it never generates code. These raise `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX` or a parse error:

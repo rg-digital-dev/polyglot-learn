@@ -10,7 +10,7 @@ jobs:
     name: Builds with the declared minimum Rust
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The version comes from `rust-version` in runner/Cargo.toml, so the two can't drift apart.
       - id: msrv
@@ -30,17 +30,18 @@ jobs:
       # Secrets aren't available to pull requests from forks; those skip the solutions check.
       HAS_SOLUTIONS_KEY: ${{ secrets.SOLUTIONS_DEPLOY_KEY != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
+          cache: false   # the exercises have no dependencies (no go.sum)
 
       - name: Install PHP and Lua 5.4
         run: |
@@ -71,7 +72,7 @@ jobs:
       # exercises; a read-only deploy key lets CI check them out.
       - name: Check out reference solutions
         if: env.HAS_SOLUTIONS_KEY == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: rg-digital-dev/polyglot-learn-solutions
           ssh-key: ${{ secrets.SOLUTIONS_DEPLOY_KEY }}
@@ -82,7 +83,7 @@ jobs:
         run: runner/target/release/learn selftest --require-all --solutions solutions
 
       # The embedded UI (runner/web/dist) must match its sources.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
       - name: Web UI is built and committed

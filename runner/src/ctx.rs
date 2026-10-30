@@ -167,7 +167,10 @@ impl Ctx {
 
     /// An exercise on a given track (shared, or that track's own).
     pub fn spec_on(&self, track: &str, slug: &str) -> Result<&Spec> {
-        let spec = self.spec(slug)?;
+        let Ok(spec) = self.spec(slug) else {
+            let all: Vec<&str> = self.specs.iter().filter(|s| s.on_track(track)).map(|s| s.slug.as_str()).collect();
+            bail!("no exercise called `{slug}` on the {track} track. Exercises: {}", all.join(", "));
+        };
         match &spec.native {
             Some(n) if n.track != track => bail!("`{slug}` is part of the {} track only", n.track),
             _ => Ok(spec),
