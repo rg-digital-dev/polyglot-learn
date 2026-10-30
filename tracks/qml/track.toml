@@ -151,3 +151,62 @@ url = "https://doc.qt.io/qt-6/qml-qtqml-workerscript-workerscript.html"
 kind = "docs"
 title = "Quickshell: Process"
 url = "https://quickshell.org/docs/v0.3.2/types/Quickshell.Io/Process"
+
+# bindings (temperature-binding)
+[[links.bindings]]
+kind = "docs"
+title = "Qt 6: Property Binding"
+url = "https://doc.qt.io/qt-6/qtqml-syntax-propertybinding.html"
+
+[[links.bindings]]
+kind = "docs"
+title = "Qt 6: Property Binding (creating bindings from JavaScript)"
+url = "https://doc.qt.io/qt-6/qtqml-syntax-propertybinding.html#creating-property-bindings-from-javascript"
+
+[[links.bindings]]
+kind = "docs"
+title = "Qt 6: QML Object Attributes (read-only properties)"
+url = "https://doc.qt.io/qt-6/qtqml-syntax-objectattributes.html#read-only-properties"
+
+# signals (signal-counter)
+[[links.signals]]
+kind = "docs"
+title = "Qt 6: Signal and Handler Event System"
+url = "https://doc.qt.io/qt-6/qtqml-syntax-signals.html"
+
+[[links.signals]]
+kind = "docs"
+title = "Qt 6: SignalSpy QML Type"
+url = "https://doc.qt.io/qt-6/qml-qttest-signalspy.html"
+
+[[links.signals]]
+kind = "docs"
+title = "Quickshell guide: QML Language (signals)"
+url = "https://quickshell.org/docs/v0.3.2/guide/qml-language/#signals"
+
+# connections (connections)
+[[links.connections]]
+kind = "docs"
+title = "Qt 6: Connections QML Type"
+url = "https://doc.qt.io/qt-6/qml-qtqml-connections.html"
+
+[[links.connections]]
+kind = "docs"
+title = "Qt 6: Signal and Handler Event System (connecting signals to methods and signals)"
+url = "https://doc.qt.io/qt-6/qtqml-syntax-signals.html#connecting-signals-to-methods-and-signals"
+
+[[links.connections]]
+kind = "docs"
+title = "Qt 6: Defining Object Types through QML Documents"
+url = "https://doc.qt.io/qt-6/qtqml-documents-definetypes.html"
+
+# models (todo-model)
+[[links.models]]
+kind = "docs"
+title = "Qt 6: ListModel QML Type"
+url = "https://doc.qt.io/qt-6/qml-qtqml-models-listmodel.html"
+
+[[links.models]]
+kind = "docs"
+title = "Qt 6: Models and Views in Qt Quick"
+url = "https://doc.qt.io/qt-6/qtquick-modelviewsdata-modelview.html"

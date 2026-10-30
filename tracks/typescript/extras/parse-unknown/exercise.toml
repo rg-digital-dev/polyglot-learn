@@ -1,0 +1,21 @@
+title = "Parse Unknown"
+concept = "narrowing"
+summary = "Turn untrusted JSON into a typed `User`: write an `isUser` type guard, then `parseUser` and `parseUsers`, which narrow an `unknown` value step by step and throw an error naming the field (and entry) that is wrong."
+stubs = ["parse-unknown.ts"]
+hints = [
+  "Start with a small guard `isRecord(value: unknown): value is Record<string, unknown>` that checks `typeof value === \"object\" && value !== null && !Array.isArray(value)`. After it, `value.name` is allowed and has type `unknown`, ready for the next `typeof` check.",
+  "Write one private helper that returns the first problem as a string (`\"age: expected a number\"`) or `null` when the value is valid. `isUser` is then `problem(value) === null`, and `parseUser` throws `new Error(problem)` when there is one. Check `tags` with `Array.isArray(v.tags) && v.tags.every((t) => typeof t === \"string\")`, and `email` only when `\"email\" in v`.",
+  "To drop extra fields, build a new object: `{ name: value.name, age: value.age, tags: value.tags }`, plus `email` when it's there. In `parseUsers`, `const data: unknown = JSON.parse(json)`, check `Array.isArray(data)`, then map each entry with its index `i` inside `try`/`catch` and rethrow a new Error whose message is `\"[\" + i + \"] \"` followed by the caught message.",
+]
+cases = [
+  "isUser accepts a valid user",
+  "isUser accepts an optional email",
+  "isUser rejects anything else",
+  "parseUser returns the typed user",
+  "parseUser keeps only the User fields",
+  "parseUser names the bad field",
+  "parseUser rejects a value that is not an object",
+  "parseUser rejects malformed JSON",
+  "parseUsers parses an array of users",
+  "parseUsers reports the index of a bad entry",
+]

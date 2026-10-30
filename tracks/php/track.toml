@@ -167,3 +167,57 @@ url = "https://www.php.net/manual/en/language.fibers.php"
 kind = "docs"
 title = "PHP manual: The Fiber class"
 url = "https://www.php.net/manual/en/class.fiber.php"
+
+# enums (card-suits)
+[[links.enums]]
+kind = "docs"
+title = "PHP manual: Enumerations"
+url = "https://www.php.net/manual/en/language.enumerations.php"
+
+[[links.enums]]
+kind = "docs"
+title = "PHP manual: Backed enumerations"
+url = "https://www.php.net/manual/en/language.enumerations.backed.php"
+
+[[links.enums]]
+kind = "docs"
+title = "PHP manual: Enumeration methods"
+url = "https://www.php.net/manual/en/language.enumerations.methods.php"
+
+# readonly value objects (money-value)
+[[links.readonly]]
+kind = "docs"
+title = "PHP manual: Readonly properties"
+url = "https://www.php.net/manual/en/language.oop5.properties.php#language.oop5.properties.readonly-properties"
+
+[[links.readonly]]
+kind = "docs"
+title = "PHP manual: Constructor promotion"
+url = "https://www.php.net/manual/en/language.oop5.decon.php#language.oop5.decon.constructor.promotion"
+
+[[links.readonly]]
+kind = "docs"
+title = "PHP manual: Readonly classes (8.2)"
+url = "https://www.php.net/manual/en/language.oop5.basic.php#language.oop5.basic.class.readonly"
+
+# traits (timestamps-trait)
+[[links.traits]]
+kind = "docs"
+title = "PHP manual: Traits"
+url = "https://www.php.net/manual/en/language.oop5.traits.php"
+
+[[links.traits]]
+kind = "docs"
+title = "PHP manual: Traits: conflict resolution"
+url = "https://www.php.net/manual/en/language.oop5.traits.php#language.oop5.traits.conflict"
+
+# generators (read-lines)
+[[links.generators]]
+kind = "docs"
+title = "PHP manual: Generator syntax"
+url = "https://www.php.net/manual/en/language.generators.syntax.php"
+
+[[links.generators]]
+kind = "docs"
+title = "PHP manual: The Generator class"
+url = "https://www.php.net/manual/en/class.generator.php"

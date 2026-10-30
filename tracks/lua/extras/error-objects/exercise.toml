@@ -1,0 +1,21 @@
+title = "Error Objects"
+concept = "error-handling"
+summary = "Raise tables as error objects with a code and a message, catch them with xpcall and a traceback handler, convert between raised errors and nil, err returns, rethrow with added context, and use error's level argument to blame the caller."
+stubs = ["error_objects.lua"]
+hints = [
+  "`error({ code = \"out_of_range\", message = \"...\" })` raises the table itself, and `pcall` hands that same table back. Use `math.type(n) == \"integer\"` to tell 30 from 30.5 and from a string.",
+  "`xpcall(fn, handler, ...)` calls the handler while the stack is still there, so `debug.traceback()` inside it sees where the error happened. Have the handler turn a string error into `{ code = \"internal\", message = e }`, set `.traceback`, and return the object. `must` is what `assert` does: `return assert(value, err)` raises err unchanged when value is nil.",
+  "require_field raises with `error(\"missing field '\" .. name .. \"'\", 2)`: level 2 puts the caller's file and line in front of the message. In with_context, catch with pcall; for a table, raise a new table with the same code and `context .. \": \" .. message`; for anything else, `error(err, 0)` rethrows it without adding a second position.",
+]
+cases = [
+  "check_age returns a valid age",
+  "check_age raises a table with code and message",
+  "check_age rejects values that are not integers",
+  "try returns the value when nothing is raised",
+  "try turns a raised error object into nil, err",
+  "try adds a traceback",
+  "try wraps a string error as an internal error",
+  "must returns the value or raises the error",
+  "require_field blames the caller",
+  "with_context adds context and rethrows",
+]

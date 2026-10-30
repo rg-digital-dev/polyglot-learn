@@ -1,0 +1,21 @@
+title = "Pipeline"
+concept = "channels"
+summary = "Write the stages of a channel pipeline: Generate sends numbers, Square transforms them, Merge fans several channels into one with a sync.WaitGroup, and Sum drains the result. Each stage runs in its own goroutine and closes its output when done."
+stubs = ["pipeline.go"]
+hints = [
+  "Every stage that returns a channel has the same shape: `out := make(chan int)`, start a goroutine that sends on `out` and runs `defer close(out)`, then `return out` right away.",
+  "`for n := range in` reads until `in` is closed, so Square and Sum need no other stop condition. Closing `out` is what lets the next stage's loop end.",
+  "In Merge, `wg.Add(len(ins))`, then one goroutine per input that forwards its values and calls `wg.Done()`. One more goroutine does `wg.Wait()` and then `close(out)`; only it may close, because a send on a closed channel panics.",
+]
+cases = [
+  "generate sends every number in order",
+  "generate returns before the values are read",
+  "generate with no numbers closes right away",
+  "square squares each value in order",
+  "square of an empty stream is empty",
+  "merge forwards every value from every input",
+  "merge with one input keeps its order",
+  "merge with no inputs closes right away",
+  "sum adds every value until the channel closes",
+  "stages chain into a pipeline",
+]

@@ -1,0 +1,21 @@
+title = "Money Value"
+concept = "readonly"
+summary = "Finish an immutable Money value object: readonly promoted properties checked in the constructor, a wither, addition that refuses mixed currencies, equality by value, formatting from integer cents, and a split that never loses a cent."
+stubs = ["money-value.php"]
+hints = [
+  "The properties are already promoted and readonly; the constructor body only has to check `$currency` (for example with `preg_match('/^[A-Z]{3}$/', $currency)`) and throw `InvalidArgumentException` when it fails.",
+  "Every operation builds a new object: `withCents()` is `new Money($cents, $this->currency)`, and `add()` can reuse it after checking the currencies. For `format()`, take `abs()` of the cents, split with `intdiv($abs, 100)` and `$abs % 100`, and put the `-` back in front.",
+  "For `allocate($parts)`: `$base = intdiv($this->cents, $parts)` and `$left = $this->cents - $base * $parts`. The first `$left` parts get `$base + 1`, the rest get `$base`.",
+]
+cases = [
+  "constructor keeps cents and currency",
+  "constructor rejects a bad currency code",
+  "properties cannot be changed after construction",
+  "withCents returns a changed copy",
+  "equals compares by value",
+  "add sums amounts of the same currency",
+  "add rejects different currencies",
+  "format shows two decimals",
+  "allocate splits without losing a cent",
+  "allocate rejects fewer than one part",
+]

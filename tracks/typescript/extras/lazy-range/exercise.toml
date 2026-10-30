@@ -1,0 +1,21 @@
+title = "Lazy Range"
+concept = "generators"
+summary = "Write generator functions that produce values only when asked: `range` with a step, `take` that stops an endless sequence, a lazy `map`, and a `Countdown` class that works with `for...of` by implementing `[Symbol.iterator]`."
+stubs = ["lazy-range.ts"]
+hints = [
+  "A `function*` runs only when someone asks for the next value, and pauses at each `yield`. range is one `for` loop whose condition depends on the sign of `step`: `step > 0 ? i < end : i > end`. Check for a zero step before the loop.",
+  "`for (const item of items)` works on any `Iterable`, including other generators. In take, `yield` the item first and only then check whether you have `n`: checking first pulls one item too many. Handle `n <= 0` before the loop, and a plain `return` ends a generator.",
+  "map is a `for...of` that does `yield fn(item)`. For Countdown, make the method a generator too: `*[Symbol.iterator]() { for (let n = this.from; n >= 1; n--) yield n; }`. Each call returns a new iterator, so every loop starts again.",
+]
+cases = [
+  "range counts from start up to end",
+  "range moves by step",
+  "range counts down with a negative step",
+  "range is empty when start is past end",
+  "range rejects a step of zero",
+  "take stops an endless sequence",
+  "take pulls no more items than it needs",
+  "map transforms lazily",
+  "Countdown works with for of and spread",
+  "Countdown from zero is empty",
+]

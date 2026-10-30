@@ -1,0 +1,21 @@
+title = "Read Lines"
+concept = "generators"
+summary = "Write a small lazy line-reading toolkit from generators: numbered lines from a string with a count as the return value, a blank-line filter, concatenation with yield from, an infinite counter, and a take() that never pulls one item too many."
+stubs = ["read-lines.php"]
+hints = [
+  "Any `yield` in the body turns the function into a generator. In `readLines`, split with `explode(\"\\n\", $text)`, drop a last empty element, `rtrim($line, \"\\r\")` each line, `yield $n => $line`, and finish with `return $n;`. Return 0 straight away for an empty string.",
+  "`$total += yield from readLines($text);` passes every line through and adds the inner return value. `naturals` is a `for` loop with no end condition and a `yield $i` inside.",
+  "In `take`, return before the loop when `$n <= 0`. Inside `foreach ($items as $k => $v)`, `yield $k => $v` first and then `if (--$n === 0) { return; }`. Checking the count before the yield instead makes the loop pull one more item from the source.",
+]
+cases = [
+  "readLines yields numbered lines",
+  "readLines drops line endings and a final newline",
+  "readLines of an empty string yields nothing",
+  "readLines returns the line count",
+  "nonBlank skips blank lines, keeps line numbers",
+  "nonBlank also accepts an array",
+  "concatLines yields every line in order",
+  "concatLines returns the total line count",
+  "take reads an infinite generator lazily",
+  "take stops without pulling extra items",
+]

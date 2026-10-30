@@ -194,3 +194,72 @@ url = "https://docs.fivem.net/docs/scripting-reference/runtimes/lua/functions/Ci
 kind = "docs"
 title = "Neovim: Luv reference manual (vim.uv)"
 url = "https://neovim.io/doc/user/luvref/"
+
+# metatables (account-classes)
+[[links.metatables]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: setmetatable"
+url = "https://www.lua.org/manual/5.4/manual.html#pdf-setmetatable"
+
+[[links.metatables]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 16.2 Inheritance"
+url = "https://www.lua.org/pil/16.2.html"
+
+[[links.metatables]]
+kind = "exercism"
+title = "Exercism Lua: Bank Account"
+url = "https://exercism.org/tracks/lua/exercises/bank-account"
+
+# metamethods (vector-ops)
+[[links.metamethods]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 2.4 Metatables and Metamethods"
+url = "https://www.lua.org/manual/5.4/manual.html#2.4"
+
+[[links.metamethods]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 13.1 Arithmetic Metamethods"
+url = "https://www.lua.org/pil/13.1.html"
+
+[[links.metamethods]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 13.2 Relational Metamethods"
+url = "https://www.lua.org/pil/13.2.html"
+
+[[links.metamethods]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 13.3 Library-Defined Metamethods"
+url = "https://www.lua.org/pil/13.3.html"
+
+# coroutines (number-generator)
+[[links.coroutines]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 6.2 Coroutine Manipulation"
+url = "https://www.lua.org/manual/5.4/manual.html#6.2"
+
+[[links.coroutines]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 9.1 Coroutine Basics"
+url = "https://www.lua.org/pil/9.1.html"
+
+[[links.coroutines]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 9.3 Coroutines as Iterators"
+url = "https://www.lua.org/pil/9.3.html"
+
+# error-handling (error-objects)
+[[links.error-handling]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: xpcall"
+url = "https://www.lua.org/manual/5.4/manual.html#pdf-xpcall"
+
+[[links.error-handling]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 8.4 Error Handling and Exceptions"
+url = "https://www.lua.org/pil/8.4.html"
+
+[[links.error-handling]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 8.5 Error Messages and Tracebacks"
+url = "https://www.lua.org/pil/8.5.html"

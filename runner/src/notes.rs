@@ -117,6 +117,13 @@ pub fn read_track_note(root: &Path, track: &str, concept: &str, from: Option<&st
     Some(render(&text, from))
 }
 
+/// The lesson of a track-only exercise (`tracks/<track>/extras/<slug>/lesson.md`).
+pub fn read_native_lesson(spec: &crate::spec::Spec, from: Option<&str>) -> Option<String> {
+    let path = spec.native.as_ref()?.lesson.as_ref()?;
+    let text = std::fs::read_to_string(path).ok()?;
+    Some(render(&text, from))
+}
+
 /// "Go deeper" section rendered from the track's link data.
 pub fn go_deeper(meta: &TrackMeta, concept: &str) -> Option<String> {
     let links = meta.links_for(concept);

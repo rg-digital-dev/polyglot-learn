@@ -113,16 +113,35 @@ impl Ctx {
 
         let course = Course::load(&root)?;
         let mut specs = Vec::new();
-        for slug in course.slugs() {
-            let path = root.join("specs").join(format!("{slug}.json"));
-            if !path.exists() {
-                bail!("course.toml lists `{slug}` but {} doesn't exist", path.display());
+        for m in &course.modules {
+            if let Some(track) = &m.track {
+                if crate::backends::get(track).ok().map(|b| b.id()) != Some(track.as_str()) {
+                    bail!("course.toml: module `{}` has unknown track `{track}`", m.id);
+                }
             }
-            let spec = Spec::load(&path)?;
-            if spec.slug != slug {
-                bail!("{} has slug `{}`; it must match the file name", path.display(), spec.slug);
+            for slug in &m.exercises {
+                let spec = match &m.track {
+                    Some(track) => {
+                        let dir = root.join("tracks").join(track).join("extras").join(slug);
+                        if !dir.join("exercise.toml").is_file() {
+                            bail!("course.toml lists `{slug}` but {} doesn't exist", dir.join("exercise.toml").display());
+                        }
+                        Spec::load_native(&dir, track, slug)?
+                    }
+                    None => {
+                        let path = root.join("specs").join(format!("{slug}.json"));
+                        if !path.exists() {
+                            bail!("course.toml lists `{slug}` but {} doesn't exist", path.display());
+                        }
+                        let spec = Spec::load(&path)?;
+                        if spec.slug != *slug {
+                            bail!("{} has slug `{}`; it must match the file name", path.display(), spec.slug);
+                        }
+                        spec
+                    }
+                };
+                specs.push(spec);
             }
-            specs.push(spec);
         }
 
         let config = read_config(&state_dir)?;
@@ -146,13 +165,27 @@ impl Ctx {
         })
     }
 
+    /// An exercise on a given track (shared, or that track's own).
+    pub fn spec_on(&self, track: &str, slug: &str) -> Result<&Spec> {
+        let spec = self.spec(slug)?;
+        match &spec.native {
+            Some(n) if n.track != track => bail!("`{slug}` is part of the {} track only", n.track),
+            _ => Ok(spec),
+        }
+    }
+
+    /// Every exercise on a track, in course order (owned: backends take a slice).
+    pub fn track_specs(&self, track: &str) -> Vec<Spec> {
+        self.specs.iter().filter(|s| s.on_track(track)).cloned().collect()
+    }
+
     pub fn is_done(&self, track: &str, slug: &str) -> bool {
         self.progress.done.get(track).is_some_and(|d| d.contains(slug))
     }
 
     /// The first unfinished exercise on a track, in course order.
     pub fn current(&self, track: &str) -> Option<&Spec> {
-        self.specs.iter().find(|s| !self.is_done(track, &s.slug))
+        self.specs.iter().filter(|s| s.on_track(track)).find(|s| !self.is_done(track, &s.slug))
     }
 
     pub fn save_config(&mut self) -> Result<()> {

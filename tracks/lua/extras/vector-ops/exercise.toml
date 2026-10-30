@@ -1,0 +1,21 @@
+title = "Vector Ops"
+concept = "metamethods"
+summary = "Give a 2D vector type real operators through metamethods: +, -, unary minus, * with a number on either side or a dot product, ==, <, <= and tostring, plus a length method."
+stubs = ["vector_ops.lua"]
+hints = [
+  "Metamethods go on the metatable, which here is M.Vec itself: `function M.Vec.__add(a, b) return M.Vec.new(a.x + b.x, a.y + b.y) end`. Return a new vector; don't change the operands.",
+  "For `3 * v` Lua calls `__mul(3, v)`, so the number can be either argument. Check with `type(a) == \"number\"` and `type(b) == \"number\"`; when neither is a number, both are vectors and the result is the dot product `a.x * b.x + a.y * b.y`.",
+  "`__eq` compares the components. `__lt` and `__le` compare lengths; comparing `x*x + y*y` avoids square roots. `__tostring` returns `\"(\" .. v.x .. \", \" .. v.y .. \")\"`, and `length` is `math.sqrt(x*x + y*y)`.",
+]
+cases = [
+  "adding two vectors",
+  "subtracting two vectors",
+  "unary minus flips both components",
+  "vector times a number",
+  "number times a vector",
+  "vector times vector is the dot product",
+  "equal components compare equal",
+  "tostring shows the components",
+  "length is the Euclidean length",
+  "shorter vectors sort first",
+]

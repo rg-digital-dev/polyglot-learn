@@ -1,0 +1,21 @@
+title = "Card Suits"
+concept = "enums"
+summary = "Give a playing-card model its behaviour: methods on the Suit and Rank enums that match over their cases, a Card that parses \"QH\" with tryFrom() and cases(), a trump rule that uses an enum constant, and a full 52-card deck."
+stubs = ["card-suits.php"]
+hints = [
+  "Inside an enum method, `$this` is the current case. `match ($this) { self::Hearts, self::Diamonds => Color::Red, ... }` needs no `default` arm when it lists every case.",
+  "A backed enum gets `from()` and `tryFrom()` for free: `Suit::tryFrom('H')` is `Suit::Hearts`, and an unknown value gives `null`. For the rank, loop over `Rank::cases()` and compare each `label()` with the text before the last character.",
+  "In `parse`, split with `substr($text, -1)` (the suit letter) and `strtoupper(substr($text, 0, -1))` (the rank label), and throw `InvalidArgumentException` when either lookup fails. In `beats`, compare `$this->suit === $other->suit` first; otherwise the answer is `$this->suit === Suit::TRUMP`.",
+]
+cases = [
+  "suit colour comes from a match",
+  "suit symbols",
+  "fromLetter accepts either case or returns null",
+  "rank labels",
+  "card label joins rank and symbol",
+  "parse reads rank and suit letters",
+  "parse rejects bad input",
+  "higher rank of the same suit wins",
+  "trump beats any other suit",
+  "full deck has 52 cards in order",
+]

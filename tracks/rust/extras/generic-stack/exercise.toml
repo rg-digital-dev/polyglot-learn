@@ -1,0 +1,22 @@
+title = "Generic Stack"
+concept = "generics"
+summary = "Write a Stack<T> that works for any element type, a describe method that only exists when T can be displayed, and two generic search functions whose trait bounds say exactly what they need from T."
+stubs = ["src/lib.rs"]
+hints = [
+  "Inside `impl<T> Stack<T>`, the stack is a thin wrapper around its `Vec<T>`: `push` and `pop` map straight onto `Vec::push` and `Vec::pop`, and `peek` is `self.items.last()`.",
+  "`describe` sits in a separate `impl<T: Display> Stack<T>` block, so you may use `{}` on items there. Map each item with `to_string()`, collect into a `Vec<String>` and `join(\", \")`.",
+  "`largest` needs `PartialOrd` to compare and `Copy` to return a value out of a borrowed slice. Start from `items.first().copied()?` and keep the bigger one in a loop. `largest_by_key` returns `Option<&T>`, so it never needs to copy; only replace the best item when the new key is strictly greater.",
+]
+cases = [
+  "a new stack is empty",
+  "push and pop are last in first out",
+  "pop on an empty stack is none",
+  "peek shows the top without removing it",
+  "a stack works with any type",
+  "describe lists items from bottom to top",
+  "largest finds the biggest number",
+  "largest works for chars and floats",
+  "largest of nothing is none",
+  "largest_by_key returns a reference to the best item",
+  "largest_by_key keeps the first on a tie",
+]

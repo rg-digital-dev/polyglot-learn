@@ -1,0 +1,21 @@
+title = "Account Classes"
+concept = "metatables"
+summary = "Build an Account class with a constructor and colon methods, then a SavingsAccount that inherits from it through its metatable, overrides two methods and calls the parent's versions."
+stubs = ["account_classes.lua"]
+hints = [
+  "Account.new builds a plain table and returns `setmetatable(obj, M.Account)`. Because `M.Account.__index = M.Account`, a key missing on the instance, such as `deposit`, is looked up in M.Account.",
+  "Inheritance is one more link in the chain: `setmetatable(M.SavingsAccount, { __index = M.Account })`. A lookup that misses on a savings instance then tries M.SavingsAccount, then M.Account.",
+  "To call the parent's version of an overridden method, name it and pass self yourself: `M.Account.withdraw(self, amount)`. SavingsAccount.new can call `M.Account.new(owner, balance)`, set `rate`, then `setmetatable` the result to M.SavingsAccount.",
+]
+cases = [
+  "new sets owner and balance",
+  "deposit adds and returns the new balance",
+  "methods live on the class, not the instance",
+  "withdrawing too much returns nil, err",
+  "a deposit of zero or less returns nil, err",
+  "a failed withdraw leaves the balance unchanged",
+  "a savings account inherits deposit from Account",
+  "add_interest adds whole cents rounded down",
+  "a savings withdraw keeps the minimum balance",
+  "describe is overridden and calls the parent",
+]

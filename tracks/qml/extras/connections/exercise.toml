@@ -1,0 +1,18 @@
+title = "Connections"
+concept = "connections"
+summary = "A Thermostat that watches a provided Sensor component: a Connections element reacts to the sensor's reading changes and forwards its alarms as a warning signal, and listen()/ignore() connect and disconnect other sensors' alarms with signal.connect() and signal.disconnect()."
+stubs = ["Thermostat.qml"]
+hints = [
+  "Put `Connections { target: root.sensor; function onReadingChanged() { ... } }` inside the Item. It follows root.sensor when the property changes and does nothing while it is null.",
+  "Write one function that sets heating from sensor.reading and target, and call it from onReadingChanged in the Connections and from an `onTargetChanged` handler on the thermostat itself. A second function in the Connections, `function onAlarm(reason) { root.warning(reason) }`, forwards alarms.",
+  "A signal can be connected straight to another signal: `other.alarm.connect(root.warning)`. ignore() undoes it with `other.alarm.disconnect(root.warning)`, which needs the same target that was connected.",
+]
+cases = [
+  "heats when the reading drops below target",
+  "stops heating at the target",
+  "a new target rechecks the last reading",
+  "follows a replaced sensor",
+  "forwards sensor alarms as warnings",
+  "listen forwards another sensor's alarms",
+  "ignore disconnects that sensor",
+]

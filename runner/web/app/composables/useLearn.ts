@@ -30,7 +30,8 @@ export interface CourseState {
   from: string | null
   backgrounds: { id: string; label: string }[]
   tracks: TrackInfo[]
-  modules: { id: string; title: string; exercises: ExerciseSummary[] }[]
+  /** `track` is set for a track-only module. */
+  modules: { id: string; title: string; track: string | null; exercises: ExerciseSummary[] }[]
   concepts: string[]
   workspace: string
 }

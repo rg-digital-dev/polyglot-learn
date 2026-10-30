@@ -248,3 +248,93 @@ url = "https://github.com/mauricioabreu/golings/tree/main/exercises/concurrent"
 kind = "exercism"
 title = "Exercism Go: Parallel Letter Frequency"
 url = "https://exercism.org/tracks/go/exercises/parallel-letter-frequency"
+
+# embedding (embedded-logger); golings and Exercism have no embedding exercises
+[[links.embedding]]
+kind = "docs"
+title = "Effective Go: Embedding"
+url = "https://go.dev/doc/effective_go#embedding"
+
+[[links.embedding]]
+kind = "docs"
+title = "Go by Example: Struct Embedding"
+url = "https://gobyexample.com/struct-embedding"
+
+[[links.embedding]]
+kind = "docs"
+title = "A Tour of Go: Interfaces are implemented implicitly"
+url = "https://go.dev/tour/methods/10"
+
+# channels (pipeline)
+[[links.channels]]
+kind = "docs"
+title = "A Tour of Go: Channels"
+url = "https://go.dev/tour/concurrency/2"
+
+[[links.channels]]
+kind = "docs"
+title = "Go Blog: Pipelines and cancellation"
+url = "https://go.dev/blog/pipelines"
+
+[[links.channels]]
+kind = "docs"
+title = "Go by Example: Channels"
+url = "https://gobyexample.com/channels"
+
+[[links.channels]]
+kind = "lings"
+title = "golings: concurrent"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/concurrent"
+
+# select (with-timeout); golings and Exercism have no select exercises
+[[links.select]]
+kind = "docs"
+title = "A Tour of Go: Select"
+url = "https://go.dev/tour/concurrency/5"
+
+[[links.select]]
+kind = "docs"
+title = "Go by Example: Timeouts"
+url = "https://gobyexample.com/timeouts"
+
+[[links.select]]
+kind = "docs"
+title = "Package context"
+url = "https://pkg.go.dev/context"
+
+# generics (generic-set)
+[[links.generics]]
+kind = "docs"
+title = "A Tour of Go: Type parameters"
+url = "https://go.dev/tour/generics/1"
+
+[[links.generics]]
+kind = "docs"
+title = "Tutorial: Getting started with generics"
+url = "https://go.dev/doc/tutorial/generics"
+
+[[links.generics]]
+kind = "docs"
+title = "Go by Example: Generics"
+url = "https://gobyexample.com/generics"
+
+[[links.generics]]
+kind = "lings"
+title = "golings: generics"
+url = "https://github.com/mauricioabreu/golings/tree/main/exercises/generics"
+
+# error-wrapping (wrapped-errors); golings has no error exercises
+[[links.error-wrapping]]
+kind = "docs"
+title = "Go Blog: Working with Errors in Go 1.13"
+url = "https://go.dev/blog/go1.13-errors"
+
+[[links.error-wrapping]]
+kind = "docs"
+title = "Package errors"
+url = "https://pkg.go.dev/errors"
+
+[[links.error-wrapping]]
+kind = "exercism"
+title = "Exercism Go: Error Wrapping"
+url = "https://exercism.org/tracks/go/concepts/error-wrapping"

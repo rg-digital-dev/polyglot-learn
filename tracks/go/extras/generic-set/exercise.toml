@@ -1,0 +1,21 @@
+title = "Generic Set"
+concept = "generics"
+summary = "Implement a generic Set[T comparable] backed by a map, a Sorted function that needs the stricter cmp.Ordered constraint, and the generic helpers Map and Filter."
+stubs = ["genericset.go"]
+hints = [
+  "Inside the methods, T is just a type: `s.items[v] = struct{}{}` adds, `_, ok := s.items[v]` checks and `delete(s.items, v)` removes. Reading from or deleting in a nil map is fine; only writing needs `make` first.",
+  "Add must handle the zero Set, whose map is nil: `if s.items == nil { s.items = make(map[T]struct{}) }`. New can then just call Add for each item.",
+  "Sorted collects the keys into a `[]T` and calls `slices.Sort`, which needs cmp.Ordered; that's why it is a function with its own type parameter, not a method. Map and Filter are loops that append to a `[]U` or `[]T`.",
+]
+cases = [
+  "new holds the given items",
+  "duplicates count once",
+  "has reports missing values",
+  "remove takes a value out",
+  "the zero value is an empty set ready to use",
+  "sorted returns numbers in order",
+  "sorted works for strings too",
+  "a set can hold structs",
+  "map converts every item in order",
+  "filter keeps matching items in order",
+]

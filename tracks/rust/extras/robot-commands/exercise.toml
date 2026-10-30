@@ -1,0 +1,22 @@
+title = "Robot Commands"
+concept = "enums"
+summary = "Model a robot's commands as an enum whose variants carry different data, parse text lines into commands (returning None for anything invalid), and run a script by matching on each command."
+stubs = ["src/lib.rs"]
+hints = [
+  "Start with `Direction::turn`: a `match` on `(self, t)` with one arm per combination, or two matches on `self` (one for each way of turning). The compiler tells you when you've missed a case.",
+  "For `parse`, split the line into words and match on a slice pattern: `[\"forward\", n] => n.parse().ok().map(Command::Forward)`, `[\"left\"] => ...`. `say` keeps the rest of the line, so `line.strip_prefix(\"say \")` is easier there.",
+  "`apply` is one `match cmd { ... }` with an arm per variant. Bind the data in the pattern: `Command::Forward(n) => ...`, `Command::Teleport { x, y } => ...`. `run` uses `if let Some(cmd) = parse(line)` to skip lines that don't parse.",
+]
+cases = [
+  "turning right goes clockwise",
+  "turning left goes counter-clockwise",
+  "parse reads forward with a distance",
+  "parse reads turns",
+  "parse reads say with the rest of the line",
+  "parse reads teleport with two numbers",
+  "parse rejects unknown or malformed lines",
+  "a new robot starts at the origin facing north",
+  "forward moves in the facing direction",
+  "say adds to the log",
+  "run executes a script and skips bad lines",
+]

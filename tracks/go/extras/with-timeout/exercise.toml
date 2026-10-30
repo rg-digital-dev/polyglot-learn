@@ -1,0 +1,19 @@
+title = "With Timeout"
+concept = "select"
+summary = "Run a piece of work in a goroutine and use select to wait for whichever comes first: the result, a time.After timer, or a cancelled context.Context."
+stubs = ["withtimeout.go"]
+hints = [
+  "Start the work with `done := make(chan int, 1)` and `go func() { done <- work() }()`. The buffer of 1 lets that goroutine finish its send and exit even when nobody reads the result any more.",
+  "`select` blocks until one of its cases can proceed. One case receives from `done`; the other receives from `time.After(limit)` in WithTimeout, or from `ctx.Done()` in WithContext.",
+  "In WithContext, return `0, ctx.Err()` from the `<-ctx.Done()` case. It is `context.Canceled` after cancel() and `context.DeadlineExceeded` after a deadline, which is exactly what the tests check.",
+]
+cases = [
+  "fast work returns its result",
+  "slow work returns ErrTimeout",
+  "a timeout does not wait for the work to finish",
+  "a timeout waits at least the limit",
+  "work that beats the deadline returns its result",
+  "a passed deadline returns DeadlineExceeded",
+  "cancelling the context stops the wait",
+  "an already cancelled context returns right away",
+]

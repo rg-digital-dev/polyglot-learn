@@ -1,0 +1,20 @@
+title = "Todo Model"
+concept = "models"
+summary = "A todo list kept in a ListModel: add, insert, toggle, remove and move items with the model's methods, read titles back into JS arrays, and keep a remaining count in sync through the model's own signals."
+stubs = ["TodoModel.qml"]
+hints = [
+  "A ListModel is not a JS array: use `items.count`, `items.get(i)`, `items.append({ ... })`, `items.insert(i, { ... })`, `items.remove(i)`, `items.setProperty(i, \"done\", value)` and `items.move(from, to, 1)`.",
+  "For titles() and pending(), loop from 0 to items.count and push into a new array. In clearDone(), loop backwards so removing an item doesn't skip the next one.",
+  "Write a recount() function and call it from handlers on the model itself: `ListModel { onCountChanged: root.recount(); onDataChanged: root.recount() }`. countChanged covers append, insert, remove and clear; dataChanged covers setProperty.",
+]
+cases = [
+  "add appends an open item",
+  "addFirst inserts at the top",
+  "toggle flips done",
+  "removeAt removes one item",
+  "moveUp swaps with the item above",
+  "remaining counts open items",
+  "remaining follows direct model changes",
+  "pending lists open titles in order",
+  "clearDone removes every finished item",
+]

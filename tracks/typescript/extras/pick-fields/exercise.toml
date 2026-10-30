@@ -1,0 +1,20 @@
+title = "Pick Fields"
+concept = "generics"
+summary = "Write three generic helpers whose types follow their input: `pick` copies chosen keys of an object, `pluck` reads one field from every item, and `groupBy` groups items by a computed key."
+stubs = ["pick-fields.ts"]
+hints = [
+  "The signatures are the hard part and they're given. In the body, `K` is just a key and `T[K]` is the value type: `obj[key]` and `item[key]` type-check because `key: K` and `K extends keyof T`.",
+  "pick: start with `const out = {} as Pick<T, K>;`, loop over `keys`, and copy `obj[key]` only when `key in obj`, so a missing optional field stays missing. pluck is one `items.map(...)`.",
+  "groupBy: start with `const groups = {} as Record<K, T[]>;`, then for each item compute `const k = key(item);` and do `(groups[k] ??= []).push(item);`. Return `groups`.",
+]
+cases = [
+  "pick copies the chosen fields",
+  "pick returns a new object",
+  "pick with no keys gives an empty object",
+  "pick leaves out a missing optional field",
+  "pluck collects one field from each item",
+  "pluck of no items is empty",
+  "groupBy keeps input order inside each group",
+  "groupBy with number keys",
+  "groupBy of no items is an empty object",
+]

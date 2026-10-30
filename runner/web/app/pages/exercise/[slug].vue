@@ -21,13 +21,15 @@ interface Exercise {
   toolFound: boolean
   toolLabel: string
   done: boolean
+  /** A track-only exercise: one lesson, no cross-track note or comparison. */
+  native: boolean
   files: { path: string; absolute: string; signatures: string[] }[]
   lesson: string | null
   note: string | null
   links: { kind: string; label: string; title: string; url: string }[]
   hints: string[]
   hintsTotal: number
-  cases: { index: number; description: string; function: string; lines: string[] }[]
+  cases: { index: number; description: string; lines: string[] }[]
   prev: string | null
   next: string | null
 }
@@ -107,7 +109,8 @@ function onSaved() {
     <header class="exercise__head">
       <div class="exercise__titles">
         <p class="eyebrow">
-          <NuxtLink :to="`/compare/${ex.concept}`">{{ ex.concept }}</NuxtLink>
+          <span v-if="ex.native">{{ ex.concept }} · {{ ex.trackName }} only</span>
+          <NuxtLink v-else :to="`/compare/${ex.concept}`">{{ ex.concept }}</NuxtLink>
           <span v-if="ex.done" class="eyebrow--accent"> · done</span>
         </p>
         <h1 class="h-title">{{ ex.title }}</h1>
@@ -115,7 +118,7 @@ function onSaved() {
       </div>
       <label class="field">
         <span class="tag">Track</span>
-        <select :value="ex.track" @change="setTrack">
+        <select :value="ex.track" :disabled="ex.native" @change="setTrack">
           <option v-for="t in state?.tracks ?? []" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
       </label>
@@ -132,10 +135,12 @@ function onSaved() {
           <section class="panel pad">
             <Markdown :source="ex.lesson" />
           </section>
-          <section class="panel pad">
-            <p class="tag tag--accent">{{ ex.trackName }}</p>
-            <Markdown v-if="ex.note" :source="ex.note" />
-            <p v-else class="muted">No {{ ex.trackName }} note for this concept yet.</p>
+          <section v-if="!ex.native || ex.links.length" class="panel pad">
+            <template v-if="!ex.native">
+              <p class="tag tag--accent">{{ ex.trackName }}</p>
+              <Markdown v-if="ex.note" :source="ex.note" />
+              <p v-else class="muted">No {{ ex.trackName }} note for this concept yet.</p>
+            </template>
             <div v-if="ex.links.length" class="links">
               <h2 class="h-card">Go deeper</h2>
               <ul>

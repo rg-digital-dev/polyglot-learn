@@ -276,3 +276,111 @@ url = "https://github.com/rust-lang/rustlings/tree/main/exercises/20_threads"
 kind = "exercism"
 title = "Exercism Rust: Parallel Letter Frequency"
 url = "https://exercism.org/tracks/rust/exercises/parallel-letter-frequency"
+
+# ---- Deeper Rust (track-only exercises) ----
+
+# ownership (word-list)
+[[links.ownership]]
+kind = "docs"
+title = "The Rust Book: 4.1 What is Ownership?"
+url = "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+
+[[links.ownership]]
+kind = "docs"
+title = "The Rust Book: 4.2 References and Borrowing"
+url = "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+
+[[links.ownership]]
+kind = "docs"
+title = "Rust by Example: Ownership and moves"
+url = "https://doc.rust-lang.org/rust-by-example/scope/move.html"
+
+[[links.ownership]]
+kind = "lings"
+title = "Rustlings: 06_move_semantics"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/06_move_semantics"
+
+# lifetimes (text-slices)
+[[links.lifetimes]]
+kind = "docs"
+title = "The Rust Book: 10.3 Validating References with Lifetimes"
+url = "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html"
+
+[[links.lifetimes]]
+kind = "docs"
+title = "Rust by Example: Lifetimes"
+url = "https://doc.rust-lang.org/rust-by-example/scope/lifetime.html"
+
+[[links.lifetimes]]
+kind = "lings"
+title = "Rustlings: 16_lifetimes"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/16_lifetimes"
+
+# enums (robot-commands)
+[[links.enums]]
+kind = "docs"
+title = "The Rust Book: 6.1 Defining an Enum"
+url = "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html"
+
+[[links.enums]]
+kind = "docs"
+title = "The Rust Book: 6.2 The match Control Flow Construct"
+url = "https://doc.rust-lang.org/book/ch06-02-match.html"
+
+[[links.enums]]
+kind = "lings"
+title = "Rustlings: 08_enums"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/08_enums"
+
+# error types (config-errors)
+[[links.error-types]]
+kind = "docs"
+title = "The Rust Book: 9.2 Recoverable Errors with Result"
+url = "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+
+[[links.error-types]]
+kind = "docs"
+title = "Rust by Example: Defining an error type"
+url = "https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/define_error_type.html"
+
+[[links.error-types]]
+kind = "lings"
+title = "Rustlings: 13_error_handling"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/13_error_handling"
+
+# generics (generic-stack)
+[[links.generics]]
+kind = "docs"
+title = "The Rust Book: 10.1 Generic Data Types"
+url = "https://doc.rust-lang.org/book/ch10-01-syntax.html"
+
+[[links.generics]]
+kind = "docs"
+title = "The Rust Book: 10.2 Defining Shared Behavior with Traits"
+url = "https://doc.rust-lang.org/book/ch10-02-traits.html"
+
+[[links.generics]]
+kind = "lings"
+title = "Rustlings: 14_generics"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/14_generics"
+
+# smart pointers (shared-state)
+[[links.smart-pointers]]
+kind = "docs"
+title = "The Rust Book: 15.4 Rc<T>, the Reference Counted Smart Pointer"
+url = "https://doc.rust-lang.org/book/ch15-04-rc.html"
+
+[[links.smart-pointers]]
+kind = "docs"
+title = "The Rust Book: 15.5 RefCell<T> and the Interior Mutability Pattern"
+url = "https://doc.rust-lang.org/book/ch15-05-interior-mutability.html"
+
+[[links.smart-pointers]]
+kind = "docs"
+title = "The Rust Book: 16.3 Shared-State Concurrency"
+url = "https://doc.rust-lang.org/book/ch16-03-shared-state.html"
+
+[[links.smart-pointers]]
+kind = "lings"
+title = "Rustlings: 19_smart_pointers"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/19_smart_pointers"

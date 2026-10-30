@@ -57,6 +57,43 @@ Module 2 uses four optional extensions. See the specs named below for complete e
 4. If the exercise introduces a new concept, add `concepts/<concept>.md`. Notes in `tracks/<lang>/<concept>.md` are optional but very welcome.
 5. Write a reference solution for each track you can and run the verification suite (below). Don't commit the solutions; they would spoil the exercise.
 
+## Adding a track-only exercise
+
+Some features only exist in one language: Rust's ownership, Go's channels, QML's bindings. Those exercises are written by hand in that language and live in the track's own *Deeper* module. In `course.toml` such a module has a `track` field:
+
+```toml
+[[module]]
+id = "deeper-rust"
+title = "Deeper Rust"
+track = "rust"
+exercises = ["word-list", "text-slices"]
+```
+
+Each exercise is a folder `tracks/<lang>/extras/<slug>/`:
+
+```
+exercise.toml   title, concept, summary, stubs, hints, cases
+lesson.md       the lesson, with "coming from X" blocks like a track note
+files/          copied to workspace/<lang>/<slug>/
+```
+
+```toml
+title = "Word List"
+concept = "ownership"          # also the key for "Go deeper" links in track.toml
+summary = "What the learner implements, in a sentence or two."
+stubs = ["src/lib.rs"]         # the learner's files, relative to files/; the first is the main one
+hints = ["...", "..."]
+cases = ["total_len counts characters of every word", "..."]   # in test order
+```
+
+- **Learner-owned files:** files listed in `stubs` are written only when missing. Every other file under `files/` (tests, manifests) is overwritten on every run, like generated tests.
+- **Layout:** follow the layout and test command of the track's generated exercises, because `learn` runs native exercises the same way. Generate a track (`learn --workspace /tmp/ws generate --lang go`) and copy what you see: the test file name, the shared harness, and how stub errors are told apart from expected errors.
+- **Test names:** name each test `cNN_<description>`. NN is the case's position in `cases`, and the description is lowercased with every run of other characters replaced by `_`, up to 48 characters, e.g. `c03_total_len_leaves_the_list_usable`. `cargo test` checks that every listed case has a test.
+- **Stubs and solutions:** every case must fail on the untouched stub, and pass with your reference solution. Check both with `learn selftest --lang <lang> --solutions <dir>`.
+- **Links:** add "Go deeper" links for the new concept to `tracks/<lang>/track.toml`.
+
+Track-only exercises are left out of `learn compare`; there's nothing to compare them with.
+
 ## Writing notes
 
 Each note should fit on one screen and contain:

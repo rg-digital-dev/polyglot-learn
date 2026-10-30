@@ -1,0 +1,20 @@
+title = "Signal Counter"
+concept = "signals"
+summary = "A bounded counter that emits custom signals with typed parameters (stepped and limitReached) and reacts to its own signals with an onCountChanged handler that counts changes and an onStepped handler that keeps a log."
+stubs = ["SignalCounter.qml"]
+hints = [
+  "Emit a signal by calling it like a function: `stepped(old, count)`. Remember the old value before you change count, and only emit when count really changes.",
+  "Handlers go in the object declaration, next to the properties: `onCountChanged: changes++`. A handler for a signal with parameters takes a function: `onStepped: (oldValue, newValue) => { ... }`.",
+  "reset() only assigns `count = 0`; that fires countChanged (when count wasn't 0 already) but not stepped. For the log, assign a new array: `log = log.concat([oldValue + \"->\" + newValue])`.",
+]
+cases = [
+  "increment adds one",
+  "increment emits stepped with old and new count",
+  "decrement emits stepped too",
+  "decrement stops at zero",
+  "increment stops at the limit",
+  "limitReached is emitted once with the limit",
+  "reset does not emit stepped",
+  "onCountChanged counts every change",
+  "onStepped keeps a log",
+]

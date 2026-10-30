@@ -32,3 +32,21 @@ All notable changes to this project are listed here. The format follows
   `learn watch`. The built UI is embedded in the binary.
 - No raw panics: a closed output pipe exits quietly, and anything unexpected
   prints a short message asking for a bug report.
+- Track-only exercises: modules in `course.toml` can belong to one track, with
+  exercises written natively in `tracks/<lang>/extras/<slug>/`.
+- Module 3, one *Deeper* module per track (28 exercises in all):
+  - Rust: `word-list`, `text-slices`, `robot-commands`, `config-errors`,
+    `generic-stack`, `shared-state`.
+  - Go: `embedded-logger`, `pipeline`, `with-timeout`, `generic-set`,
+    `wrapped-errors`.
+  - TypeScript: `shape-union`, `pick-fields`, `parse-unknown`,
+    `typed-emitter`, `lazy-range`.
+  - PHP: `card-suits`, `money-value`, `timestamps-trait`, `read-lines`.
+  - Lua: `account-classes`, `vector-ops`, `number-generator`, `error-objects`.
+  - QML: `temperature-binding`, `signal-counter`, `connections`, `todo-model`.
+
+### Fixed
+- CI installs Qt 6.10 instead of Ubuntu's Qt 6.4, which was missing a module
+  every QML test needs.
+- The built web UI is now identical on Windows and Linux (pnpm's store folder
+  names are pinned to the same length).

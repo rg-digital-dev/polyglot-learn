@@ -3,3 +3,8 @@ packages:
 
 allowBuilds:
   esbuild: true
+
+# Vue hashes component paths into scoped-CSS ids, and those paths run through
+# node_modules/.pnpm. pnpm shortens folder names to 60 characters on Windows
+# but 120 elsewhere, so pin it: the built dist/ is then the same on every OS.
+virtualStoreDirMaxLength: 60

@@ -184,3 +184,88 @@ url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Executi
 kind = "exercism"
 title = "Exercism JavaScript: Promises"
 url = "https://exercism.org/tracks/javascript/concepts/promises"
+
+# unions (shape-union)
+[[links.unions]]
+kind = "docs"
+title = "TypeScript Handbook: Discriminated unions"
+url = "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions"
+
+[[links.unions]]
+kind = "docs"
+title = "TypeScript Handbook: Exhaustiveness checking"
+url = "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking"
+
+[[links.unions]]
+kind = "docs"
+title = "TypeScript Handbook: Union types"
+url = "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types"
+
+# generics (pick-fields)
+[[links.generics]]
+kind = "docs"
+title = "TypeScript Handbook: Generics"
+url = "https://www.typescriptlang.org/docs/handbook/2/generics.html"
+
+[[links.generics]]
+kind = "docs"
+title = "TypeScript Handbook: Keyof type operator"
+url = "https://www.typescriptlang.org/docs/handbook/2/keyof-types.html"
+
+[[links.generics]]
+kind = "docs"
+title = "TypeScript Handbook: Pick<Type, Keys>"
+url = "https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys"
+
+[[links.generics]]
+kind = "exercism"
+title = "Exercism TypeScript: List Ops"
+url = "https://exercism.org/tracks/typescript/exercises/list-ops"
+
+# narrowing (parse-unknown)
+[[links.narrowing]]
+kind = "docs"
+title = "TypeScript Handbook: Using type predicates"
+url = "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates"
+
+[[links.narrowing]]
+kind = "docs"
+title = "TypeScript Handbook: The in operator narrowing"
+url = "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-in-operator-narrowing"
+
+[[links.narrowing]]
+kind = "docs"
+title = "MDN: JSON.parse()"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse"
+
+# mapped-types (typed-emitter)
+[[links.mapped-types]]
+kind = "docs"
+title = "TypeScript Handbook: Mapped Types"
+url = "https://www.typescriptlang.org/docs/handbook/2/mapped-types.html"
+
+[[links.mapped-types]]
+kind = "docs"
+title = "TypeScript Handbook: Indexed Access Types"
+url = "https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html"
+
+[[links.mapped-types]]
+kind = "docs"
+title = "TypeScript Handbook: Tuple Types"
+url = "https://www.typescriptlang.org/docs/handbook/2/objects.html#tuple-types"
+
+# generators (lazy-range)
+[[links.generators]]
+kind = "docs"
+title = "MDN: Iterators and generators"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_generators"
+
+[[links.generators]]
+kind = "docs"
+title = "MDN: function*"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*"
+
+[[links.generators]]
+kind = "docs"
+title = "TypeScript Handbook: Iterators and Generators"
+url = "https://www.typescriptlang.org/docs/handbook/iterators-and-generators.html"

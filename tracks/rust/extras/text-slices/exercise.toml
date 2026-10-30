@@ -1,0 +1,22 @@
+title = "Text Slices"
+concept = "lifetimes"
+summary = "Return slices that borrow from the input instead of copying it: the first word, the longer of two strings, and the sentences of an Excerpt that holds a reference to its text."
+stubs = ["src/lib.rs"]
+hints = [
+  "A `&str` result can point into the input. Find the position you need (for example with `text.find(' ')`) and return `&text[..i]`; don't build a new `String`.",
+  "`longest` has two inputs, so the compiler can't guess which one the result borrows from. The `'a` on both parameters and on the result says the result lives as long as both inputs do.",
+  "`sentences` returns `Vec<&'a str>`, tied to the text rather than to `&self`, so the slices stay valid after the Excerpt is gone. `self.text.split('.')` already yields `&'a str` pieces; trim them and drop the empty ones.",
+]
+cases = [
+  "first_word returns the text before the first space",
+  "first_word of a single word is the whole text",
+  "first_word borrows from the input",
+  "longest picks the longer string",
+  "longest picks the first on a tie",
+  "longest counts characters, not bytes",
+  "sentences splits on full stops and trims",
+  "sentences skips empty pieces",
+  "sentences outlive the excerpt",
+  "longest_sentence finds the longest",
+  "longest_sentence of no text is none",
+]

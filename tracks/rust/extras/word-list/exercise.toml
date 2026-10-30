@@ -1,0 +1,20 @@
+title = "Word List"
+concept = "ownership"
+summary = "Three functions over a list of words that each take it differently: total_len borrows it, shout borrows it mutably and changes it in place, and into_sentence takes ownership and consumes it."
+stubs = ["src/lib.rs"]
+hints = [
+  "The signatures already say who owns what. `&[String]` means read-only access, `&mut Vec<String>` means you may change the caller's vector, and `Vec<String>` means the vector is now yours.",
+  "For shout, loop with `for word in words.iter_mut()` and assign `*word = ...`. You can't push to a vector while iterating over it, but you can replace each element.",
+  "into_sentence owns the vector, so it can move the strings out of it: `words.join(\" \")` borrows them, which is also fine, because the vector is dropped at the end of the function either way.",
+]
+cases = [
+  "total_len counts characters of every word",
+  "total_len of no words is zero",
+  "total_len leaves the list usable",
+  "shout uppercases every word in place",
+  "shout adds an exclamation mark",
+  "shout on an empty list changes nothing",
+  "into_sentence joins with spaces",
+  "into_sentence capitalises the first letter and ends with a full stop",
+  "into_sentence of no words is empty",
+]

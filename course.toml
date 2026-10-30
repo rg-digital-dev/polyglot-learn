@@ -26,3 +26,76 @@ exercises = [
   "slugify",
   "run-all",
 ]
+
+# Track-only modules: exercises written natively for one language, for the
+# features that don't exist everywhere. They live in tracks/<track>/extras/.
+
+[[module]]
+id = "deeper-rust"
+title = "Deeper Rust"
+track = "rust"
+exercises = [
+  "word-list",
+  "text-slices",
+  "robot-commands",
+  "config-errors",
+  "generic-stack",
+  "shared-state",
+]
+
+[[module]]
+id = "deeper-go"
+title = "Deeper Go"
+track = "go"
+exercises = [
+  "embedded-logger",
+  "pipeline",
+  "with-timeout",
+  "generic-set",
+  "wrapped-errors",
+]
+
+[[module]]
+id = "deeper-typescript"
+title = "Deeper TypeScript"
+track = "typescript"
+exercises = [
+  "shape-union",
+  "pick-fields",
+  "parse-unknown",
+  "typed-emitter",
+  "lazy-range",
+]
+
+[[module]]
+id = "deeper-php"
+title = "Deeper PHP"
+track = "php"
+exercises = [
+  "card-suits",
+  "money-value",
+  "timestamps-trait",
+  "read-lines",
+]
+
+[[module]]
+id = "deeper-lua"
+title = "Deeper Lua"
+track = "lua"
+exercises = [
+  "account-classes",
+  "vector-ops",
+  "number-generator",
+  "error-objects",
+]
+
+[[module]]
+id = "deeper-qml"
+title = "Deeper QML"
+track = "qml"
+exercises = [
+  "temperature-binding",
+  "signal-counter",
+  "connections",
+  "todo-model",
+]

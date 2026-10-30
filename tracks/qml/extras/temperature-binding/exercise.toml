@@ -1,0 +1,18 @@
+title = "Temperature Binding"
+concept = "bindings"
+summary = "A temperature component whose Fahrenheit value, label, freezing flag and readonly Kelvin value are bindings on celsius, plus pin() and unpin() functions that break the Fahrenheit binding with an assignment and restore it with Qt.binding()."
+stubs = ["TemperatureBinding.qml"]
+hints = [
+  "A binding is the expression after the colon in a property declaration: `property real fahrenheit: celsius * 9 / 5 + 32`. QML re-evaluates it whenever a property it reads changes. label can read fahrenheit, so it follows a pinned value too.",
+  "A readonly property must get its value (or binding) in the declaration: `readonly property real kelvin: celsius + 273.15`. Assigning it from JavaScript then throws on its own.",
+  "pin() is a plain assignment, `fahrenheit = value`, which replaces the binding. unpin() assigns a new binding: `fahrenheit = Qt.binding(() => celsius * 9 / 5 + 32)`.",
+]
+cases = [
+  "fahrenheit follows celsius",
+  "label shows both scales with one decimal",
+  "freezing is true at or below zero",
+  "kelvin is readonly and follows celsius",
+  "pin breaks the fahrenheit binding",
+  "label follows a pinned fahrenheit",
+  "unpin restores the binding",
+]

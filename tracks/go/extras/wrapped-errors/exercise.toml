@@ -1,0 +1,20 @@
+title = "Wrapped Errors"
+concept = "error-wrapping"
+summary = "Look up keys in config lines and report failures in a way callers can inspect: a wrapped sentinel error for a missing key, a custom *ParseError for a bad line, an extra layer of context, and a Describe function built on errors.Is and errors.As."
+stubs = ["wrappederrors.go"]
+hints = [
+  "`strings.Cut(line, \"=\")` returns the part before, the part after and whether it found the separator. Count lines from 1 for ParseError, and return `&ParseError{...}`: the pointer type is what has the Error method.",
+  "`fmt.Errorf(\"key %q: %w\", key, ErrNotFound)` gives the message `key \"port\": not found` and keeps ErrNotFound inside. LookupIn wraps again with `fmt.Errorf(\"%s: %w\", file, err)`.",
+  "In Describe, `errors.Is(err, ErrNotFound)` checks the whole chain. For the custom type, declare `var pe *ParseError` and test `errors.As(err, &pe)`; on success `pe.Line` is the line number.",
+]
+cases = [
+  "lookup returns the value for a key",
+  "blank lines and comments are skipped",
+  "a missing key wraps ErrNotFound",
+  "a line without an equals sign is a ParseError",
+  "ParseError message names the line and text",
+  "LookupIn puts the file name in front",
+  "errors.Is sees through both layers",
+  "errors.As sees through both layers",
+  "Describe names each kind of error",
+]

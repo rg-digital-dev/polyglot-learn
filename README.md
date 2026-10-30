@@ -8,7 +8,7 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 
 **Tracks:** TypeScript (Node), Rust, Go, PHP, Lua 5.4 and QML (Qt 6).
 
-**Modules:** *Foundations* (functions, conditionals, loops, maps, errors, sorting) and *Building Blocks* (structs, interfaces, closures, iterators, modules, concurrency). There are 12 exercises, each available in every track.
+**Modules:** *Foundations* (functions, conditionals, loops, maps, errors, sorting) and *Building Blocks* (structs, interfaces, closures, iterators, modules, concurrency). There are 12 exercises, each available in every track. Then each track has its own *Deeper* module (4 to 6 exercises) for what doesn't exist everywhere: ownership, lifetimes, enums and smart pointers in Rust; embedding, channels, `select` and generics in Go; unions, narrowing and generators in TypeScript; enums, readonly objects and traits in PHP; metatables and coroutines in Lua; bindings, signals and models in QML.
 
 ## Quick start
 
@@ -80,17 +80,20 @@ course.toml            modules -> ordered exercise slugs
 specs/<slug>.json      language-neutral exercise: signature + test cases
 concepts/<concept>.md  the lesson, written once
 tracks/<lang>/         README, track.toml (links, install hints), one note per concept
+tracks/<lang>/extras/  track-only exercises, written natively (lesson, stub, tests)
 runner/                the `learn` CLI (Rust): one backend per language
 workspace/<lang>/      generated: your stubs + generated tests (gitignored)
 ```
 
 A backend maps the small spec type vocabulary (`int`, `bool`, `string`, `list<T>`, `map<string,T>`, plus records, classes, interfaces and function types) to native types, renders typed literals, writes the stub and the tests, and reads per-case results back from the test output. Errors follow each language's own convention: `Result` in Rust, `(T, error)` in Go, exceptions in TypeScript, PHP and QML, and `nil, err` in Lua.
 
+Track-only exercises skip the generation step: their stub and tests are written by hand in the language itself, and `learn` copies them into the workspace and runs them with the same test command as the generated ones.
+
 The design borrows from [Exercism's problem-specifications](https://github.com/exercism/problem-specifications) (exercises as data, generated per-language tests) and from [Rustlings](https://github.com/rust-lang/rustlings) (fix one small file at a time, with a watcher). The exercises and text here are original.
 
 ## Adding an exercise
 
-Add `specs/<slug>.json` and list the slug in `course.toml`. Every track now has the exercise; run `learn generate --lang all`. Track notes for a new concept are optional. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Add `specs/<slug>.json` and list the slug in `course.toml`. Every track now has the exercise; run `learn generate --lang all`. Track notes for a new concept are optional. For a feature only one language has, write a track-only exercise in `tracks/<lang>/extras/<slug>/` instead. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Adding a language
 

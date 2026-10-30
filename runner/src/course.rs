@@ -22,7 +22,17 @@ pub struct Course {
 pub struct Module {
     pub id: String,
     pub title: String,
+    /// Set for a track-only module: its exercises live in
+    /// `tracks/<track>/extras/<slug>/` instead of `specs/`.
+    #[serde(default)]
+    pub track: Option<String>,
     pub exercises: Vec<String>,
+}
+
+impl Module {
+    pub fn on_track(&self, track: &str) -> bool {
+        self.track.as_deref().map_or(true, |t| t == track)
+    }
 }
 
 impl Course {
@@ -104,8 +114,48 @@ mod tests {
     fn repo_course_references_existing_specs() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
         let course = Course::load(&root).unwrap();
-        for slug in course.slugs() {
-            assert!(root.join("specs").join(format!("{slug}.json")).exists(), "missing spec {slug}");
+        for m in &course.modules {
+            for slug in &m.exercises {
+                let path = match &m.track {
+                    Some(t) => root.join("tracks").join(t).join("extras").join(slug).join("exercise.toml"),
+                    None => root.join("specs").join(format!("{slug}.json")),
+                };
+                assert!(path.exists(), "missing {}", path.display());
+            }
+        }
+    }
+
+    /// Every case listed in a native exercise's `exercise.toml` has a test with
+    /// its `cNN_` name, and every test file name says which case it checks.
+    #[test]
+    fn repo_native_exercises_name_their_cases() {
+        fn read_all(dir: &Path, skip: &[std::path::PathBuf], rel: &Path, out: &mut String) {
+            for e in std::fs::read_dir(dir.join(rel)).unwrap().flatten() {
+                let r = rel.join(e.file_name());
+                if e.path().is_dir() {
+                    read_all(dir, skip, &r, out);
+                } else if !skip.contains(&r) {
+                    out.push_str(&std::fs::read_to_string(e.path()).unwrap());
+                }
+            }
+        }
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let course = Course::load(&root).unwrap();
+        for m in &course.modules {
+            let Some(track) = &m.track else { continue };
+            for slug in &m.exercises {
+                let dir = root.join("tracks").join(track).join("extras").join(slug);
+                let spec = crate::spec::Spec::load_native(&dir, track, slug).unwrap();
+                let native = spec.native.as_ref().unwrap();
+                let mut tests = String::new();
+                read_all(&native.files, &native.stubs, Path::new(""), &mut tests);
+                for (_, c) in spec.cases() {
+                    let name = crate::naming::case_name(c.index, &c.description);
+                    assert!(tests.contains(&name), "{track}/{slug}: no test named {name}");
+                }
+                let next = crate::naming::case_name(spec.cases().len(), "");
+                assert!(!tests.contains(&format!("{next}_")), "{track}/{slug}: a test {next}_… isn't listed in cases");
+            }
         }
     }
 

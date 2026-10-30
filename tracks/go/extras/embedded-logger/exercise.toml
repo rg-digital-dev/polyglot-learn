@@ -1,0 +1,21 @@
+title = "Embedded Logger"
+concept = "embedding"
+summary = "Build two loggers that share their behaviour by embedding a Base struct: Plain uses the promoted methods as they are, Shouty overrides Log. All of them satisfy a Logger interface without declaring it."
+stubs = ["embeddedlogger.go"]
+hints = [
+  "Start with Base: Log appends `b.Prefix + msg` to `b.lines`, and Lines returns a copy, for example `append([]string(nil), b.lines...)`. Both need a pointer receiver because Log changes the struct.",
+  "A field written as just a type name, `type Plain struct { Base }`, embeds it: `p.Log` now means `p.Base.Log`, so *Plain has Log and Lines and satisfies Logger. The constructors return `&Plain{Base{Prefix: prefix}}`.",
+  "Shouty embeds Base too and declares `func (s *Shouty) Log(msg string)`, which hides the promoted Log. Inside it, call the hidden one explicitly: `s.Base.Log(strings.ToUpper(msg) + \"!\")`.",
+]
+cases = [
+  "plain logs messages with its prefix",
+  "lines come back in the order they were logged",
+  "lines returns a copy",
+  "a new logger has no lines",
+  "shouty uppercases and adds an exclamation mark",
+  "shouty keeps the prefix as it is",
+  "each logger keeps its own lines",
+  "broadcast logs to every logger",
+  "base on its own is a logger",
+  "plain and shouty embed base",
+]

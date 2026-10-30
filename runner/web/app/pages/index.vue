@@ -2,9 +2,13 @@
 import IconCheck from '~icons/lucide/check'
 import IconArrowRight from '~icons/lucide/arrow-right'
 import IconAlert from '~icons/lucide/triangle-alert'
+import type { CourseState } from '~/composables/useLearn'
 
 const { state, refresh } = useLearn()
-const total = computed(() => state.value?.modules.reduce((n, m) => n + m.exercises.length, 0) ?? 0)
+/** Exercises on a track: the shared modules plus that track's own. */
+const totalFor = (track: string) =>
+  state.value?.modules.filter((m) => !m.track || m.track === track).reduce((n, m) => n + m.exercises.length, 0) ?? 0
+const tracksOf = (m: CourseState['modules'][number]) => state.value?.tracks.filter((t) => !m.track || t.id === m.track) ?? []
 const busy = ref(false)
 
 async function pickTrack(id: string) {
@@ -72,8 +76,8 @@ const resumeSlug = computed(() => active.value?.current ?? null)
             <span v-if="t.id === state.track" class="pill pill--good">active</span>
           </span>
           <span class="track__progress">
-            <span class="bar"><span :style="{ width: `${(t.done / total) * 100}%` }" /></span>
-            <span class="tag">{{ t.done }}/{{ total }}</span>
+            <span class="bar"><span :style="{ width: `${(t.done / totalFor(t.id)) * 100}%` }" /></span>
+            <span class="tag">{{ t.done }}/{{ totalFor(t.id) }}</span>
           </span>
           <span v-if="t.tool.found" class="track__tool tag" :title="t.tool.path ?? ''">{{ toolText(t.tool) }}</span>
           <span v-else class="track__tool track__tool--missing">
@@ -85,14 +89,17 @@ const resumeSlug = computed(() => active.value?.current ?? null)
     </section>
 
     <section v-for="m in state.modules" :key="m.id">
-      <h2 class="h-card-lg section-title">{{ m.title }}</h2>
+      <h2 class="h-card-lg section-title">
+        {{ m.title }}
+        <span v-if="m.track" class="pill">{{ trackName(state, m.track) }} only</span>
+      </h2>
       <div class="panel grid-wrap">
         <table class="grid">
           <thead>
             <tr>
               <th scope="col" class="tag">Exercise</th>
               <th scope="col" class="tag">Concept</th>
-              <th v-for="t in state.tracks" :key="t.id" scope="col" class="tag grid__track" :class="{ active: t.id === state.track }">
+              <th v-for="t in tracksOf(m)" :key="t.id" scope="col" class="tag grid__track" :class="{ active: t.id === state.track }">
                 {{ t.id === 'typescript' ? 'ts' : t.id }}
               </th>
             </tr>
@@ -100,10 +107,13 @@ const resumeSlug = computed(() => active.value?.current ?? null)
           <tbody>
             <tr v-for="e in m.exercises" :key="e.slug">
               <th scope="row">
-                <NuxtLink :to="`/exercise/${e.slug}?track=${state.track ?? 'typescript'}`" class="grid__title">{{ e.title }}</NuxtLink>
+                <NuxtLink :to="`/exercise/${e.slug}?track=${m.track ?? state.track ?? 'typescript'}`" class="grid__title">{{ e.title }}</NuxtLink>
               </th>
-              <td><NuxtLink class="chip" :to="`/compare/${e.concept}`">{{ e.concept }}</NuxtLink></td>
-              <td v-for="t in state.tracks" :key="t.id" class="grid__cell">
+              <td>
+                <span v-if="m.track" class="chip chip--static">{{ e.concept }}</span>
+                <NuxtLink v-else class="chip" :to="`/compare/${e.concept}`">{{ e.concept }}</NuxtLink>
+              </td>
+              <td v-for="t in tracksOf(m)" :key="t.id" class="grid__cell">
                 <NuxtLink
                   :to="`/exercise/${e.slug}?track=${t.id}`"
                   :aria-label="`${e.title} in ${t.name}: ${e.done.includes(t.id) ? 'done' : isCurrent(t.id, e.slug) ? 'up next' : 'not done'}`"

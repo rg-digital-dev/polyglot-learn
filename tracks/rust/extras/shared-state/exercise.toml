@@ -1,0 +1,19 @@
+title = "Shared State"
+concept = "smart-pointers"
+summary = "Share one shopping list between several shoppers with Rc<RefCell<..>>, then share a counter and a word count between threads with Arc<Mutex<..>>."
+stubs = ["src/lib.rs"]
+hints = [
+  "`Rc::new(RefCell::new(Vec::new()))` makes the list. Each Shopper keeps its own `Rc::clone(list)`: that's a second pointer to the same list, not a copy of it.",
+  "`add` takes `&self`, yet changes the list: `self.list.borrow_mut().push(...)` checks at run time that nobody else is borrowing it. `count` only needs `self.list.borrow().len()`.",
+  "For the threads, put the value in `Arc::new(Mutex::new(...))`, give every thread its own `Arc::clone`, and change it with `*counter.lock().unwrap() += 1`. Keep the `JoinHandle`s in a Vec and `join()` them all before reading the result.",
+]
+cases = [
+  "new_list starts empty",
+  "shoppers share one list",
+  "add works through a shared reference",
+  "each shopper holds a reference to the list",
+  "dropping a shopper releases its reference",
+  "parallel_increments adds up every increment",
+  "parallel_word_count counts across chunks",
+  "parallel_word_count of no chunks is empty",
+]

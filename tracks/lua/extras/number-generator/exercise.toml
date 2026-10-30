@@ -1,0 +1,21 @@
+title = "Number Generator"
+concept = "coroutines"
+summary = "Write generators with coroutines: a range usable in a generic for, an endless naturals generator, a lazy take, and a running total that receives numbers sent in with coroutine.resume."
+stubs = ["number_generator.lua"]
+hints = [
+  "`coroutine.wrap(function() ... coroutine.yield(v) ... end)` returns a function. Each call runs the body until the next yield and returns the yielded value; when the body ends, the call returns nothing (nil), which also ends a generic `for`.",
+  "In range, check `step == 0` before building the coroutine and return `nil, \"message\"`. Loop with `for i = from, to, step do coroutine.yield(i) end`: the numeric for already handles negative steps and empty ranges. take is a plain loop that calls gen at most n times and stops at the first nil.",
+  "running_total uses coroutine.create. The first resume's argument arrives as the function's parameter; every later resume's argument is the return value of `coroutine.yield`. So: `function(x) local total = 0; while x ~= nil do total = total + x; x = coroutine.yield(total) end; return total end`.",
+]
+cases = [
+  "range counts up inclusive",
+  "range with a step",
+  "range counts down with a negative step",
+  "an empty range yields nothing",
+  "range with a zero step returns nil and an error",
+  "naturals never runs out",
+  "take collects the first n values",
+  "take is lazy",
+  "take stops early when the generator ends",
+  "running_total adds the values sent with resume",
+]

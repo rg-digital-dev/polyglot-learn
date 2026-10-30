@@ -1,0 +1,21 @@
+title = "Timestamps Trait"
+concept = "traits"
+summary = "Fill in two traits, HasTimestamps (with an abstract now() the class must provide) and HasTags, then make Note use both and settle their clashing describe() methods with insteadof and as."
+stubs = ["timestamps-trait.php"]
+hints = [
+  "A trait's methods run as if they were written in the class, so `$this->createdAt` and `$this->tags` are the object's own properties. `$this->createdAt ??= $now;` sets a value only when it is still null.",
+  "In `Note`, `use HasTimestamps, HasTags;` alone stops with \"Trait method HasTags::describe has not been applied ... because of collision\". Add a block after the use: `{ A::method insteadof B; B::method as otherName; }`.",
+  "`HasTimestamps` declares `abstract protected function now(): int;`, so `Note` must define `protected function now(): int { return ($this->clock)(); }`. The parentheses around `$this->clock` call the closure stored in the property instead of looking for a method named clock.",
+]
+cases = [
+  "a new note has no timestamps",
+  "touch sets both timestamps the first time",
+  "touch again moves only updatedAt",
+  "tag keeps the first occurrence of each tag",
+  "tag returns the same object for chaining",
+  "each object has its own tags",
+  "note uses both traits",
+  "describe comes from HasTimestamps",
+  "the tags describe is available as describeTags",
+  "summary combines title, tags and timestamps",
+]

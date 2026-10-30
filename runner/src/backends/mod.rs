@@ -105,13 +105,74 @@ pub struct Generated {
     pub stubs_kept: Vec<PathBuf>,
 }
 
+/// The file the learner starts in, relative to the track folder.
+pub fn main_file(backend: &dyn Backend, spec: &Spec) -> PathBuf {
+    match &spec.native {
+        Some(n) => PathBuf::from(&spec.slug).join(&n.stubs[0]),
+        None => backend.stub_path(spec),
+    }
+}
+
+/// Every file the learner edits (relative to the track folder), helper modules
+/// first, each with the signatures it must provide (none for native exercises).
+pub fn learner_files(backend: &dyn Backend, spec: &Spec) -> Vec<(PathBuf, Vec<String>)> {
+    if let Some(n) = &spec.native {
+        return n.stubs.iter().map(|s| (PathBuf::from(&spec.slug).join(s), Vec::new())).collect();
+    }
+    let mut files = Vec::new();
+    for m in spec.modules() {
+        let sigs = spec.helpers.iter().filter(|h| h.module.as_deref() == Some(m)).map(|f| backend.signature(spec, f));
+        files.push((backend.module_path(spec, m), sigs.collect()));
+    }
+    files.push((backend.stub_path(spec), vec![backend.signature(spec, &spec.main)]));
+    files
+}
+
+/// Files of a native exercise, relative to its `files/` folder.
+fn native_files(dir: &Path, rel: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
+    let here = dir.join(rel);
+    let mut entries: Vec<_> = std::fs::read_dir(&here)
+        .context(|| format!("can't read {}", here.display()))?
+        .flatten()
+        .collect();
+    entries.sort_by_key(|e| e.file_name());
+    for e in entries {
+        let path = rel.join(e.file_name());
+        if e.path().is_dir() {
+            native_files(dir, &path, out)?;
+        } else {
+            out.push(path);
+        }
+    }
+    Ok(())
+}
+
 /// Write shared files and tests for every spec, and stubs only where none exist.
+/// `specs` are the track's exercises (shared and its own).
 pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Result<Generated> {
     let mut report = Generated::default();
     for (rel, contents) in backend.shared(specs) {
         write(&track_dir.join(rel), &contents)?;
     }
     for spec in specs {
+        if let Some(n) = &spec.native {
+            let mut files = Vec::new();
+            native_files(&n.files, Path::new(""), &mut files)?;
+            for rel in files {
+                let contents = std::fs::read_to_string(n.files.join(&rel))
+                    .context(|| format!("can't read {}", n.files.join(&rel).display()))?;
+                let path = track_dir.join(&spec.slug).join(&rel);
+                if !n.stubs.contains(&rel) {
+                    write(&path, &contents)?;
+                } else if path.exists() {
+                    report.stubs_kept.push(path);
+                } else {
+                    write(&path, &contents)?;
+                    report.stubs_created.push(path);
+                }
+            }
+            continue;
+        }
         for (rel, contents) in backend.tests(spec) {
             write(&track_dir.join(rel), &contents)?;
         }

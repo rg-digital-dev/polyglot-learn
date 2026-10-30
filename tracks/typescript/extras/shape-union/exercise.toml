@@ -1,0 +1,19 @@
+title = "Shape Union"
+concept = "unions"
+summary = "Compute the area and a label for a shape that is one of three object types told apart by a `kind` tag, and make every switch exhaustive with an `assertNever` helper that throws for a kind that should not exist."
+stubs = ["shape-union.ts"]
+hints = [
+  "Switch on `shape.kind`. Inside `case \"circle\":` TypeScript knows `shape` is the circle variant, so `shape.radius` type-checks there and nowhere else.",
+  "In the `default` branch every kind has been handled, so `shape` has type `never`. Pass it on with `return assertNever(shape);`. That function only has to throw an Error whose message is built from `JSON.stringify(value)`.",
+  "area: `Math.PI * shape.radius ** 2`, `shape.width * shape.height`, `(shape.base * shape.height) / 2`. describe uses the same switch with template strings. totalArea is `shapes.reduce((sum, s) => sum + area(s), 0)`.",
+]
+cases = [
+  "area of a circle",
+  "area of a rect",
+  "area of a triangle is half base times height",
+  "describe labels each kind",
+  "total area of mixed shapes",
+  "total area of no shapes is zero",
+  "area throws for an unknown kind",
+  "describe throws for an unknown kind",
+]

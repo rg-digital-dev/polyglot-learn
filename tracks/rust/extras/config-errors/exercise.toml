@@ -1,0 +1,22 @@
+title = "Config Errors"
+concept = "error-types"
+summary = "Parse a small `key = value` config file into a struct. Use Option for lookups that may find nothing, and your own error enum (with a Display message) for everything that can go wrong, passed up with the ? operator."
+stubs = ["src/lib.rs"]
+hints = [
+  "In `parse_pairs`, loop with `for (i, line) in text.lines().enumerate()`, skip blank and `#` lines, and use `line.split_once('=')`. It returns an Option, so `.ok_or(ConfigError::BadLine(i + 1))?` turns a missing `=` into your error.",
+  "`get` is a search that may find nothing: `pairs.iter().find(|(k, _)| k == key).map(|(_, v)| v.as_str())`. In `parse_config`, `get(...).ok_or_else(|| ConfigError::MissingKey(\"name\".into()))?` makes a required key, and `.unwrap_or(\"4\")` makes an optional one.",
+  "For numbers, `value.parse::<u16>()` returns a `Result` whose error doesn't know the key. Swap it for yours with `.map_err(|_| ConfigError::BadValue { key: ..., value: ... })?`. Write `Display` with one `match self` arm per variant and `write!(f, ...)`.",
+]
+cases = [
+  "parse_pairs reads key value lines",
+  "parse_pairs skips blank lines and comments",
+  "parse_pairs reports the bad line number",
+  "get finds a key",
+  "get returns none for a missing key",
+  "parse_config reads every field",
+  "parse_config uses defaults for optional keys",
+  "parse_config reports a missing key",
+  "parse_config reports a bad value",
+  "errors display readable messages",
+  "config errors work with the question mark operator",
+]

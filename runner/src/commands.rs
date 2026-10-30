@@ -65,7 +65,7 @@ fn from(ctx: &Ctx) -> Option<&str> {
 /// The exercise a command applies to: the named one, or the current one.
 fn pick<'a>(ctx: &'a Ctx, track: &str, slug: Option<&str>) -> Result<Option<&'a Spec>> {
     match slug {
-        Some(s) => Ok(Some(ctx.spec(s)?)),
+        Some(s) => Ok(Some(ctx.spec_on(track, s)?)),
         None => Ok(ctx.current(track)),
     }
 }
@@ -80,12 +80,8 @@ fn position(ctx: &Ctx, spec: &Spec) -> (String, usize, usize) {
 }
 
 fn all_done_message(ctx: &Ctx, backend: &dyn Backend) {
-    println!(
-        "You've finished every exercise on the {} track ({} of {}).",
-        backend.name(),
-        ctx.specs.len(),
-        ctx.specs.len()
-    );
+    let total = ctx.specs.iter().filter(|s| s.on_track(backend.id())).count();
+    println!("You've finished every exercise on the {} track ({total} of {total}).", backend.name());
     println!("Try another track with `learn start <lang>`, or compare languages with `learn compare <concept>`.");
 }
 
@@ -224,7 +220,7 @@ fn doctor(ctx: &Ctx) -> Result<ExitCode> {
 fn start(ctx: &mut Ctx, lang: &str) -> Result<ExitCode> {
     let backend = backends::get(lang)?;
     let dir = track_dir(ctx, backend);
-    let report = backends::generate(backend, &ctx.specs, &dir)?;
+    let report = backends::generate(backend, &ctx.track_specs(backend.id()), &dir)?;
     ctx.config.track = Some(backend.id().to_string());
     ctx.save_config()?;
 
@@ -267,15 +263,13 @@ fn print_brief(ctx: &Ctx, backend: &dyn Backend, spec: &Spec) {
     let dir = track_dir(ctx, backend);
     // Helper modules first: their tests run first.
     let mut label = "Edit:";
-    for m in spec.modules() {
-        println!("{label:<6} {}", display_path(&dir.join(backend.module_path(spec, m))));
-        for f in spec.helpers.iter().filter(|h| h.module.as_deref() == Some(m)) {
-            println!("       {}", backend.signature(spec, f));
+    for (file, sigs) in backends::learner_files(backend, spec) {
+        println!("{label:<6} {}", display_path(&dir.join(file)));
+        for sig in sigs {
+            println!("       {sig}");
         }
         label = "";
     }
-    println!("{label:<6} {}", display_path(&dir.join(backend.stub_path(spec))));
-    println!("       {}", backend.signature(spec, &spec.main));
     println!("Then:  learn check   (or `learn watch` to re-run on every save)");
 }
 
@@ -286,20 +280,27 @@ fn show(ctx: &Ctx, slug: Option<&str>) -> Result<ExitCode> {
         all_done_message(ctx, backend);
         return Ok(ExitCode::SUCCESS);
     };
-    let stub = track_dir(ctx, backend).join(backend.stub_path(spec));
+    let stub = track_dir(ctx, backend).join(backends::main_file(backend, spec));
     if !stub.exists() {
-        backends::generate(backend, &ctx.specs, &track_dir(ctx, backend))?;
+        backends::generate(backend, &ctx.track_specs(backend.id()), &track_dir(ctx, backend))?;
     }
     print_brief(ctx, backend, spec);
 
-    if let Some(lesson) = notes::read_concept(&ctx.root, &spec.concept, from(ctx)) {
-        rule(&format!("Lesson: {}", spec.concept));
-        println!("{lesson}");
-    }
     let meta = TrackMeta::load(&ctx.root, backend.id())?;
-    if let Some(note) = notes::read_track_note(&ctx.root, backend.id(), &spec.concept, from(ctx)) {
-        rule(&format!("{} note", backend.name()));
-        println!("{note}");
+    if spec.native.is_some() {
+        if let Some(lesson) = notes::read_native_lesson(spec, from(ctx)) {
+            rule(&format!("Lesson: {}", spec.title));
+            println!("{lesson}");
+        }
+    } else {
+        if let Some(lesson) = notes::read_concept(&ctx.root, &spec.concept, from(ctx)) {
+            rule(&format!("Lesson: {}", spec.concept));
+            println!("{lesson}");
+        }
+        if let Some(note) = notes::read_track_note(&ctx.root, backend.id(), &spec.concept, from(ctx)) {
+            rule(&format!("{} note", backend.name()));
+            println!("{note}");
+        }
     }
     if let Some(links) = notes::go_deeper(&meta, &spec.concept) {
         println!("\n{links}");
@@ -409,9 +410,9 @@ fn print_result(spec: &Spec, result: &CheckResult, verbose: bool) {
 /// Run one check, print it, and record progress. Returns whether it passed.
 fn check_once(ctx: &mut Ctx, backend: &dyn Backend, slug: &str, verbose: bool) -> Result<bool> {
     let tool = check::require_tool(backend)?;
-    let spec = ctx.spec(slug)?.clone();
+    let spec = ctx.spec_on(backend.id(), slug)?.clone();
     println!("Running {} tests for {}…", backend.name(), spec.slug);
-    let result = check::run(backend, &spec, &ctx.specs, &track_dir(ctx, backend), &tool)?;
+    let result = check::run(backend, &spec, &ctx.track_specs(backend.id()), &track_dir(ctx, backend), &tool)?;
     print_result(&spec, &result, verbose);
 
     let total = result.cases.len();
@@ -467,7 +468,7 @@ fn watch(ctx: &mut Ctx) -> Result<ExitCode> {
     let track = ctx.active_track()?;
     let backend = backends::get(&track)?;
     check::require_tool(backend)?;
-    backends::generate(backend, &ctx.specs, &track_dir(ctx, backend))?;
+    backends::generate(backend, &ctx.track_specs(backend.id()), &track_dir(ctx, backend))?;
 
     let Some(mut slug) = ctx.current(&track).map(|s| s.slug.clone()) else {
         all_done_message(ctx, backend);
@@ -508,7 +509,8 @@ fn watch(ctx: &mut Ctx) -> Result<ExitCode> {
 // ---- compare / docs / generate / status -------------------------------------
 
 fn known_concepts(ctx: &Ctx) -> Vec<String> {
-    let mut v: Vec<String> = ctx.specs.iter().map(|s| s.concept.clone()).collect();
+    // Track-only exercises have nothing to compare across tracks.
+    let mut v: Vec<String> = ctx.specs.iter().filter(|s| s.native.is_none()).map(|s| s.concept.clone()).collect();
     v.dedup();
     v
 }
@@ -520,7 +522,9 @@ fn resolve_concept(ctx: &Ctx, concept: &str) -> Result<String> {
     }
     // Accept an exercise slug too: `learn compare parse-port`.
     if let Ok(spec) = ctx.spec(concept) {
-        return Ok(spec.concept.clone());
+        if spec.native.is_none() {
+            return Ok(spec.concept.clone());
+        }
     }
     bail!("unknown concept `{concept}`. Concepts: {}", concepts.join(", "))
 }
@@ -601,7 +605,7 @@ fn generate(ctx: &Ctx, lang: Option<&str>) -> Result<ExitCode> {
     };
     for b in selected {
         let dir = track_dir(ctx, b);
-        let report = backends::generate(b, &ctx.specs, &dir)?;
+        let report = backends::generate(b, &ctx.track_specs(b.id()), &dir)?;
         println!(
             "{:<11} tests regenerated in {}; {} new stub(s), {} kept",
             b.id(),
@@ -625,11 +629,16 @@ fn status(ctx: &Ctx) -> Result<ExitCode> {
     }
     println!();
     for m in &ctx.course.modules {
-        println!("{}", m.title);
+        match &m.track {
+            Some(t) => println!("{} ({t} only)", m.title),
+            None => println!("{}", m.title),
+        }
         for slug in &m.exercises {
             print!("{slug:width$}");
             for id in &ids {
-                let cell = if ctx.is_done(id, slug) {
+                let cell = if !m.on_track(id) {
+                    " "
+                } else if ctx.is_done(id, slug) {
                     "✓"
                 } else if Some(*id) == active && ctx.current(id).is_some_and(|s| s.slug == *slug) {
                     "▶"
@@ -646,7 +655,7 @@ fn status(ctx: &Ctx) -> Result<ExitCode> {
     for id in &ids {
         let n = ctx.progress.done.get(*id).map_or(0, |d| d.len());
         if n > 0 {
-            totals.push(format!("{id} {n}/{}", ctx.specs.len()));
+            totals.push(format!("{id} {n}/{}", ctx.specs.iter().filter(|s| s.on_track(id)).count()));
         }
     }
     if totals.is_empty() {
@@ -763,10 +772,11 @@ fn selftest(ctx: &Ctx, langs: &[String], solutions: Option<&Path>, require_all: 
             println!("   ! {w}");
         }
         let dir = base.join(b.id());
-        backends::generate(b, &ctx.specs, &dir)?;
+        let specs = ctx.track_specs(b.id());
+        backends::generate(b, &specs, &dir)?;
 
-        for spec in &ctx.specs {
-            let r = check::run(b, spec, &ctx.specs, &dir, &tool)?;
+        for spec in &specs {
+            let r = check::run(b, spec, &specs, &dir, &tool)?;
             let passing = r.count(Some(true));
             if r.passed {
                 problems.push(format!("{}/{}: the untouched stub PASSES", b.id(), spec.slug));
@@ -789,13 +799,14 @@ fn selftest(ctx: &Ctx, langs: &[String], solutions: Option<&Path>, require_all: 
                 continue;
             }
             copy_dir(&src, &dir)?;
-            for spec in &ctx.specs {
-                if !src.join(b.stub_path(spec)).exists() {
+            for spec in &specs {
+                let main = backends::main_file(b, spec);
+                if !src.join(&main).exists() {
                     problems.push(format!("{}/{}: no reference solution", b.id(), spec.slug));
-                    println!("   ✗ ref  {:<18} missing {}", spec.slug, b.stub_path(spec).display());
+                    println!("   ✗ ref  {:<18} missing {}", spec.slug, main.display());
                     continue;
                 }
-                let r = check::run(b, spec, &ctx.specs, &dir, &tool)?;
+                let r = check::run(b, spec, &specs, &dir, &tool)?;
                 if r.passed {
                     println!("   ✓ ref  {:<18} passes", spec.slug);
                 } else {

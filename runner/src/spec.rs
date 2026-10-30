@@ -283,6 +283,35 @@ pub struct Spec {
     pub main: Function,
     /// The main function runs `task(ms)` for each delay; tests also check timing.
     pub concurrency: bool,
+    /// Set for a track-only exercise written natively instead of generated.
+    pub native: Option<Native>,
+}
+
+/// A track-only exercise: `tracks/<track>/extras/<slug>/` holds an
+/// `exercise.toml`, an optional `lesson.md`, and a `files/` folder that is
+/// copied to `workspace/<track>/<slug>/`. The files listed in `stubs` belong to
+/// the learner (written only when missing); every other file is overwritten,
+/// like generated tests. Test names follow the same `cNN_<description>` rule.
+#[derive(Debug, Clone)]
+pub struct Native {
+    pub track: String,
+    /// The `files/` folder.
+    pub files: std::path::PathBuf,
+    /// Learner-owned files, relative to the exercise folder; the first is the main one.
+    pub stubs: Vec<std::path::PathBuf>,
+    pub lesson: Option<std::path::PathBuf>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawNative {
+    title: String,
+    concept: String,
+    summary: String,
+    stubs: Vec<String>,
+    #[serde(default)]
+    hints: Vec<String>,
+    cases: Vec<String>,
 }
 
 // ---- raw JSON shapes ----------------------------------------------------------
@@ -706,6 +735,7 @@ impl Spec {
             helpers,
             main,
             concurrency: raw.concurrency,
+            native: None,
         };
         let mut seen = HashSet::new();
         for (_, c) in spec.cases() {
@@ -714,6 +744,82 @@ impl Spec {
             }
         }
         Ok(spec)
+    }
+
+    /// Load a track-only exercise from `tracks/<track>/extras/<slug>/`.
+    pub fn load_native(dir: &Path, track: &str, slug: &str) -> Result<Spec> {
+        let path = dir.join("exercise.toml");
+        let text = std::fs::read_to_string(&path).context(|| format!("can't read {}", path.display()))?;
+        Spec::parse_native(&text, dir, track, slug).map_err(|e| Error(format!("invalid {}: {e}", path.display())))
+    }
+
+    fn parse_native(text: &str, dir: &Path, track: &str, slug: &str) -> Result<Spec> {
+        let raw: RawNative = toml::from_str(text).map_err(|e| Error(e.to_string()))?;
+        if !is_slug(slug) {
+            bail!("slug `{slug}` must be kebab-case (a-z, 0-9, -)");
+        }
+        if !is_slug(&raw.concept) {
+            bail!("concept `{}` must be kebab-case", raw.concept);
+        }
+        if raw.title.trim().is_empty() {
+            bail!("title must not be empty");
+        }
+        if raw.stubs.is_empty() {
+            bail!("list at least one learner file in `stubs`");
+        }
+        if raw.cases.is_empty() || raw.cases.len() > 99 {
+            bail!("list between 1 and 99 case descriptions in `cases`");
+        }
+        let files = dir.join("files");
+        let mut stubs = Vec::new();
+        for s in &raw.stubs {
+            let rel = std::path::PathBuf::from(s);
+            if rel.is_absolute() || rel.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+                bail!("stub `{s}` must be a path inside the exercise folder");
+            }
+            if !files.join(&rel).is_file() {
+                bail!("stub `{s}` doesn't exist in {}", files.display());
+            }
+            stubs.push(rel);
+        }
+        let mut seen = HashSet::new();
+        let mut cases = Vec::new();
+        for (index, description) in raw.cases.into_iter().enumerate() {
+            if !seen.insert(crate::naming::ident(&description)) {
+                bail!("two cases share the description {description:?}");
+            }
+            let kind = CaseKind::Call { input: Vec::new(), outcome: Outcome::Value(Value::Null) };
+            cases.push(Case { index, description, kind });
+        }
+        let lesson = Some(dir.join("lesson.md")).filter(|p| p.is_file());
+        // Native exercises have no signature to generate; the main function only
+        // carries the summary and the cases, and names the exercise like a spec
+        // function would (backends derive file and package names from the slug).
+        let main = Function {
+            name: crate::naming::snake(slug),
+            module: None,
+            summary: raw.summary,
+            params: Vec::new(),
+            returns: Type::Int,
+            fallible: false,
+            cases,
+        };
+        Ok(Spec {
+            slug: slug.to_string(),
+            title: raw.title,
+            concept: raw.concept,
+            hints: raw.hints,
+            types: Vec::new(),
+            helpers: Vec::new(),
+            main,
+            concurrency: false,
+            native: Some(Native { track: track.to_string(), files, stubs, lesson }),
+        })
+    }
+
+    /// Is this exercise part of `track`? Shared specs are part of every track.
+    pub fn on_track(&self, track: &str) -> bool {
+        self.native.as_ref().map_or(true, |n| n.track == track)
     }
 
     /// Helpers first (their tests come first), then the main function.

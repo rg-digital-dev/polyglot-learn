@@ -1,0 +1,20 @@
+title = "Typed Emitter"
+concept = "mapped-types"
+summary = "Build a small event emitter whose event names and listener arguments come from one type map, using a mapped type to store the listeners: `on` returns an unsubscribe function, `off` removes a listener, and `emit` calls the listeners in order."
+stubs = ["typed-emitter.ts"]
+hints = [
+  "The `listeners` field is already declared with the mapped type. `this.listeners[event]` is either undefined or an array of `Listener<Events[K]>`, so `(this.listeners[event] ??= []).push(listener)` creates the array the first time.",
+  "`off` finds the listener with `indexOf` and removes it with `splice(i, 1)`. `on` can return `() => this.off(event, listener)`; to make a second call harmless even when the same function was added twice, keep a `let active = true` flag in the closure.",
+  "In `emit`, loop over a copy: `const list = [...(this.listeners[event] ?? [])]`, call `listener(...args)` for each, and return `list.length`. The copy is what keeps a listener that unsubscribes itself from making the loop skip the next one.",
+]
+cases = [
+  "emit calls a listener with the arguments",
+  "listeners run in the order they were added",
+  "emit returns how many listeners ran",
+  "emit with no listeners does nothing",
+  "events are kept apart",
+  "the returned function unsubscribes",
+  "off removes one listener and keeps the others",
+  "a listener can unsubscribe itself while running",
+  "listener added mid-emit runs from the next emit",
+]

@@ -6,7 +6,7 @@ import IconLoader from '~icons/lucide/loader-circle'
 import type { Run } from '~/composables/useLearn'
 
 const props = defineProps<{
-  cases: { index: number; description: string; function: string; lines: string[] }[]
+  cases: { index: number; description: string; lines: string[] }[]
   run: Run | undefined
 }>()
 
@@ -46,8 +46,8 @@ watch(
         </span>
         <span class="case__desc">{{ c.description }}</span>
       </button>
-      <div v-if="open[c.index]" class="case__body">
-        <pre class="case__lines"><template v-for="l in c.lines" :key="l">{{ l }}
+      <div v-if="open[c.index] && (c.lines.length || message(c.index))" class="case__body">
+        <pre v-if="c.lines.length" class="case__lines"><template v-for="l in c.lines" :key="l">{{ l }}
 </template></pre>
         <pre v-if="message(c.index)" class="case__msg">{{ message(c.index) }}</pre>
       </div>
