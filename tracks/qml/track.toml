@@ -12,9 +12,15 @@ windows = [
   "# aqtinstall 3.3.0 cannot install Qt 6.11+ (Qt changed its repository layout).",
   "# Alternative: the Qt Online Installer, https://www.qt.io/download-qt-installer-oss (free Qt account; pick Qt 6.x > MSVC 2022 64-bit)",
 ]
-macos = ["brew install qt"]
+macos = [
+  "brew install qt",
+  "# Or just: brew install qtdeclarative (the part this track needs).",
+]
 arch = ["sudo pacman -S qt6-declarative"]
-debian = ["sudo apt install qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick qml6-module-qtquick-window qml6-module-qtqml-workerscript"]
+debian = [
+  "sudo apt install qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick qml6-module-qtquick-window qml6-module-qtqml-workerscript",
+  "# Ubuntu 24.04 ships Qt 6.4. For a newer Qt: pip install aqtinstall, then aqt install-qt linux desktop 6.10.3 linux_gcc_64 -O ~/Qt and add ~/Qt/6.10.3/gcc_64/bin to PATH.",
+]
 fedora = ["sudo dnf install qt6-qtdeclarative-devel"]
 
 [[links.functions]]

@@ -159,6 +159,54 @@ mod tests {
         }
     }
 
+    /// `track.toml`'s `[install]` (what `learn doctor` prints) is the source of
+    /// truth; each README's Install section must show the same commands.
+    #[test]
+    fn repo_readme_install_steps_match_track_toml() {
+        const INSTALLERS: &[&str] = &[
+            "sudo ", "brew ", "winget ", "curl ", "pip ", "aqt ", "fnm ", "rustup ", "rustup-init", "xcode-select", "source ",
+            "export ",
+        ];
+        // A command without its trailing `   # comment`.
+        let bare = |c: &str| c.split("   #").next().unwrap().trim().to_string();
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let mut problems = Vec::new();
+        for track in ["rust", "typescript", "php", "lua", "go", "qml"] {
+            let meta = TrackMeta::load(&root, track).unwrap();
+            let readme = std::fs::read_to_string(root.join("tracks").join(track).join("README.md")).unwrap();
+            let start = readme.find("## Install").unwrap_or_else(|| panic!("{track}: README has no ## Install"));
+            let section = &readme[start..];
+            let section = &section[..section[3..].find("\n## ").map_or(section.len(), |i| i + 3)];
+            // Commands the README shows: lines of fenced blocks, and inline code
+            // spans (split at `&&`).
+            let mut shown: Vec<String> = Vec::new();
+            for (i, part) in section.split("```").enumerate() {
+                if i % 2 == 1 {
+                    shown.extend(part.lines().skip(1).map(bare).filter(|l| !l.is_empty()));
+                } else {
+                    for span in part.split('`').skip(1).step_by(2) {
+                        shown.extend(span.split(" && ").map(bare));
+                    }
+                }
+            }
+            let lines: Vec<&String> = meta.install.values().flatten().collect();
+            let commands: Vec<String> = lines.iter().filter(|c| !c.starts_with('#')).map(|c| bare(c)).collect();
+            // Alternatives may be mentioned in the README if a `#` note in track.toml names them.
+            let notes: Vec<&String> = lines.iter().copied().filter(|c| c.starts_with('#')).collect();
+            for c in &commands {
+                if !shown.contains(c) {
+                    problems.push(format!("{track}: README doesn't show `{c}`"));
+                }
+            }
+            for s in shown.iter().filter(|s| INSTALLERS.iter().any(|i| s.starts_with(i))) {
+                if !commands.contains(s) && !notes.iter().any(|n| n.contains(s.as_str())) {
+                    problems.push(format!("{track}: README shows `{s}`, which track.toml doesn't have"));
+                }
+            }
+        }
+        assert!(problems.is_empty(), "\n{}", problems.join("\n"));
+    }
+
     #[test]
     fn repo_track_tomls_parse() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");

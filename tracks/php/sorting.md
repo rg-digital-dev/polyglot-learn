@@ -1,10 +1,6 @@
 # Collections and sorting in PHP
 
-PHP's sort functions work on the array you pass by reference and return `true`,
-not a new array. `sort`/`rsort` order values and reindex the keys, `asort`/`arsort`
-keep each key with its value, `ksort`/`krsort` order by key, and `usort` takes a
-comparison callback. The spaceship operator `<=>` returns -1, 0 or 1, which is
-exactly what a comparator needs. `array_slice` copies part of an array.
+PHP's sort functions work on the array you pass by reference and return `true`, not a new array. `sort`/`rsort` order values and reindex the keys, `asort`/`arsort` keep each key with its value, `ksort`/`krsort` order by key, and `usort` takes a comparison callback. The spaceship operator `<=>` returns -1, 0 or 1, which is exactly what a comparator needs. `array_slice` copies part of an array.
 
 ```php
 <?php
@@ -26,10 +22,8 @@ print_r(ranking([
 <!-- from:typescript -->
 ## Coming from TypeScript
 - `sort($xs)` returns `true`; the sorted result is `$xs` itself afterwards.
-- Because arrays are passed by value, sorting a parameter inside a function
-  does not touch the caller's array. No defensive copy is needed.
-- Default sorting compares numbers as numbers, so `[10, 9, 1]` sorts to
-  `[1, 9, 10]`, unlike JavaScript's string-based default.
+- Because arrays are passed by value, sorting a parameter inside a function does not touch the caller's array. No defensive copy is needed.
+- Default sorting compares numbers as numbers, so `[10, 9, 1]` sorts to `[1, 9, 10]`, unlike JavaScript's string-based default.
 - `<=>` on arrays compares element by element, handy for tie-breakers.
 <!-- /from -->
 
@@ -50,5 +44,4 @@ rsort($scores);            // now $scores is sorted
 ```
 
 ## In this exercise
-Implement `function topScores(array $scores, int $n): array` in
-`top-scores/top-scores.php`, taking and returning a `list<int>`.
+Implement `function topScores(array $scores, int $n): array` in `top-scores/top-scores.php`, taking and returning a `list<int>`.

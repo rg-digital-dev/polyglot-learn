@@ -1,10 +1,6 @@
 # Errors in PHP
 
-Modern PHP reports failures with exceptions. You `throw` an object that
-implements `Throwable`, and handle it with `try`/`catch`/`finally`. Your own code
-usually throws `Exception` subclasses from the standard library, such as
-`InvalidArgumentException` or `RangeException`, while the engine throws `Error`
-subclasses like `TypeError`. One `catch` can list several types with `|`.
+Modern PHP reports failures with exceptions. You `throw` an object that implements `Throwable`, and handle it with `try`/`catch`/`finally`. Your own code usually throws `Exception` subclasses from the standard library, such as `InvalidArgumentException` or `RangeException`, while the engine throws `Error` subclasses like `TypeError`. One `catch` can list several types with `|`.
 
 ```php
 <?php
@@ -31,12 +27,9 @@ try {
 
 <!-- from:typescript -->
 ## Coming from TypeScript
-- `throw`, `try`, `catch` and `finally` work the same way, but `catch` must
-  name a type: `catch (Exception $e)`, or `catch (Throwable $e)` for everything.
-- Only objects implementing `Throwable` can be thrown; there is no
-  `throw "oops"`.
-- `Exception` and `Error` are separate branches, so `catch (Exception $e)` does
-  not catch a `TypeError`.
+- `throw`, `try`, `catch` and `finally` work the same way, but `catch` must name a type: `catch (Exception $e)`, or `catch (Throwable $e)` for everything.
+- Only objects implementing `Throwable` can be thrown; there is no `throw "oops"`.
+- `Exception` and `Error` are separate branches, so `catch (Exception $e)` does not catch a `TypeError`.
 - Like TypeScript, PHP has no checked exceptions; document them with `@throws`.
 <!-- /from -->
 
@@ -48,9 +41,7 @@ try {
 <!-- /from -->
 
 ## Common mistake
-Using a cast to validate. `(int) '80a'` is `80`, and `(int)` on a digit string
-too large for `int` silently returns `PHP_INT_MAX`. Check the characters and
-the length first:
+Using a cast to validate. `(int) '80a'` is `80`, and `(int)` on a digit string too large for `int` silently returns `PHP_INT_MAX`. Check the characters and the length first:
 
 ```php
 if (!ctype_digit($s)) {
@@ -59,5 +50,4 @@ if (!ctype_digit($s)) {
 ```
 
 ## In this exercise
-Implement `function parsePort(string $input): int` in `parse-port/parse-port.php`.
-Throw an exception, such as `InvalidArgumentException`, for bad input.
+Implement `function parsePort(string $input): int` in `parse-port/parse-port.php`. Throw an exception, such as `InvalidArgumentException`, for bad input.

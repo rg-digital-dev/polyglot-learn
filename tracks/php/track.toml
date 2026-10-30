@@ -6,7 +6,7 @@ name = "PHP"
 [install]
 windows = [
   "winget install --id PHP.PHP.8.5 -e",
-  "To enable extensions later, copy php.ini-development to php.ini in the folder that holds php.exe and edit it.",
+  "# To enable extensions later, copy php.ini-development to php.ini in the folder that holds php.exe and edit it.",
 ]
 macos = ["brew install php"]
 arch = ["sudo pacman -S php"]
