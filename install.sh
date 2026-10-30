@@ -61,7 +61,9 @@ if has sha256sum; then
 else
   actual=$(shasum -a 256 "$tmp/$name.tar.gz" | cut -d' ' -f1)
 fi
-[ -n "$expected" ] && [ "$expected" = "$actual" ] || die "checksum mismatch for $name.tar.gz; nothing was installed"
+if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
+  die "checksum mismatch for $name.tar.gz; nothing was installed"
+fi
 
 tar -xzf "$tmp/$name.tar.gz" -C "$tmp"
 mkdir -p "$BIN_DIR"
