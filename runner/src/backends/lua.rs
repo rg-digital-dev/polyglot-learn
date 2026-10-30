@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, escape, field_values, header, parse_tap, render_args, step_label, stub_message, timing, Backend};
+use super::{case_name, def_of, doc, escape, field_values, header, kept_inputs, parse_tap, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Outcome, Spec, Type};
 use crate::toolchain::{Found, Invocation, Tool};
@@ -367,6 +367,25 @@ impl Backend for Lua {
                                 self.literal(spec, v, &f.returns),
                                 t.max, t.max, t.max + 1, t.max, t.sum
                             ));
+                        }
+                        Outcome::Value(v) if kept_inputs(spec, f).iter().any(Option::is_some) => {
+                            // Tables are shared with the caller: check the function left them alone.
+                            let kept = kept_inputs(spec, f);
+                            let (args, vars) =
+                                render_kept_args(f, input, &kept, |v, t| self.literal(spec, v, t), naming::snake);
+                            s.push_str(&format!("t:scenario(\"{name}\", function()\n"));
+                            for (var, lit, _) in &vars {
+                                s.push_str(&format!("  local {var} = {lit}\n"));
+                            }
+                            s.push_str(&format!(
+                                "  H.expect(M.{}({args}), {}, \"result\")\n",
+                                self.function_name(f),
+                                self.literal(spec, v, &f.returns)
+                            ));
+                            for (var, lit, kind) in &vars {
+                                s.push_str(&format!("  H.expect({var}, {lit}, \"the input {kind} was modified\")\n"));
+                            }
+                            s.push_str("end)\n");
                         }
                         Outcome::Value(v) => s.push_str(&format!(
                             "t:equals(\"{name}\", function() return {call} end, {})\n",

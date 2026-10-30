@@ -9,6 +9,7 @@
     { "name": "n", "type": "int" }
   ],
   "returns": "list<int>",
+  "pure": true,
   "fallible": false,
   "hints": [
     "Copy the scores first so the caller's list isn't changed.",

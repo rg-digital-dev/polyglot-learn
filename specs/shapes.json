@@ -2,7 +2,7 @@
   "slug": "shapes",
   "title": "Shapes",
   "concept": "interfaces",
-  "summary": "Implement the shape interface for rect and square, then describe a list of shapes as \"<label>: <area>\", largest area first. Shapes with equal areas keep their input order.",
+  "summary": "Implement the shape interface for rect and square, then describe a list of shapes as \"<label>: <area>\", largest area first. Shapes with equal areas keep their input order. Do not modify the input.",
   "types": [
     {
       "name": "shape",
@@ -31,6 +31,7 @@
   "function": "describe_all",
   "params": [{ "name": "shapes", "type": "list<shape>" }],
   "returns": "list<string>",
+  "pure": true,
   "hints": [
     "A rect's label is \"rect WxH\" (e.g. \"rect 2x3\"); a square's is \"square S\" (e.g. \"square 4\").",
     "describe_all should only call area() and label(); it must not care which concrete type each shape is.",

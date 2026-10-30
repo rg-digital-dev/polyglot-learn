@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, field_values, header, json, parse_tap, render_args, step_label, stub_message, timing, Backend};
+use super::{case_name, def_of, doc, field_values, header, json, kept_inputs, parse_tap, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Method, Outcome, Param, Spec, Type};
 use crate::toolchain::{parse_version, Found, Invocation, Tool};
@@ -256,6 +256,22 @@ impl Backend for TypeScript {
                                 self.literal(spec, v, &f.returns),
                                 t.min_ms, t.max, t.limit_ms, t.max, t.sum
                             ));
+                        }
+                        Outcome::Value(v) if kept_inputs(spec, f).iter().any(Option::is_some) => {
+                            let kept = kept_inputs(spec, f);
+                            let (args, vars) =
+                                render_kept_args(f, input, &kept, |v, t| self.literal(spec, v, t), naming::camel);
+                            let call = format!("{}({args})", self.function_name(f));
+                            let call = if matches!(f.returns, Type::Map(_)) { format!("{{ ...{call} }}") } else { call };
+                            s.push_str(&format!("\ntest(\"{name}\", () => {{\n"));
+                            for (var, lit, _) in &vars {
+                                s.push_str(&format!("  const {var} = {lit};\n"));
+                            }
+                            s.push_str(&format!("  assert.deepStrictEqual({call}, {});\n", self.literal(spec, v, &f.returns)));
+                            for (var, lit, kind) in &vars {
+                                s.push_str(&format!("  assert.deepStrictEqual({var}, {lit}, \"the input {kind} was modified\");\n"));
+                            }
+                            s.push_str("});\n");
                         }
                         Outcome::Value(v) => {
                             // Spread maps into a plain object so Object.create(null) results compare equal.

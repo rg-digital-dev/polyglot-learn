@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, escape, field_values, header, hex_escape, render_args, step_label, stub_message, timing, Backend};
+use super::{case_name, def_of, doc, escape, field_values, header, hex_escape, kept_inputs, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Method, Outcome, Param, Spec, Type};
 use crate::toolchain::{Found, Invocation, Tool};
@@ -293,6 +293,24 @@ impl Backend for Go {
                                         "\t\tstart := time.Now()\n\t\tgot := {call}\n\t\telapsed := time.Since(start).Milliseconds()\n\t\tif !specEqual(got, want) {{\n\t\t\tt.Fatalf(\"got %#v, want %#v\", got, want)\n\t\t}}\n\t\tif elapsed < {} {{\n\t\t\tt.Fatalf(\"finished in %d ms, but the slowest task alone takes {} ms: call task for every delay\", elapsed)\n\t\t}}\n\t\tif elapsed >= {} {{\n\t\t\tt.Fatalf(\"took %d ms: run the tasks at the same time so the call takes about {} ms, not {} ms\", elapsed)\n\t\t}}\n",
                                         tm.min_ms, tm.max, tm.limit_ms, tm.max, tm.sum
                                     ));
+                                } else if kept_inputs(spec, f).iter().any(Option::is_some) {
+                                    // Slices and maps share memory with the caller: check
+                                    // the function left them alone.
+                                    let kept = kept_inputs(spec, f);
+                                    let (args, vars) =
+                                        render_kept_args(f, input, &kept, |v, t| self.literal(spec, v, t), naming::camel);
+                                    for (var, lit, _) in &vars {
+                                        s.push_str(&format!("\t\t{var} := {lit}\n"));
+                                    }
+                                    s.push_str(&format!(
+                                        "\t\tgot := {}({args})\n\t\tif !specEqual(got, want) {{\n\t\t\tt.Fatalf(\"got %#v, want %#v\", got, want)\n\t\t}}\n",
+                                        self.function_name(f)
+                                    ));
+                                    for (var, lit, kind) in &vars {
+                                        s.push_str(&format!(
+                                            "\t\tif !reflect.DeepEqual({var}, {lit}) {{\n\t\t\tt.Fatalf(\"the input {kind} was modified: it is now %#v\", {var})\n\t\t}}\n"
+                                        ));
+                                    }
                                 } else {
                                     s.push_str(&format!(
                                         "\t\tgot := {call}\n\t\tif !specEqual(got, want) {{\n\t\t\tt.Fatalf(\"got %#v, want %#v\", got, want)\n\t\t}}\n"

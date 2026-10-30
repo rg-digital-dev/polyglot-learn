@@ -169,3 +169,53 @@ fn aliases_resolve() {
     assert_eq!(get("RS").unwrap().id(), "rust");
     assert!(get("cobol").is_err());
 }
+
+/// A `pure` spec keeps list arguments in a variable and checks them after the
+/// call, in every language where the callee could change the caller's list.
+#[test]
+fn pure_specs_check_the_input_is_unchanged() {
+    let s = Spec::parse(
+        r#"{"slug":"top-scores","title":"T","concept":"sorting","summary":"S.","function":"top_scores",
+            "params":[{"name":"scores","type":"list<int>"},{"name":"n","type":"int"}],"returns":"list<int>","pure":true,
+            "cases":[{"description":"top two","input":[[10,30,20],2],"expected":[30,20]}]}"#,
+    )
+    .unwrap();
+    let test = |id: &str| get(id).unwrap().tests(&s).remove(0).1;
+
+    let ts = test("typescript");
+    assert!(ts.contains("  const scores = [10, 30, 20];\n  assert.deepStrictEqual(topScores(scores, 2), [30, 20]);\n"), "{ts}");
+    assert!(ts.contains("assert.deepStrictEqual(scores, [10, 30, 20], \"the input list was modified\");"), "{ts}");
+
+    let go = test("go");
+    assert!(go.contains("\t\tscores := []int{10, 30, 20}\n\t\tgot := TopScores(scores, 2)\n"), "{go}");
+    assert!(go.contains("if !reflect.DeepEqual(scores, []int{10, 30, 20}) {\n\t\t\tt.Fatalf(\"the input list was modified: it is now %#v\", scores)"), "{go}");
+
+    let lua = test("lua");
+    assert!(lua.contains("  local scores = {10, 30, 20}\n  H.expect(M.top_scores(scores, 2), {30, 20}, \"result\")\n"), "{lua}");
+    assert!(lua.contains("  H.expect(scores, {10, 30, 20}, \"the input list was modified\")\n"), "{lua}");
+
+    let qml = test("qml");
+    assert!(qml.contains("        const scores = [10, 30, 20]\n        const scoresBefore = JSON.stringify(scores)\n"), "{qml}");
+    assert!(qml.contains("compare(subject.topScores(scores, 2), [30, 20])"), "{qml}");
+    assert!(qml.contains("compare(JSON.stringify(scores), scoresBefore, \"the input list was modified\")"), "{qml}");
+
+    // The callee can't change the caller's list: a borrowed slice, a copied array.
+    assert!(!test("rust").contains("modified"));
+    assert!(!test("php").contains("modified"));
+
+    // Without `pure`, arguments stay inline.
+    let plain = Spec::parse(r#"{"slug":"top-scores","title":"T","concept":"sorting","summary":"S.","function":"top_scores",
+            "params":[{"name":"scores","type":"list<int>"},{"name":"n","type":"int"}],"returns":"list<int>",
+            "cases":[{"description":"top two","input":[[10,30,20],2],"expected":[30,20]}]}"#).unwrap();
+    assert!(get("typescript").unwrap().tests(&plain)[0].1.contains("topScores([10, 30, 20], 2)"));
+}
+
+#[test]
+fn pure_needs_a_list_or_map_parameter() {
+    let err = Spec::parse(
+        r#"{"slug":"x","title":"T","concept":"c","summary":"S.","function":"f","pure":true,
+            "params":[{"name":"n","type":"int"}],"returns":"int","cases":[{"description":"d","input":[1],"expected":1}]}"#,
+    )
+    .unwrap_err();
+    assert!(err.0.contains("pure"), "{}", err.0);
+}

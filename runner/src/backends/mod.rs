@@ -283,6 +283,47 @@ pub fn render_args(params: &[crate::spec::Param], input: &[Value], render: impl 
     input.iter().zip(params).map(|(v, p)| render(v, &p.ty)).collect::<Vec<_>>().join(", ")
 }
 
+/// For a `pure` spec, the arguments a test keeps in a variable to check they're
+/// unchanged after the call: per parameter, `Some("list")`/`Some("map")`, or
+/// `None`. Helper functions aren't covered. Languages where the callee can't
+/// change the caller's value (Rust's `&[T]`, PHP's copied arrays) don't use it.
+pub fn kept_inputs(spec: &Spec, f: &Function) -> Vec<Option<&'static str>> {
+    f.params
+        .iter()
+        .map(|p| match &p.ty {
+            _ if !spec.pure || f.module.is_some() => None,
+            Type::List(_) => Some("list"),
+            Type::Map(_) => Some("map"),
+            _ => None,
+        })
+        .collect()
+}
+
+/// Render arguments, using `var(param name)` instead of the literal for the
+/// kept ones. Returns the argument list and `(variable, literal, kind)` per kept input.
+pub fn render_kept_args(
+    f: &Function,
+    input: &[Value],
+    kept: &[Option<&'static str>],
+    render: impl Fn(&Value, &Type) -> String,
+    var: impl Fn(&str) -> String,
+) -> (String, Vec<(String, String, &'static str)>) {
+    let mut args = Vec::new();
+    let mut vars = Vec::new();
+    for ((v, p), k) in input.iter().zip(&f.params).zip(kept) {
+        let lit = render(v, &p.ty);
+        match k {
+            Some(kind) => {
+                let name = var(&p.name);
+                vars.push((name.clone(), lit, *kind));
+                args.push(name);
+            }
+            None => args.push(lit),
+        }
+    }
+    (args.join(", "), vars)
+}
+
 /// The record/class a named-type value is (resolving interfaces via `"type"`).
 pub fn def_of<'a>(spec: &'a Spec, name: &str, value: &Value) -> &'a TypeDef {
     concrete_def(name, value, &spec.types).expect("spec values are validated against their types")

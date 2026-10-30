@@ -53,6 +53,7 @@ Module 2 uses four optional extensions. See the specs named below for complete e
   ```
 - **Helper modules** (`slugify.json`): `"helpers"` lists extra functions, each with a `module`, its own `summary`, signature and `cases`. Every backend puts them in a separate file (a Rust `mod`, a Go subpackage, a PHP namespace, a `.mjs` module…). Helper cases run before the main function's cases.
 - **Concurrency** (`run-all.json`): `"concurrency": true` for a function taking `list<int>` delays and returning `list<int>`. Each stub provides a `task(ms)` helper. Rust, Go and TypeScript tests check the real elapsed time. PHP, Lua and QML have no threads, so they use a provided virtual clock and check the ticks instead.
+- **Pure functions** (`top-scores.json`, `shapes.json`): `"pure": true` when the summary says not to modify the input. Tests then check that every list and map argument is unchanged after the call, and fail with "the input list was modified". TypeScript, Go, Lua and QML need the check; Rust (`&[T]`) and PHP (arrays are copied) can't change the caller's value.
 3. Run `cargo test --manifest-path runner/Cargo.toml`. It validates every spec.
 4. If the exercise introduces a new concept, add `concepts/<concept>.md`. Notes in `tracks/<lang>/<concept>.md` are optional but very welcome.
 5. Write a reference solution for each track you can and run the verification suite (below). Don't commit the solutions; they would spoil the exercise.

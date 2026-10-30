@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, field_values, header, json, render_args, step_label, stub_message, timing, Backend};
+use super::{case_name, def_of, doc, field_values, header, json, kept_inputs, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Outcome, Param, Spec, Type};
 use crate::toolchain::{Found, Invocation, Tool};
@@ -261,6 +261,29 @@ impl Backend for Qml {
                                 self.literal(spec, v, &f.returns),
                                 t.max, t.max, t.max + 1, t.max, t.sum
                             ));
+                        }
+                        Outcome::Value(v) if kept_inputs(spec, f).iter().any(Option::is_some) => {
+                            // Arrays and objects are shared with the caller. Compare
+                            // JSON snapshots: class values carry their own methods,
+                            // which compare() would see as different functions.
+                            let kept = kept_inputs(spec, f);
+                            let (args, vars) =
+                                render_kept_args(f, input, &kept, |v, t| self.literal(spec, v, t), naming::camel);
+                            s.push_str(&format!("\n    function test_{name}() {{\n"));
+                            for (var, lit, _) in &vars {
+                                s.push_str(&format!("        const {var} = {lit}\n        const {var}Before = JSON.stringify({var})\n"));
+                            }
+                            s.push_str(&format!(
+                                "        compare(subject.{}({args}), {})\n",
+                                self.function_name(f),
+                                self.literal(spec, v, &f.returns)
+                            ));
+                            for (var, _, kind) in &vars {
+                                s.push_str(&format!(
+                                    "        compare(JSON.stringify({var}), {var}Before, \"the input {kind} was modified\")\n"
+                                ));
+                            }
+                            s.push_str("    }\n");
                         }
                         Outcome::Value(v) => s.push_str(&format!(
                             "\n    function test_{name}() {{\n        compare({call}, {})\n    }}\n",

@@ -283,6 +283,9 @@ pub struct Spec {
     pub main: Function,
     /// The main function runs `task(ms)` for each delay; tests also check timing.
     pub concurrency: bool,
+    /// The main function must not change its list and map arguments; tests
+    /// check that they're unchanged after the call.
+    pub pure: bool,
     /// Set for a track-only exercise written natively instead of generated.
     pub native: Option<Native>,
 }
@@ -337,6 +340,8 @@ struct RawSpec {
     helpers: Vec<RawHelper>,
     #[serde(default)]
     concurrency: bool,
+    #[serde(default)]
+    pure: bool,
 }
 
 #[derive(Deserialize)]
@@ -725,6 +730,9 @@ impl Spec {
                 bail!("a concurrency spec's function must take one list<int> of delays and return list<int>");
             }
         }
+        if raw.pure && !main.params.iter().any(|p| matches!(p.ty, Type::List(_) | Type::Map(_))) {
+            bail!("`pure` only applies to list and map parameters, and the function has none");
+        }
 
         let spec = Spec {
             slug: raw.slug,
@@ -735,6 +743,7 @@ impl Spec {
             helpers,
             main,
             concurrency: raw.concurrency,
+            pure: raw.pure,
             native: None,
         };
         let mut seen = HashSet::new();
@@ -813,6 +822,7 @@ impl Spec {
             helpers: Vec::new(),
             main,
             concurrency: false,
+            pure: false,
             native: Some(Native { track: track.to_string(), files, stubs, lesson }),
         })
     }
