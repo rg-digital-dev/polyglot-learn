@@ -49,7 +49,7 @@ select {
 .topbar__inner { display: flex; align-items: center; gap: var(--space-6); min-height: 60px; }
 .brandname {
   font-family: var(--font-display); font-weight: var(--fw-extrabold);
-  letter-spacing: var(--track-display); font-size: 1.125rem;
+  letter-spacing: var(--track-display); font-size: 1.125rem; white-space: nowrap;
 }
 .topnav { display: flex; gap: var(--space-4); }
 .topnav a { color: var(--text-secondary); font-weight: var(--fw-medium); padding-block: var(--space-1); border-bottom: 2px solid transparent; }
@@ -156,6 +156,8 @@ a.chip:hover, button.chip:hover { border-color: var(--accent-border); }
 .file__path { display: flex; gap: var(--space-2); align-items: start; }
 .file__path code { flex: 1; min-width: 0; word-break: break-all; font-size: var(--fs-meta); color: var(--text-secondary); line-height: 1.5; padding-top: 6px; }
 .code--sig { margin-top: var(--space-2); }
+/* After .code, so a long signature wraps instead of scrolling sideways on phones. */
+.code.code--sig { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .results__head { display: flex; justify-content: space-between; align-items: center; }
 .cases { display: grid; gap: 2px; }

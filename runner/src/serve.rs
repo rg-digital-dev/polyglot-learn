@@ -75,6 +75,11 @@ impl IntoResponse for ApiError {
 
 type ApiResult<T> = std::result::Result<T, ApiError>;
 
+/// An exercise on a track, or 404: an unknown slug, or another track's own exercise.
+fn spec_or_404<'a>(ctx: &'a Ctx, track: &str, slug: &str) -> ApiResult<&'a Spec> {
+    ctx.spec_on(track, slug).map_err(|e| ApiError(StatusCode::NOT_FOUND, e.0))
+}
+
 // ---- entry point -------------------------------------------------------------------
 
 pub fn serve(workspace: Option<PathBuf>, port: u16, open: bool) -> Result<()> {
@@ -351,7 +356,7 @@ async fn exercise(
 ) -> ApiResult<Json<Value>> {
     let ctx = app.ctx()?;
     let b = resolve_track(&ctx, &q)?;
-    let spec = ctx.spec_on(b.id(), &slug)?;
+    let spec = spec_or_404(&ctx, b.id(), &slug)?;
     let dir = ctx.workspace.join(b.id());
     if !dir.join(backends::main_file(b, spec)).exists() {
         backends::generate(b, &ctx.track_specs(b.id()), &dir)?;
@@ -398,8 +403,8 @@ async fn exercise(
 
 async fn hint(State(app): State<Shared>, UrlPath(slug): UrlPath<String>) -> ApiResult<Json<Value>> {
     let mut ctx = app.ctx()?;
-    let total = ctx.spec(&slug)?.hints.len();
-    let hints = ctx.spec(&slug)?.hints.clone();
+    let spec = ctx.spec(&slug).map_err(|e| ApiError(StatusCode::NOT_FOUND, e.0))?;
+    let (total, hints) = (spec.hints.len(), spec.hints.clone());
     let shown = ctx.progress.hints.entry(slug.clone()).or_insert(0);
     *shown = (*shown + 1).min(total);
     let shown = *shown;
@@ -459,16 +464,16 @@ fn mtime_ms(p: &std::path::Path) -> u64 {
 }
 
 /// Only the exercise's learner-owned files can be read or written.
-fn editable_path(ctx: &Ctx, q: &FileQuery, slug: &str) -> Result<PathBuf> {
+fn editable_path(ctx: &Ctx, q: &FileQuery, slug: &str) -> ApiResult<PathBuf> {
     let b = match &q.track {
         Some(t) => backends::get(t)?,
         None => backends::get(&ctx.active_track()?)?,
     };
-    let spec = ctx.spec_on(b.id(), slug)?;
+    let spec = spec_or_404(ctx, b.id(), slug)?;
     let allowed = backends::learner_files(b, spec).into_iter().find(|(rel, _)| rel_string(rel) == q.path);
     match allowed {
         Some((rel, _)) => Ok(ctx.workspace.join(b.id()).join(rel)),
-        None => Err(Error(format!("`{}` isn't one of this exercise's files", q.path))),
+        None => Err(ApiError(StatusCode::BAD_REQUEST, format!("`{}` isn't one of this exercise's files", q.path))),
     }
 }
 
@@ -518,7 +523,7 @@ async fn start_check(
 ) -> ApiResult<(StatusCode, Json<Value>)> {
     let ctx = app.ctx()?;
     let b = resolve_track(&ctx, &q)?;
-    ctx.spec_on(b.id(), &slug)?;
+    spec_or_404(&ctx, b.id(), &slug)?;
     let track = b.id().to_string();
     let app2 = app.clone();
     let slug2 = slug.clone();
