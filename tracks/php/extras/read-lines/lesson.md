@@ -82,8 +82,8 @@ echo "\n";
 ## Common mistake
 Collecting with `iterator_to_array($gen)` when the keys repeat. It keeps the
 keys by default, so later values overwrite earlier ones:
-`iterator_to_array(concatLines(["a
-b", "c"]))` gives `[1 => 'c', 2 => 'b']`.
+`iterator_to_array(concatLines(["a\nb", "c"]))` gives
+`[1 => 'c', 2 => 'b']`.
 Pass `false` as the second argument to get a plain list. And calling
 `getReturn()` too early throws
 `Exception: Cannot get return value of a generator that hasn't returned`.

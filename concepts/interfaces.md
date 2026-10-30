@@ -21,7 +21,7 @@ Sorting "largest area first" leaves ties: `square 2` and `rect 1x4` both have ar
 
 | Stable | Not stable |
 |---|---|
-| JS `sort` (by ES2019), Rust `sort_by`, PHP `usort` (8.0+), Go `slices.SortStableFunc` | Lua `table.sort`, Go `slices.SortFunc`, QML's JS engine with more than a few items |
+| JS `sort` (by ES2019), Rust `sort_by`, PHP `usort` (8.0+), Go `slices.SortStableFunc` | Lua `table.sort`, Go `slices.SortFunc`, QML's JS engine `sort` |
 
 When stability isn't guaranteed, break ties on the original index yourself.
 

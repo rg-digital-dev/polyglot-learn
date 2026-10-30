@@ -47,7 +47,6 @@ main();
 `delays.forEach(async (d) => results.push(await task(d)))`. `forEach` ignores
 the promises its callback returns, so the outer function returns before any
 task has finished, and `push` would order the results by finish time anyway.
-Turn the inputs into an array of promises and pass that to `Promise.all`.
 
 ## In this exercise
 `run-all/run-all.ts` provides `export function task(ms: number): Promise<number>`;

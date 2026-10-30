@@ -68,4 +68,4 @@ type Votes struct{ Tally }     // fixed: embedded
 ```
 
 ## In this exercise
-Implement `Base.Log` and `Base.Lines` in `embeddedlogger.go`, then embed `Base` in `Plain` and `Shouty` and give `Shouty` its own `Log`. `NewPlain` and `NewShouty` return them as a `Logger`; the tests check through reflection that both really embed `Base`.
+Implement `Base.Log` and `Base.Lines` in `embeddedlogger.go`, then embed `Base` in `Plain` and `Shouty` and give `Shouty` its own `Log`. `NewPlain` and `NewShouty` return them as a `Logger`, and `Broadcast(msg, loggers...)` sends one message to every logger it's given, whatever their concrete types. The tests check through reflection that both really embed `Base`.

@@ -47,4 +47,4 @@ let r = g.next(); while (!r.done) r = g.next(); r.value   // fixed: "b done"
 ```
 
 ## In this exercise
-Implement `function runAll(delays: var): var` in `run-all/RunAll.qml`. The stub provides `property int now`, `function tick()` and `function task(ms: int): var`, which returns a generator; don't change them. Create one generator per delay, call `next()` on every unfinished one in turn, call `tick()` once per round, and store each final value at its index. The tests check the results and that `now` advanced by about the largest delay, not the sum.
+Implement `function runAll(delays: var): var` in `run-all/RunAll.qml`. The stub provides `property int now`, `function tick()` and `function task(ms: int): var`, which returns a generator; don't change them. The tasks should take turns on the virtual clock instead of running one after another. The tests check the results and that `now` advanced by about the largest delay, not the sum.

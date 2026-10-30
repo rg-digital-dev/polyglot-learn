@@ -26,7 +26,7 @@ ranking([{ name: "Bo", wins: 2 }, { name: "Al", wins: 5 }]); // ["Al", "Bo"]
   compiler reject `sort`, `push` and friends on it, so you cannot mutate the
   caller's array by accident.
 - `toSorted` needs `"lib": ["es2023"]` or newer in `tsconfig.json` for the type
-  checker; Node itself already has it.
+  checker. The workspace's generated `tsconfig.json` already has it.
 - Comparators are typed: in `(a, b) => b - a` on a `number[]`, both are numbers.
 <!-- /from -->
 

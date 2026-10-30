@@ -206,7 +206,12 @@ impl Backend for Qml {
         if spec.main.fallible {
             text.push_str(" Throw an Error for invalid input.");
         }
-        let mut main = String::from("import QtQuick\n\nQtObject {\n    id: root\n\n");
+        let mut main = String::from("import QtQuick\n");
+        // Helper modules are imported already, as the track note says.
+        for m in spec.modules() {
+            main.push_str(&format!("import \"{}.mjs\" as {}\n", naming::snake(m), naming::pascal(m)));
+        }
+        main.push_str("\nQtObject {\n    id: root\n\n");
         if spec.concurrency {
             main.push_str(CLOCK);
         }

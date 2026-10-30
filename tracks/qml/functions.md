@@ -29,7 +29,7 @@ QtObject {
 <!-- from:typescript -->
 ## Coming from TypeScript
 - Types are QML names, not TS ones: `int`/`real` instead of `number`, `bool` instead of `boolean`, `var` for anything else. There are no unions or generics.
-- Annotations are checked at run time, not just by a compiler: a `: int` function that computes `7 / 2` returns `3`.
+- From Qt 6.7 on, annotations are checked at run time, not just by a compiler: a `: int` function that computes `7 / 2` returns `3`. Older Qt (6.4 on Ubuntu 24.04) ignores the annotation and returns `3.5`.
 - `let`, `const`, template literals and arrow functions all work. There is no DOM, no `window`, and no Node APIs like `require` or `process`; `console.log` is available.
 - Assigning to an undeclared name throws instead of creating a global.
 - `String.prototype.arg()` is a QML addition you won't find on MDN.

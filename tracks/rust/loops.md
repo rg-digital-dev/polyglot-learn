@@ -20,6 +20,8 @@ fn contains_negative(values: &[i64]) -> bool {
 }
 ```
 
+`|&v| v < 0` is a closure: a small unnamed function, here taking each value and returning whether it's negative. Closures get their own lesson (9, Make Counter); for now, read `|x| expr` as "given x, compute expr".
+
 <!-- from:typescript -->
 ## Coming from TypeScript
 - `for n in 1..limit` replaces `for (let i = 1; i < limit; i++)`; there is no C-style `for`.

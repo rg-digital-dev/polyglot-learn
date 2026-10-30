@@ -321,6 +321,13 @@ impl Backend for Lua {
 
     fn stubs(&self, spec: &Spec) -> Vec<(PathBuf, String)> {
         let mut main = String::from("local M = {}\n\n");
+        // Helper modules are loaded already, as the track note says.
+        for m in spec.modules() {
+            main.push_str(&format!("local {0} = require(\"{0}\")\n", naming::snake(m)));
+        }
+        if !spec.modules().is_empty() {
+            main.push('\n');
+        }
         if spec.concurrency {
             main.push_str(CLOCK);
         }

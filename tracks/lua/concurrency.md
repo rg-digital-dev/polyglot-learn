@@ -47,4 +47,4 @@ local co = coroutine.create(M.task)        -- fixed: wrap it, then resume it
 ```
 
 ## In this exercise
-Implement `function M.run_all(delays)` in `run-all/run_all.lua`. The stub provides `M.clock`, `M.tick()` and `M.task(ms)`; don't change them. Create one coroutine per delay, then resume every unfinished one in turn, calling `M.tick()` once per round, and store each task's result at its index. The tests check the results and that the virtual clock advanced by about the largest delay, not the sum.
+Implement `function M.run_all(delays)` in `run-all/run_all.lua`. The stub provides `M.clock`, `M.tick()` and `M.task(ms)`; don't change them. The tasks should take turns on the virtual clock instead of running one after another. The tests check the results and that the virtual clock advanced by about the largest delay, not the sum.

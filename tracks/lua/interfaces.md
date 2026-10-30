@@ -47,15 +47,9 @@ Expecting `table.sort` to keep equal elements in their input order. Record each 
 
 ```lua
 table.sort(jobs, function(a, b) return a.priority > b.priority end)  -- ties may swap
-
--- fixed: note each position before sorting, then use it for ties
-local pos = {}
-for i, job in ipairs(jobs) do pos[job] = i end
-table.sort(jobs, function(a, b)
-  if a.priority ~= b.priority then return a.priority > b.priority end
-  return pos[a] < pos[b]
-end)
 ```
+
+`table.sort` isn't stable. When two items compare equal, the comparator needs something else to decide by: where each item was before sorting.
 
 ## In this exercise
 Complete the `M.Rect` and `M.Square` classes in `shapes/shapes.lua` (`new`, `:area()` and `:label()`, as laid out in the stub), then implement `function M.describe_all(shapes)`. It returns a sequence of strings like `"rect 2x3: 6"`, largest area first, with equal areas in input order, and should only call `area` and `label`.

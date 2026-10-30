@@ -71,7 +71,8 @@ var_dump(Level::Debug->atLeast(Level::DEFAULT));       // bool(false)
 ## Common mistake
 Leaving a case out of a `match` with no `default` arm. PHP doesn't check this
 when it loads the file; it fails only when the missing case shows up:
-`UnhandledMatchError: Unhandled match case Suit::Clubs`. Likewise,
+`UnhandledMatchError: Unhandled match case Suit::Clubs` (before PHP 8.4 just
+`Unhandled match case of type Suit`). Likewise,
 `Suit::from('X')` throws `ValueError: "X" is not a valid backing value for
 enum Suit`. For user input, use `tryFrom()` and handle `null`.
 

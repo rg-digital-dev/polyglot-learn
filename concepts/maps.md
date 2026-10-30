@@ -11,7 +11,7 @@ Each language has its own map type:
 | Go | `map[string]int` | `c[k]++` (missing keys read as 0) |
 | PHP | `array` | `$c[$k] = ($c[$k] ?? 0) + 1` |
 | Lua | table | `c[k] = (c[k] or 0) + 1` |
-| QML | JS object | `c[k] = (c[k] || 0) + 1` |
+| QML | JS object | `c[k] = (c[k] ?? 0) + 1` |
 
 What differs between them:
 

@@ -46,8 +46,9 @@ Appending to a shared slice from every goroutine:
 ```go
 go func() { defer wg.Done(); results = append(results, slow(j)) }()
 // a data race, and results arrive in finishing order: [300 100 200] comes back as [100 200 300]
-go func() { defer wg.Done(); results[i] = slow(j) }()   // fixed: each goroutine owns one index
 ```
+
+Give each goroutine a place of its own to write its result, so no two touch the same memory.
 
 ## In this exercise
 Implement `func RunAll(delays []int) []int` using the provided `task(ms)`; do not change `task`. The tests check that the call takes about as long as the longest delay, not the sum.

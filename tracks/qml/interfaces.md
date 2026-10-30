@@ -46,14 +46,13 @@ QtObject {
 <!-- /from -->
 
 ## Common mistake
-Relying on `sort` to keep ties in input order. Pair each item with its index and compare that last:
+Relying on `sort` to keep ties in input order:
 
 ```qml
 items.sort((a, b) => b.priority - a.priority)              // equal priorities may swap
-items.map((x, i) => ({ x, i }))
-     .sort((a, b) => b.x.priority - a.x.priority || a.i - b.i)
-     .map(e => e.x)                                        // fixed: ties keep their order
 ```
+
+QML's sort isn't stable. When two items compare equal, the comparator needs something else to decide by: where each item was in the input.
 
 ## In this exercise
 In `shapes/Shapes.qml`, complete the factory functions `function rect(width: int, height: int): var` and `square`, each returning an object with `area()` and `label()`, then implement `function describeAll(shapes: var): var`. It returns strings like `"rect 2x3: 6"`, largest area first, with equal areas in input order.

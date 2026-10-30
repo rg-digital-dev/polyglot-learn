@@ -40,8 +40,9 @@ Spawning and joining in one lazy chain:
 ```rust
 jobs.iter().map(|&j| s.spawn(move || slow(j))).map(|h| h.join().unwrap()).collect()
 // iterators are lazy: each thread is joined before the next is spawned, so it runs one at a time
-let handles: Vec<_> = jobs.iter().map(|&j| s.spawn(move || slow(j))).collect(); // fixed: spawn all
 ```
+
+Every thread has to be running before you join the first one.
 
 ## In this exercise
 Implement `pub fn run_all(delays: &[i64]) -> Vec<i64>` using the provided `task(ms)`; do not change `task`. The tests check that the call takes about as long as the longest delay, not the sum.

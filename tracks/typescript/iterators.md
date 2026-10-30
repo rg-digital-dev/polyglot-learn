@@ -25,8 +25,8 @@ console.log(passed); // [ 'ada=90', 'cy=72', 'lin=72' ]
   and destructured names are typed.
 - `sort` mutates the array; `toSorted` (ES2023) returns a sorted copy.
 - Node 22+ also has lazy iterator helpers:
-  `map.keys().filter(f).take(3).toArray()`. Your editor needs a recent `lib`
-  setting to type them.
+  `map.keys().filter(f).take(3).toArray()`. The workspace's `tsconfig.json`
+  includes their types (`ESNext.Iterator`).
 <!-- /from -->
 
 <!-- from:default -->

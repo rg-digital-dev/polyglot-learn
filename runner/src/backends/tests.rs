@@ -183,7 +183,10 @@ fn pure_specs_check_the_input_is_unchanged() {
     let test = |id: &str| get(id).unwrap().tests(&s).remove(0).1;
 
     let ts = test("typescript");
-    assert!(ts.contains("  const scores = [10, 30, 20];\n  assert.deepStrictEqual(topScores(scores, 2), [30, 20]);\n"), "{ts}");
+    assert!(
+        ts.contains("  const scores: Parameters<typeof topScores>[0] = [10, 30, 20];\n  assert.deepStrictEqual(topScores(scores, 2), [30, 20]);\n"),
+        "{ts}"
+    );
     assert!(ts.contains("assert.deepStrictEqual(scores, [10, 30, 20], \"the input list was modified\");"), "{ts}");
 
     let go = test("go");

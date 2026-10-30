@@ -74,8 +74,9 @@ track only requires 8.1, so the exercise works with neither.
 - Promote constructor parameters with `public readonly` and validate them in
   the constructor body.
 - To "change" a value, return `new self(...)` with the new data.
-- Integer cents: `intdiv($c, 100)` for units, `$c % 100` for cents, and
-  `sprintf('%02d', ...)` to pad.
+- Integer cents: split `abs($c)` with `intdiv()` and `%`, pad with
+  `sprintf('%02d', ...)`, and add the sign yourself. Splitting a negative
+  amount directly gives `0.-5` for -5 cents.
 <!-- /from -->
 
 ## Common mistake

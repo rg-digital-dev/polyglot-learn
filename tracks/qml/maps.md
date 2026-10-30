@@ -49,5 +49,7 @@ counts[word]++                              // undefined + 1 -> NaN
 counts[word] = (counts[word] ?? 0) + 1      // fixed
 ```
 
+A plain `{}` also inherits keys from `Object.prototype`: the word `"constructor"` already "exists", so `(counts[w] ?? 0) + 1` gives a string of function source instead of `1`. Start from `Object.create(null)`, which has no inherited keys.
+
 ## In this exercise
 Implement `function wordCount(text: string): var` in `word-count/WordCount.qml`. Return a plain object mapping each lowercase word to its count; empty text gives `{}`. Key order does not matter to `compare()`.

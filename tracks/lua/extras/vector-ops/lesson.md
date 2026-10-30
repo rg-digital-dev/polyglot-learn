@@ -49,12 +49,9 @@ Assuming the table is always the first argument. `v * 3` calls `__mul(v, 3)`, bu
 ```lua
 V.__mul = function(v, n) return V.new(v.x * n, v.y * n) end
 -- 3 * v  --> attempt to index a number value (local 'v')
-
-V.__mul = function(a, b)                       -- fixed: check which one is the number
-  if type(a) == "number" then a, b = b, a end
-  return V.new(a.x * b, a.y * b)
-end
 ```
+
+Check which argument is the number before using either one.
 
 ## In this exercise
 Fill in the metamethods of `M.Vec` in `vector-ops/vector_ops.lua`: `__add`, `__sub`, `__unm`, `__mul`, `__eq`, `__lt`, `__le` and `__tostring`, plus a `:length()` method. `M.Vec.new` is provided. `*` scales a vector when one side is a number and returns the dot product when both sides are vectors. `<` and `<=` compare lengths, so `table.sort` orders vectors from shortest to longest.

@@ -50,7 +50,7 @@ resume a fiber that is not suspended"). Check `isTerminated()` first.
 
 ## In this exercise
 `run-all/run-all.php` provides `Clock` and `function task(int $ms): int`; leave
-them unchanged. Implement `function runAll(array $delays): array`: create a
-`Fiber` per delay, start them all, then resume every unfinished fiber in
-rounds, calling `Clock::tick()` once per round. The tests check the results and
-that `Clock::$now` ends at about the largest delay.
+them unchanged. Implement `function runAll(array $delays): array` so the tasks
+take turns on the virtual clock instead of running one after another. The tests
+check the results and that `Clock::$now` ends at about the largest delay, not
+the sum.
