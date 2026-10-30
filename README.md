@@ -12,7 +12,11 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 
 ## Quick start
 
-You need [Rust](https://rustup.rs) 1.88 or newer to build the `learn` CLI. Each track also needs its own toolchain; `learn doctor` tells you what's missing and how to install it.
+You need the `learn` CLI and a copy of this repository. Each track also needs its own toolchain; `learn doctor` tells you what's missing and how to install it.
+
+**Without Rust:** download `learn` for your system from the [latest release](https://github.com/rg-digital-dev/polyglot-learn/releases/latest) (Linux, macOS and Windows, x86-64 and ARM), unpack it and put `learn` (`learn.exe`) somewhere on your `PATH`. The binaries aren't signed: on macOS, allow it once under System Settings > Privacy & Security; on Windows, choose "More info" > "Run anyway" if SmartScreen asks. Then skip the `cargo install` line below.
+
+**With Rust** 1.88 or newer, build it yourself with `cargo install`:
 
 ```bash
 git clone https://github.com/rg-digital-dev/polyglot-learn

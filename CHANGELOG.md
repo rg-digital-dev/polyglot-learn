@@ -6,6 +6,10 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-30
+
+The first release, with prebuilt `learn` binaries for Linux, macOS and Windows.
+
 ### Added
 - `learn` CLI with `init`, `doctor`, `start`, `show`, `check`, `watch`, `hint`,
   `status`, `compare`, `docs`, `generate`, `check-links` and `selftest`.

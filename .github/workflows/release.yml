@@ -1,0 +1,90 @@
+name: Release
+
+# A version tag (v0.1.0) builds `learn` for every platform and attaches the
+# archives to a *draft* GitHub release, to review and publish by hand.
+# Running it by hand (workflow_dispatch) only builds; nothing is released.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # musl: one static binary that runs on any Linux distribution.
+          - { os: ubuntu-24.04, target: x86_64-unknown-linux-musl }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl }
+          - { os: macos-15, target: aarch64-apple-darwin }
+          - { os: macos-15, target: x86_64-apple-darwin }
+          - { os: windows-2025, target: x86_64-pc-windows-msvc }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install musl tools
+        if: contains(matrix.target, 'musl')
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends musl-tools
+
+      - name: Build
+        run: cargo build --release --locked --manifest-path runner/Cargo.toml --target ${{ matrix.target }}
+
+      - name: Package
+        shell: bash
+        run: |
+          version=$(grep -m1 '^version' runner/Cargo.toml | cut -d'"' -f2)
+          name="learn-${version}-${{ matrix.target }}"
+          mkdir "$name"
+          exe=learn; [[ "${{ matrix.target }}" == *windows* ]] && exe=learn.exe
+          cp "runner/target/${{ matrix.target }}/release/$exe" "$name/"
+          cp LICENSE "$name/"
+          if [[ "${{ matrix.target }}" == *windows* ]]; then
+            7z a -tzip "$name.zip" "$name" > /dev/null
+          else
+            tar -czf "$name.tar.gz" "$name"
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: learn-${{ matrix.target }}
+          path: |
+            learn-*.tar.gz
+            learn-*.zip
+          if-no-files-found: error
+
+  release:
+    name: Draft release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS
+
+      - name: Create a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --draft \
+            --title "polyglot-learn ${GITHUB_REF_NAME}" \
+            --notes-file <(awk -v v="${GITHUB_REF_NAME#v}" '/^## \[/ { p = index($0, "## [" v "]") == 1; next } p' CHANGELOG.md)
