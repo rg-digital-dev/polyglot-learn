@@ -177,7 +177,14 @@ fn doctor(ctx: &Ctx) -> Result<ExitCode> {
         match b.tool().find() {
             Some(found) => {
                 let version = if found.version.is_empty() { String::new() } else { format!("{}  ", found.version) };
-                println!("  ✓ {:<11} {version}{}{marker}", b.id(), found.path.display());
+                match b.probe(&found) {
+                    Ok(()) => println!("  ✓ {:<11} {version}{}{marker}", b.id(), found.path.display()),
+                    Err(problem) => {
+                        println!("  ✗ {:<11} {version}{}{marker}", b.id(), found.path.display());
+                        println!("      found, but it can't run tests yet: {problem}");
+                        missing.push(*b);
+                    }
+                }
                 if let Some(warning) = b.check_tool(&found) {
                     println!("      ! {warning}");
                 }
@@ -400,6 +407,11 @@ fn print_result(spec: &Spec, result: &CheckResult, verbose: bool) {
         }
         return;
     }
+    if let (Some(problem), false) = (&result.setup_problem, verbose) {
+        println!("
+{problem}");
+        return;
+    }
     let show_output = verbose || (result.none_ran() && !result.passed);
     if show_output {
         if result.none_ran() && !verbose {
@@ -433,7 +445,8 @@ fn check_once(ctx: &mut Ctx, backend: &dyn Backend, slug: &str, verbose: bool) -
             Some(next) => println!("Next up: {} ({}). Run `learn` to see it.", next.title, next.slug),
             None => all_done_message(ctx, backend),
         }
-    } else {
+    } else if result.setup_problem.is_none() {
+        // (A setup problem isn't the learner's code: hints wouldn't help.)
         let passing = result.count(Some(true));
         println!("\n{passing}/{total} cases pass. Keep going: `learn hint` if you're stuck.");
     }

@@ -219,3 +219,15 @@ fn pure_needs_a_list_or_map_parameter() {
     .unwrap_err();
     assert!(err.0.contains("pure"), "{}", err.0);
 }
+
+#[test]
+fn qml_names_a_missing_module_and_its_package() {
+    let qml = get("qml").unwrap();
+    let out = "QWARN  : qmltestrunner::tst_hello::compile()\n    tst_hello.qml: module \"QtQuick.Window\" is not installed\nFAIL!  : qmltestrunner::tst_hello::compile() Type TestCase unavailable\n";
+    let problem = qml.setup_problem(out).unwrap();
+    assert!(problem.contains("`QtQuick.Window`"), "{problem}");
+    assert!(problem.contains("sudo apt install qml6-module-qtquick-window"), "{problem}");
+    assert!(problem.contains("learn doctor"), "{problem}");
+    assert_eq!(qml.setup_problem("FAIL!  : qmltestrunner::Hello::test_c01_x() Compared values are not the same"), None);
+    assert_eq!(get("go").unwrap().setup_problem(out), None);
+}

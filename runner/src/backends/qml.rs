@@ -334,6 +334,50 @@ impl Backend for Qml {
             .timeout(Duration::from_secs(60))
     }
 
+    /// Distributions split Qt into many packages, and `qmltestrunner` alone
+    /// can't load a test: run one that uses what the exercises use.
+    fn probe(&self, tool: &Found) -> std::result::Result<(), String> {
+        let dir = std::env::temp_dir().join(format!("learn-qml-probe-{}", std::process::id()));
+        let _ = std::fs::create_dir_all(&dir);
+        let test = "import QtQuick\nimport QtTest\n\nTestCase {\n    name: \"Probe\"\n    ListModel { id: model }\n\n    function test_probe() {\n        model.append({ n: 1 })\n        compare(model.count, 1)\n    }\n}\n";
+        if std::fs::write(dir.join("tst_probe.qml"), test).is_err() {
+            return Ok(()); // can't probe; don't claim a problem we didn't see
+        }
+        let report = dir.join("report.txt");
+        let inv = Invocation::new(&tool.path, &dir)
+            .args(["-platform", "offscreen", "-input", "tst_probe.qml"])
+            .args(["-o".to_string(), format!("{},txt", report.display())])
+            .env("QT_QPA_PLATFORM", "offscreen")
+            .output_file(report)
+            .timeout(Duration::from_secs(30));
+        let result = crate::toolchain::run(&inv);
+        let _ = std::fs::remove_dir_all(&dir);
+        let out = result.map_err(|e| e.0)?;
+        if out.output.lines().any(|l| l.starts_with("PASS") && l.contains("::Probe::test_probe()")) {
+            return Ok(());
+        }
+        if out.timed_out {
+            return Err("qmltestrunner didn't finish a one-line test within 30 s".into());
+        }
+        Err(self.setup_problem(&out.output).unwrap_or_else(|| {
+            let first = out.output.lines().find(|l| l.contains("FAIL!") || l.contains("rror")).unwrap_or("no output");
+            format!("qmltestrunner can't run a test: {}", first.trim())
+        }))
+    }
+
+    /// `module "QtQuick.Window" is not installed` names the missing piece, and
+    /// Debian's package names follow from it.
+    fn setup_problem(&self, output: &str) -> Option<String> {
+        let rest = output.split("module \"").skip(1).find(|r| r.contains("\" is not installed"))?;
+        let module = &rest[..rest.find('"')?];
+        let debian = format!("qml6-module-{}", module.to_ascii_lowercase().replace('.', "-"));
+        Some(format!(
+            "Qt's `{module}` QML module isn't installed, so the tests can't load. \
+             Install it (Debian/Ubuntu: `sudo apt install {debian}`; Fedora: `qt6-qtdeclarative`; \
+             Arch: `qt6-declarative`), then run `learn doctor` to check."
+        ))
+    }
+
     /// `FAIL!  : Comp::test_name() message`, plus following `Actual`/`Expected` lines.
     fn failure_reason(&self, output: &str, test_name: &str) -> Option<String> {
         let marker = format!("::test_{test_name}()");

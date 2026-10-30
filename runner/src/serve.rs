@@ -554,6 +554,7 @@ fn run_check(app: &App, track: &str, slug: &str) {
             "passed": result.passed,
             "timedOut": result.timed_out,
             "noneRan": result.none_ran(),
+            "setupProblem": result.setup_problem,
             "command": result.command,
             "cases": result.cases,
             "output": tail.join("\n"),

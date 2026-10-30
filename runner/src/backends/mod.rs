@@ -66,6 +66,19 @@ pub trait Backend: Sync {
     fn check_tool(&self, _tool: &Found) -> Option<String> {
         None
     }
+
+    /// Run a tiny test to prove the toolchain can actually run tests, for
+    /// toolchains that can be installed in pieces. Slower than `check_tool`, so
+    /// only `learn doctor` calls it. `Err` explains what's missing.
+    fn probe(&self, _tool: &Found) -> std::result::Result<(), String> {
+        Ok(())
+    }
+
+    /// When no case ran: a toolchain setup problem visible in the output (such
+    /// as a missing module), to report instead of "the code doesn't compile".
+    fn setup_problem(&self, _output: &str) -> Option<String> {
+        None
+    }
 }
 
 static BACKENDS: &[&dyn Backend] = &[

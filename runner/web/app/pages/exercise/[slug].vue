@@ -203,7 +203,8 @@ function onSaved() {
           </div>
           <p v-if="run?.error" class="error-box">{{ run.error }}</p>
           <p v-if="run?.final?.timedOut" class="warn">The tests took too long and were stopped. Look for an infinite loop.</p>
-          <div v-if="run?.final?.noneRan && !run.final.passed && !run.final.timedOut" class="stack-sm">
+          <p v-if="run?.final?.setupProblem" class="warn">{{ run.final.setupProblem }}</p>
+          <div v-else-if="run?.final?.noneRan && !run.final.passed && !run.final.timedOut" class="stack-sm">
             <p class="warn">No test cases ran, which usually means the code doesn't compile:</p>
             <pre class="output">{{ run.final.output }}</pre>
           </div>

@@ -53,6 +53,8 @@ export interface Run {
     passed: boolean
     timedOut: boolean
     noneRan: boolean
+    /** A missing toolchain piece (e.g. a Qt module) when no case ran. */
+    setupProblem: string | null
     command: string
     cases: CaseResult[]
     output: string
