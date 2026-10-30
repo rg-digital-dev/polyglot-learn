@@ -21,3 +21,10 @@ axum = "0.8"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time"] }
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 rust-embed = { version = "8", features = ["mime-guess"] }
+
+# Killing a test command together with everything it started (process groups / Job Objects).
+[target."cfg(unix)".dependencies]
+libc = "0.2"
+
+[target."cfg(windows)".dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_System_Threading"] }

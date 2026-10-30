@@ -264,6 +264,101 @@ pub fn run(inv: &Invocation) -> Result<RunOutput> {
     run_streaming(inv, &mut |_| {})
 }
 
+/// A started command and everything it starts in turn. Test runners start
+/// their own processes (`node --test` runs each file in a subprocess, `cargo
+/// test` and `go test` run a compiled test binary), and killing only the direct
+/// child would leave those running, possibly in an endless loop.
+///
+/// Unix: the command leads its own process group, and the group is killed.
+/// Windows: the command is put in a Job Object that kills every process in it
+/// when the job is closed.
+struct ProcessTree {
+    #[cfg(windows)]
+    job: windows_sys::Win32::Foundation::HANDLE,
+    #[cfg(unix)]
+    pgid: i32,
+}
+
+impl ProcessTree {
+    /// Arrange for `cmd` to start in its own group (call before spawning).
+    fn prepare(cmd: &mut Command) {
+        #[cfg(unix)]
+        {
+            use std::os::unix::process::CommandExt;
+            cmd.process_group(0);
+        }
+        #[cfg(not(unix))]
+        let _ = cmd;
+    }
+
+    #[cfg(unix)]
+    fn track(child: &std::process::Child) -> ProcessTree {
+        ProcessTree { pgid: child.id() as i32 }
+    }
+
+    /// Put the just-started child in a new job. Only processes it starts after
+    /// this point are covered, which in practice is all of them: test runners
+    /// take far longer to start up than this takes.
+    #[cfg(windows)]
+    fn track(child: &std::process::Child) -> ProcessTree {
+        use std::os::windows::io::AsRawHandle;
+        use windows_sys::Win32::System::JobObjects::*;
+        // SAFETY: plain Win32 calls on a handle we own; a failure leaves `job`
+        // null and kill() then falls back to killing the direct child only.
+        unsafe {
+            let job = CreateJobObjectW(std::ptr::null(), std::ptr::null());
+            if !job.is_null() {
+                let mut info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
+                info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                SetInformationJobObject(
+                    job,
+                    JobObjectExtendedLimitInformation,
+                    &info as *const _ as *const _,
+                    std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+                );
+                AssignProcessToJobObject(job, child.as_raw_handle() as _);
+            }
+            ProcessTree { job }
+        }
+    }
+
+    #[cfg(not(any(unix, windows)))]
+    fn track(_child: &std::process::Child) -> ProcessTree {
+        ProcessTree {}
+    }
+
+    /// Kill every process in the tree that's still running.
+    fn kill(&self) {
+        #[cfg(unix)]
+        // SAFETY: signals a process group we created; ESRCH (already gone) is fine.
+        unsafe {
+            libc::kill(-self.pgid, libc::SIGKILL);
+        }
+        #[cfg(windows)]
+        if !self.job.is_null() {
+            // SAFETY: terminates the processes in our own job.
+            unsafe {
+                windows_sys::Win32::System::JobObjects::TerminateJobObject(self.job, 1);
+            }
+        }
+    }
+}
+
+impl Drop for ProcessTree {
+    fn drop(&mut self) {
+        // Anything the test command left behind goes too, also after a normal
+        // exit: a leftover process would keep the output pipes open.
+        self.kill();
+        #[cfg(windows)]
+        if !self.job.is_null() {
+            // SAFETY: closes the job handle we created, exactly once.
+            unsafe {
+                windows_sys::Win32::Foundation::CloseHandle(self.job);
+            }
+        }
+    }
+}
+
 /// Run a tool, calling `on_line` for every output line as it arrives (stdout
 /// and stderr), so results can be shown before the process ends.
 pub fn run_streaming(inv: &Invocation, on_line: &mut dyn FnMut(&str)) -> Result<RunOutput> {
@@ -276,7 +371,9 @@ pub fn run_streaming(inv: &Invocation, on_line: &mut dyn FnMut(&str)) -> Result<
     for (k, v) in &inv.env {
         cmd.env(k, v);
     }
+    ProcessTree::prepare(&mut cmd);
     let mut child = cmd.spawn().context(|| format!("couldn't start {}", inv.program.display()))?;
+    let tree = ProcessTree::track(&child);
 
     // Each reader keeps its own full copy and forwards lines as they arrive.
     let (tx, rx) = mpsc::channel::<String>();
@@ -319,6 +416,7 @@ pub fn run_streaming(inv: &Invocation, on_line: &mut dyn FnMut(&str)) -> Result<
             break Some(status);
         }
         if Instant::now() >= deadline || cancelled() {
+            tree.kill();
             let _ = child.kill();
             let _ = child.wait();
             timed_out = !cancelled();
@@ -328,6 +426,8 @@ pub fn run_streaming(inv: &Invocation, on_line: &mut dyn FnMut(&str)) -> Result<
             on_line(&line);
         }
     };
+    // Stragglers would keep the pipes open and the readers waiting forever.
+    drop(tree);
 
     let mut output = String::from_utf8_lossy(&out_thread.join().unwrap_or_default()).to_string();
     let err = String::from_utf8_lossy(&err_thread.join().unwrap_or_default()).to_string();
@@ -375,6 +475,31 @@ mod tests {
         let mut v = vec!["6.9.0", "6.10.3", "6.2.4"];
         v.sort_by(|a, b| natural_cmp(b, a));
         assert_eq!(v, ["6.10.3", "6.9.0", "6.2.4"]);
+    }
+
+    /// A timed-out command's own children are killed too, not only the command.
+    #[cfg(unix)]
+    #[test]
+    fn timeout_kills_grandchildren() {
+        let inv = Invocation::new("/bin/sh", std::env::temp_dir())
+            .args(["-c", "sleep 30 & echo $!; wait"])
+            .timeout(Duration::from_millis(500));
+        let started = Instant::now();
+        let out = run(&inv).unwrap();
+        assert!(out.timed_out);
+        // Without the group kill, the sleeping grandchild keeps stdout open and
+        // the run only returns after 30 s.
+        assert!(started.elapsed() < Duration::from_secs(10), "run waited for the grandchild");
+        let pid: i32 = out.output.trim().parse().expect("the shell printed the grandchild's pid");
+        let gone = (0..50).any(|_| {
+            // SAFETY: signal 0 only checks whether the process exists.
+            let alive = unsafe { libc::kill(pid, 0) } == 0;
+            if alive {
+                std::thread::sleep(Duration::from_millis(100));
+            }
+            !alive
+        });
+        assert!(gone, "grandchild {pid} is still running");
     }
 
     #[test]
