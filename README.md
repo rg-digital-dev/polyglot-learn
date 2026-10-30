@@ -12,20 +12,32 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 
 ## Quick start
 
-You need the `learn` CLI and a copy of this repository. Each track also needs its own toolchain; `learn doctor` tells you what's missing and how to install it.
-
-**Without Rust:** download `learn` for your system from the [latest release](https://github.com/rg-digital-dev/polyglot-learn/releases/latest) (Linux, macOS and Windows, x86-64 and ARM), unpack it and put `learn` (`learn.exe`) somewhere on your `PATH`. The binaries aren't signed: on macOS, allow it once under System Settings > Privacy & Security; on Windows, choose "More info" > "Run anyway" if SmartScreen asks. Then skip the `cargo install` line below.
-
-**With Rust** 1.88 or newer, build it yourself with `cargo install`:
+One command installs the `learn` CLI and fetches the course into `~/polyglot-learn`:
 
 ```bash
-git clone https://github.com/rg-digital-dev/polyglot-learn
-cd polyglot-learn
-cargo install --locked --path runner   # installs the `learn` command
-learn init                             # which language do you already know?
-learn start rust                       # or typescript, go, php, lua, qml
-learn watch                            # edit the file it shows you, then save
+curl -fsSL https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.sh | sh
 ```
+
+On Windows, in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.ps1 | iex
+```
+
+The installer picks the [release](https://github.com/rg-digital-dev/polyglot-learn/releases/latest) binary for your system (Linux, macOS and Windows, x86-64 and ARM), checks it against the published checksums, and ends with `learn doctor`, which lists the language toolchains to install. Run it again to update; your work stays. Read [install.sh](install.sh) or [install.ps1](install.ps1) first if you like; the top of each lists its settings, such as other install folders.
+
+Then:
+
+```bash
+cd ~/polyglot-learn
+learn init          # which language do you already know?
+learn start rust    # or typescript, go, php, lua, qml
+learn watch         # edit the file it shows you, then save
+```
+
+**By hand:** download `learn` from the latest release, put it on your `PATH`, and `git clone` this repository. The binaries aren't signed: on macOS, allow it once under System Settings > Privacy & Security; on Windows, choose "More info" > "Run anyway" if SmartScreen asks.
+
+**From source**, with Rust 1.88 or newer: clone the repository and run `cargo install --locked --path runner` inside it.
 
 `learn watch` re-runs the tests each time you save and moves on to the next exercise when they pass. The first Rust check compiles for a few seconds; after that it's quick.
 

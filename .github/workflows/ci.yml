@@ -55,6 +55,9 @@ jobs:
           version: 6.10.3
           cache: true
 
+      - name: Lint install.sh
+        run: shellcheck install.sh
+
       - name: Unit tests (spec parser, naming, literals, notes)
         run: cargo test --locked --manifest-path runner/Cargo.toml
 

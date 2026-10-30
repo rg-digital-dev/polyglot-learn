@@ -6,6 +6,11 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+- One-command installers: `install.sh` (Linux, macOS) and `install.ps1`
+  (Windows) download the release binary, check it against SHA256SUMS, and
+  fetch the matching version of the course.
+
 ## [0.1.0] - 2026-10-30
 
 The first release, with prebuilt `learn` binaries for Linux, macOS and Windows.
