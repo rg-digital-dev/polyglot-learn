@@ -15,6 +15,6 @@ This project is for people learning, and people learning ask basic questions. Pl
 - Publishing someone's private information.
 - Continuing to engage with someone who has asked you to stop.
 
-**Reporting.** Contact a maintainer privately through GitHub. <!-- TODO: add a contact email before publishing --> Reports are kept confidential. Maintainers may edit or remove contributions, or block people who break these rules.
+**Reporting.** Email [info@rg-digital.dev](mailto:info@rg-digital.dev). Reports are kept confidential. Maintainers may edit or remove contributions, or block people who break these rules.
 
 This code is adapted in spirit from the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).

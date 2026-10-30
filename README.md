@@ -15,7 +15,7 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 You need [Rust](https://rustup.rs) to build the `learn` CLI. Each track also needs its own toolchain; `learn doctor` tells you what's missing and how to install it.
 
 ```bash
-git clone https://github.com/rg-digital/polyglot-learn
+git clone https://github.com/rg-digital-dev/polyglot-learn
 cd polyglot-learn
 cargo install --path runner      # installs the `learn` command
 learn init                       # which language do you already know?

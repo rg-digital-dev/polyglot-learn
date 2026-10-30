@@ -53,6 +53,6 @@ jobs:
           pnpm build
           git diff --exit-code -- dist || (echo "runner/web/dist is out of date: run 'pnpm build' in runner/web and commit it" && exit 1)
 
-      # Reference solutions live outside this repo so they don't spoil the
-      # exercises. Once their location is decided, check them out here and run:
-      #   runner/target/release/learn selftest --require-all --solutions <dir>
+      # Reference solutions are kept out of this repo (and out of CI) so they
+      # don't spoil the exercises. Maintainers run, before each release:
+      #   learn selftest --require-all --solutions <dir>

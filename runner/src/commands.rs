@@ -687,7 +687,7 @@ fn check_links(ctx: &Ctx) -> Result<ExitCode> {
                 std::thread::spawn(move || {
                     let inv = Invocation::new(curl, std::env::temp_dir())
                         .args(["-s", "-L", "-o", null, "-w", "%{http_code}", "--max-time", "20"])
-                        .args(["-A", "polyglot-learn check-links (+https://github.com/rg-digital/polyglot-learn)"])
+                        .args(["-A", "polyglot-learn check-links (+https://github.com/rg-digital-dev/polyglot-learn)"])
                         .args([url.as_str()])
                         .timeout(Duration::from_secs(30));
                     let code = toolchain::run(&inv).map(|o| o.output.trim().to_string()).unwrap_or_default();
