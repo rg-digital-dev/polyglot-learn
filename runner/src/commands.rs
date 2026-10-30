@@ -352,7 +352,10 @@ fn print_result(spec: &Spec, result: &CheckResult, verbose: bool) {
             Some(false) => "✗",
             None => "·",
         };
-        println!("  {mark} {}", c.description);
+        // After a timeout only the cases that finished are worth listing.
+        if !(result.timed_out && c.passed.is_none()) {
+            println!("  {mark} {}", c.description);
+        }
     }
     let failed: Vec<_> = result.cases.iter().filter(|c| c.passed == Some(false)).collect();
     let all = spec.cases();
@@ -388,7 +391,14 @@ fn print_result(spec: &Spec, result: &CheckResult, verbose: bool) {
     }
 
     if result.timed_out {
+        // A timeout explains itself: no compile-error guess, no raw output dump.
         println!("\nThe tests took too long and were stopped. Look for an infinite loop.");
+        if verbose {
+            println!("\nOutput of `{}`:\n{}", result.command, result.output);
+        } else {
+            println!("`learn check -v` shows the full test output.");
+        }
+        return;
     }
     let show_output = verbose || (result.none_ran() && !result.passed);
     if show_output {
