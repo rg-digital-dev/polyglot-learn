@@ -7,6 +7,14 @@ All notable changes to this project are listed here. The format follows
 ## [Unreleased]
 
 ### Added
+- A readable terminal: colour (16 ANSI colours, so it suits dark and light
+  themes), lessons rendered from markdown with wrapping and clickable links,
+  and a short `learn show` card. New `learn lesson` (paged when long),
+  `learn show --full`, `learn status --all`, and global `--color`, `--ascii`
+  and `--no-pager` flags.
+- `learn check` leads with a summary and shows the first failure as
+  call / expected / got, the first compiler error instead of a raw dump, and
+  hides Rust backtraces and test-runner chatter (all still in `-v`).
 - One-command installers: `install.sh` (Linux, macOS) and `install.ps1`
   (Windows) download the release binary, check it against SHA256SUMS, and
   fetch the matching version of the course into `./polyglot-learn`.

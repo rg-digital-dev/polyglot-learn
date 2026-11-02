@@ -32,6 +32,8 @@ pub struct CheckResult {
     pub output: String,
     /// When no case ran because of the toolchain rather than the code.
     pub setup_problem: Option<String>,
+    /// How long the run was allowed to take.
+    pub timeout_secs: u64,
 }
 
 impl CheckResult {
@@ -96,7 +98,8 @@ pub fn run_streaming(
     }
     let passed = out.success && !out.timed_out && cases.iter().all(|c| c.passed == Some(true));
     let setup_problem = if cases.iter().all(|c| c.passed.is_none()) { backend.setup_problem(&out.output) } else { None };
-    Ok(CheckResult { cases, passed, timed_out: out.timed_out, command: inv.display(), output: out.output, setup_problem })
+    let timeout_secs = inv.timeout.as_secs();
+    Ok(CheckResult { cases, passed, timed_out: out.timed_out, command: inv.display(), output: out.output, setup_problem, timeout_secs })
 }
 
 /// Mark an exercise done on a track after a passing check.

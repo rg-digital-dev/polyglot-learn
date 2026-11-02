@@ -62,11 +62,12 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 
 | Command | What it does |
 |---|---|
-| `learn` / `learn show [slug]` | The current exercise: summary, file to edit, lesson, track note, links |
-| `learn check [slug] [-v]` | Run the tests; mark the exercise done when they pass |
+| `learn` / `learn show [slug]` | The current exercise: what to do, the file to edit, what to run next (`--full` adds the lesson) |
+| `learn lesson [slug]` | The concept lesson, your track's note and further reading, in a pager when it's long |
+| `learn check [slug] [-v]` | Run the tests; mark the exercise done when they pass (`-v` for every detail) |
 | `learn watch` | Re-run on save, advance automatically |
 | `learn hint [slug]` | Reveal the next hint |
-| `learn status` | Progress table, with exercises as rows and tracks as columns |
+| `learn status [--all]` | Your progress on the active track (`--all`: every track side by side) |
 | `learn compare <concept>` | One concept's note from every track, one after another |
 | `learn docs [concept] [--open]` | Official docs, *lings and Exercism links for a concept |
 | `learn start <lang>` | Switch track (your work on other tracks is kept) |
@@ -76,7 +77,7 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 | `learn serve [--port N] [--open]` | The web UI at `http://learn.localhost:4321`, until you stop it |
 | `learn check-links` | Report dead links in `tracks/*/track.toml` |
 
-`learn` works from any subfolder of the repo.
+`learn` works from any subfolder of the repo. Output is coloured on a terminal; `--color never` (or `NO_COLOR`) turns that off, `--ascii` uses plain ASCII symbols, and `--no-pager` prints long lessons directly.
 
 ## Keeping your own solutions
 

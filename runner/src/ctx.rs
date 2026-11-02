@@ -161,7 +161,8 @@ impl Ctx {
     pub fn spec(&self, slug: &str) -> Result<&Spec> {
         self.specs.iter().find(|s| s.slug == slug).ok_or_else(|| {
             let all: Vec<&str> = self.specs.iter().map(|s| s.slug.as_str()).collect();
-            Error(format!("no exercise called `{slug}`. Exercises: {}", all.join(", ")))
+            Error(format!("no exercise called `{slug}`.
+Exercises: {}", all.join(", ")))
         })
     }
 
@@ -169,10 +170,12 @@ impl Ctx {
     pub fn spec_on(&self, track: &str, slug: &str) -> Result<&Spec> {
         let Ok(spec) = self.spec(slug) else {
             let all: Vec<&str> = self.specs.iter().filter(|s| s.on_track(track)).map(|s| s.slug.as_str()).collect();
-            bail!("no exercise called `{slug}` on the {track} track. Exercises: {}", all.join(", "));
+            bail!("no exercise called `{slug}` on the {track} track.
+Exercises: {}", all.join(", "));
         };
         match &spec.native {
-            Some(n) if n.track != track => bail!("`{slug}` is part of the {} track only", n.track),
+            Some(n) if n.track != track => bail!("`{slug}` is part of the {} track only.
+Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
             _ => Ok(spec),
         }
     }
@@ -215,7 +218,8 @@ impl Ctx {
         match &self.config.track {
             Some(t) => Ok(t.clone()),
             None => bail!(
-                "no track selected yet. Run `learn start <lang>` with one of: {}",
+                "no track selected yet.
+Run `learn start <lang>` with one of: {}",
                 crate::backends::ids().join(", ")
             ),
         }

@@ -829,7 +829,7 @@ impl Spec {
 
     /// Is this exercise part of `track`? Shared specs are part of every track.
     pub fn on_track(&self, track: &str) -> bool {
-        self.native.as_ref().map_or(true, |n| n.track == track)
+        self.native.as_ref().is_none_or(|n| n.track == track)
     }
 
     /// Helpers first (their tests come first), then the main function.

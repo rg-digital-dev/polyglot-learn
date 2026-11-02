@@ -112,7 +112,8 @@ pub fn get(id: &str) -> Result<&'static dyn Backend> {
         other => other.to_string(),
     };
     BACKENDS.iter().copied().find(|b| b.id() == id).ok_or_else(|| {
-        crate::error::Error(format!("unknown track `{id}`. Tracks: {}", ids().join(", ")))
+        crate::error::Error(format!("unknown track `{id}`.
+Tracks: {}", ids().join(", ")))
     })
 }
 

@@ -31,7 +31,7 @@ pub struct Module {
 
 impl Module {
     pub fn on_track(&self, track: &str) -> bool {
-        self.track.as_deref().map_or(true, |t| t == track)
+        self.track.as_deref().is_none_or(|t| t == track)
     }
 }
 

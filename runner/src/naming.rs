@@ -102,7 +102,7 @@ pub fn find_case_index(line: &str) -> Option<usize> {
     for i in 0..bytes.len().saturating_sub(2) {
         let boundary = i == 0 || !bytes[i - 1].is_ascii_alphanumeric();
         if boundary && bytes[i] == b'c' && bytes[i + 1].is_ascii_digit() && bytes[i + 2].is_ascii_digit() {
-            let end_ok = bytes.get(i + 3).map_or(true, |b| !b.is_ascii_alphanumeric());
+            let end_ok = bytes.get(i + 3).is_none_or(|b| !b.is_ascii_alphanumeric());
             if end_ok {
                 let n: usize = line[i + 1..i + 3].parse().ok()?;
                 return n.checked_sub(1);

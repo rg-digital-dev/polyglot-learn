@@ -11,11 +11,14 @@ mod commands;
 mod course;
 mod ctx;
 mod error;
+mod markdown;
 mod naming;
 mod notes;
 mod serve;
 mod spec;
 mod toolchain;
+mod ui;
+mod view;
 
 #[derive(Parser)]
 #[command(name = "learn", version, about = "Learn languages locally with small, test-driven exercises.")]
@@ -24,6 +27,18 @@ struct Cli {
     /// (also: LEARN_WORKSPACE).
     #[arg(long, global = true, value_name = "DIR")]
     workspace: Option<PathBuf>,
+
+    /// Colour output: auto (on a terminal, unless NO_COLOR is set), always or never.
+    #[arg(long, global = true, value_enum, default_value_t = ui::ColorWhen::Auto, value_name = "WHEN")]
+    color: ui::ColorWhen,
+
+    /// Plain ASCII symbols (ok/FAIL/>/-) instead of ✓ ✗ ● ○.
+    #[arg(long, global = true)]
+    ascii: bool,
+
+    /// Print long text directly instead of through a pager.
+    #[arg(long, global = true)]
+    no_pager: bool,
 
     #[command(subcommand)]
     command: Option<Command>,
@@ -41,8 +56,15 @@ enum Command {
     Doctor,
     /// Pick a track and generate its workspace.
     Start { lang: String },
-    /// Show an exercise: lesson, track note and the file to edit (default: current).
-    Show { slug: Option<String> },
+    /// Show an exercise: what to do and which file to edit (default: the current one).
+    Show {
+        slug: Option<String>,
+        /// Also print the lesson, the track note and the links.
+        #[arg(long)]
+        full: bool,
+    },
+    /// Read the lesson for an exercise: the concept, your track's note and further reading.
+    Lesson { slug: Option<String> },
     /// Run the tests; mark the exercise done when they pass.
     Check {
         slug: Option<String>,
@@ -67,8 +89,12 @@ enum Command {
         #[arg(long)]
         lang: Option<String>,
     },
-    /// Progress table: exercises by track.
-    Status,
+    /// Your progress on the active track.
+    Status {
+        /// Every track side by side.
+        #[arg(long)]
+        all: bool,
+    },
     /// List (or open) further-reading links for a concept.
     Docs {
         concept: Option<String>,
@@ -128,10 +154,11 @@ fn install_panic_hook() {
 fn main() -> ExitCode {
     install_panic_hook();
     let cli = Cli::parse();
+    ui::init(cli.color, cli.ascii, cli.no_pager);
     match commands::dispatch(cli.workspace, cli.command) {
         Ok(code) => code,
         Err(e) => {
-            eprintln!("error: {e}");
+            anstream::eprintln!("{}", ui::get().error(&e.0));
             ExitCode::FAILURE
         }
     }

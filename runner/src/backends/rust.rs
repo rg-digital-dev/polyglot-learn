@@ -376,6 +376,9 @@ impl Backend for Rust {
         Invocation::new(&tool.path, track_dir)
             .args(["test", "-p", spec.slug.as_str(), "--test", "spec", "--color", "never"])
             .env("CARGO_TERM_COLOR", "never")
+            // A learner's RUST_BACKTRACE=1 would bury every failure under a stack trace.
+            .env("RUST_BACKTRACE", "0")
+            .env("RUST_LIB_BACKTRACE", "0")
             .timeout(Duration::from_secs(600))
     }
 

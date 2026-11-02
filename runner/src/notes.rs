@@ -19,7 +19,6 @@
 
 use std::path::Path;
 
-use crate::course::TrackMeta;
 
 /// Backgrounds offered by `learn init`. Notes may add sections for any of them.
 pub const BACKGROUNDS: &[(&str, &str)] = &[
@@ -121,19 +120,6 @@ pub fn read_native_lesson(spec: &crate::spec::Spec, from: Option<&str>) -> Optio
     let path = spec.native.as_ref()?.lesson.as_ref()?;
     let text = std::fs::read_to_string(path).ok()?;
     Some(render(&text, from))
-}
-
-/// "Go deeper" section rendered from the track's link data.
-pub fn go_deeper(meta: &TrackMeta, concept: &str) -> Option<String> {
-    let links = meta.links_for(concept);
-    if links.is_empty() {
-        return None;
-    }
-    let mut out = String::from("## Go deeper\n");
-    for l in links {
-        out.push_str(&format!("- {}: {} <{}>\n", meta.kind_label(&l.kind), l.title, l.url));
-    }
-    Some(out.trim_end().to_string())
 }
 
 #[cfg(test)]
