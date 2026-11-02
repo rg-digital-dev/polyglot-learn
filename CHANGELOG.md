@@ -6,6 +6,10 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-02
+
+A readable terminal, one-command installers, and the fixes from the October review.
+
 ### Added
 - A readable terminal: colour (16 ANSI colours, so it suits dark and light
   themes), lessons rendered from markdown with wrapping and clickable links,
@@ -18,6 +22,23 @@ All notable changes to this project are listed here. The format follows
 - One-command installers: `install.sh` (Linux, macOS) and `install.ps1`
   (Windows) download the release binary, check it against SHA256SUMS, and
   fetch the matching version of the course into `./polyglot-learn`.
+- Specs can promise not to modify their input (`"pure": true`); the tests
+  check it in TypeScript, Go, Lua and QML (`top-scores`, `shapes`).
+- TypeScript: optional editor type checking with `@types/node` (see the
+  track README); the generated `tsconfig.json` matches Node 22.6+.
+
+### Changed
+- `learn doctor` runs a real QML test and names the missing Qt module and
+  its package.
+- Notes always show their key points, with the "coming from" section added.
+- Lesson fixes: no more ready-made solutions in notes, corrected examples,
+  imports in the Lua and QML `slugify` stubs.
+- Install with `cargo install --locked`; the minimum Rust is now 1.88.
+
+### Fixed
+- A timed-out test no longer leaves processes running (the whole process
+  tree is stopped), and the timeout message no longer claims a compile error.
+- `learn serve` answers 404 for unknown exercises; the web UI fits phones.
 
 ## [0.1.0] - 2026-10-30
 
