@@ -303,7 +303,16 @@ pub struct Native {
     /// Learner-owned files, relative to the exercise folder; the first is the main one.
     pub stubs: Vec<std::path::PathBuf>,
     pub lesson: Option<std::path::PathBuf>,
+    /// Files to type-check before the tests run, relative to the exercise
+    /// folder. When set, the first case is the type check itself.
+    pub typecheck: Vec<std::path::PathBuf>,
 }
+
+/// The description the first case must have when an exercise lists `typecheck` files.
+pub const TYPES_CHECK: &str = "types check";
+
+/// Tracks whose backend has a type checker (`Backend::checker`).
+const TYPECHECK_TRACKS: &[&str] = &["typescript"];
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -315,6 +324,8 @@ struct RawNative {
     #[serde(default)]
     hints: Vec<String>,
     cases: Vec<String>,
+    #[serde(default)]
+    typecheck: Vec<String>,
 }
 
 // ---- raw JSON shapes ----------------------------------------------------------
@@ -780,16 +791,25 @@ impl Spec {
             bail!("list between 1 and 99 case descriptions in `cases`");
         }
         let files = dir.join("files");
-        let mut stubs = Vec::new();
-        for s in &raw.stubs {
+        let inside = |kind: &str, s: &str| -> Result<std::path::PathBuf> {
             let rel = std::path::PathBuf::from(s);
             if rel.is_absolute() || rel.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
-                bail!("stub `{s}` must be a path inside the exercise folder");
+                bail!("{kind} `{s}` must be a path inside the exercise folder");
             }
             if !files.join(&rel).is_file() {
-                bail!("stub `{s}` doesn't exist in {}", files.display());
+                bail!("{kind} `{s}` doesn't exist in {}", files.display());
             }
-            stubs.push(rel);
+            Ok(rel)
+        };
+        let stubs = raw.stubs.iter().map(|s| inside("stub", s)).collect::<Result<Vec<_>>>()?;
+        let typecheck = raw.typecheck.iter().map(|s| inside("typecheck file", s)).collect::<Result<Vec<_>>>()?;
+        if !typecheck.is_empty() {
+            if !TYPECHECK_TRACKS.contains(&track) {
+                bail!("`typecheck` needs a track with a type checker ({}), not {track}", TYPECHECK_TRACKS.join(", "));
+            }
+            if raw.cases.first().map(String::as_str) != Some(TYPES_CHECK) {
+                bail!("with `typecheck`, the first case must be {TYPES_CHECK:?}: learn fills it in from the type checker");
+            }
         }
         let mut seen = HashSet::new();
         let mut cases = Vec::new();
@@ -823,7 +843,7 @@ impl Spec {
             main,
             concurrency: false,
             pure: false,
-            native: Some(Native { track: track.to_string(), files, stubs, lesson }),
+            native: Some(Native { track: track.to_string(), files, stubs, lesson, typecheck }),
         })
     }
 
@@ -1042,5 +1062,38 @@ mod tests {
             }
         }
         assert!(n >= 12);
+    }
+
+    /// An exercise.toml for branded-ids' real files, with `typecheck` and `cases` swapped in.
+    fn typecheck_native(track: &str, typecheck: &str, cases: &str) -> Result<Spec> {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../tracks/typescript/extras/branded-ids");
+        let text = format!(
+            "title = \"T\"\nconcept = \"c\"\nsummary = \"s\"\nstubs = [\"branded-ids.ts\"]\ntypecheck = {typecheck}\ncases = {cases}\n"
+        );
+        Spec::parse_native(&text, &dir, track, "branded-ids")
+    }
+
+    #[test]
+    fn accepts_typecheck_files() {
+        let s = typecheck_native("typescript", r#"["branded-ids.ts", "branded-ids.types.ts"]"#, r#"["types check", "x"]"#).unwrap();
+        assert_eq!(s.native.unwrap().typecheck.len(), 2);
+    }
+
+    #[test]
+    fn typecheck_needs_types_check_first() {
+        let err = typecheck_native("typescript", r#"["branded-ids.ts"]"#, r#"["x", "types check"]"#).unwrap_err();
+        assert!(err.0.contains("first case"), "{err}");
+    }
+
+    #[test]
+    fn typecheck_needs_a_track_with_a_checker() {
+        let err = typecheck_native("rust", r#"["branded-ids.ts"]"#, r#"["types check"]"#).unwrap_err();
+        assert!(err.0.contains("type checker"), "{err}");
+    }
+
+    #[test]
+    fn typecheck_files_must_exist() {
+        let err = typecheck_native("typescript", r#"["missing.types.ts"]"#, r#"["types check"]"#).unwrap_err();
+        assert!(err.0.contains("typecheck file `missing.types.ts` doesn't exist"), "{err}");
     }
 }

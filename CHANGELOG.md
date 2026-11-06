@@ -6,6 +6,24 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+- *Rust in Practice*, a second Rust-only module: `scoped-guard` (Drop),
+  `error-conversion` (From and ?), `custom-iterator`, `borrow-or-own` (Cow and
+  AsRef), `id-registry` (atomics, LazyLock, OnceLock) and `channel-workers`
+  (channels, Send and Sync).
+- *TypeScript in Practice*: `cancellable-task` (AbortSignal),
+  `disposable-resource` (`using` and DisposableStack), `branded-ids` (branded
+  types and `satisfies`) and `infer-types` (conditional and template literal
+  types).
+- Type-checked exercises: a track-only exercise can list `typecheck` files in
+  its `exercise.toml`; `learn` runs the track's type checker on them first and
+  reports the result as case 1, "types check". TypeScript uses TypeScript 7's
+  `tsc`, which `learn doctor` now checks for.
+
+### Changed
+- The TypeScript track needs Node 24 or newer (was 22.6), for `using`. The
+  generated `tsconfig.json` adds `ESNext.Disposable`.
+
 ## [0.2.0] - 2026-11-02
 
 A readable terminal, one-command installers, and the fixes from the October review.

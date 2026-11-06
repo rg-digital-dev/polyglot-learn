@@ -1,25 +1,19 @@
 # TypeScript track
 
-This track runs TypeScript directly on Node.js. There is no compiler step, no `npm install` and no dependencies: Node strips the type annotations and runs the remaining JavaScript, and the tests use Node's built-in test runner.
+This track runs TypeScript directly on Node.js. There is no build step and no `npm install` in the workspace: Node strips the type annotations and runs the remaining JavaScript, and the tests use Node's built-in test runner. A few exercises in *TypeScript in Practice* also check your types, with TypeScript 7's `tsc`.
 
 ## What you need
 
-**Node.js 22.18+ or 23.6+** (any 24.x or later is fine). That is the only requirement. Check with `node --version`.
-
-| Node version                | TypeScript support                                     |
-| --------------------------- | ------------------------------------------------------ |
-| 22.18+, 23.6+, 24 and later | Type stripping on by default                           |
-| 22.6 - 22.17, 23.0 - 23.5   | Needs `--experimental-strip-types` (`learn` adds it)  |
-| older than 22.6             | Not supported; upgrade Node                            |
-
-Type stripping stopped printing an "experimental" warning in 22.18 and 24.3, and was declared stable in 24.12 and 25.2.
+- **Node.js 24 or newer.** Check with `node --version`. Node 24 strips types by default and runs `using` declarations, which *TypeScript in Practice* uses. (Type stripping was declared stable in 24.12.)
+- **TypeScript 7 (`tsc`)**, installed globally, for the type-check exercises (`branded-ids`, `infer-types`). Check with `tsc --version`. TypeScript 7's compiler is a native program, so a check takes a fraction of a second. The other exercises don't need it.
 
 ## Install
 
 - **Windows:** `winget install --id OpenJS.NodeJS.LTS -e`
 - **macOS:** `brew install node`
-- **Arch:** `sudo pacman -S nodejs`
-- **Debian / Ubuntu / Fedora:** the distro packages are often too old (Debian 13 ships Node 20). Use [fnm](https://github.com/Schniz/fnm), which needs `curl` and `unzip`: `sudo apt install curl unzip` (Fedora: `sudo dnf install curl unzip`), then `curl -fsSL https://fnm.vercel.app/install | bash`, `source ~/.bashrc` and `fnm install --lts`. If your distro's `node --version` already prints 22.18 or newer, that works too.
+- **Arch:** `sudo pacman -S nodejs pnpm`, then `pnpm setup` (it puts pnpm's global folder on your PATH), `source ~/.bashrc` and `pnpm add -g typescript` for `tsc`.
+- **Debian / Ubuntu / Fedora:** the distro packages are often too old (Debian 13 ships Node 20). Use [fnm](https://github.com/Schniz/fnm), which needs `curl` and `unzip`: `sudo apt install curl unzip` (Fedora: `sudo dnf install curl unzip`), then `curl -fsSL https://fnm.vercel.app/install | bash`, `source ~/.bashrc` and `fnm install --lts`. If your distro's `node --version` already prints 24 or newer, that works too.
+- **Then, everywhere except Arch:** `npm install -g typescript` for `tsc`.
 
 ## How the tests run
 
@@ -28,6 +22,8 @@ Type stripping stopped printing an "experimental" warning in 22.18 and 24.3, and
 ```sh
 node --test --test-reporter=tap <slug>/<slug>.test.ts
 ```
+
+For an exercise whose `exercise.toml` lists `typecheck` files, `learn` first runs `tsc --noEmit` on them (with the same settings as `tsconfig.json`) and reports the result as case 1, "types check". The `.types.ts` file it checks is never run: each `@ts-expect-error` line in it must be a type error, so it proves your types reject what they should.
 
 You can run the same command yourself. `workspace/typescript/package.json` sets `"type": "module"`, so files use `import`/`export`, and imports must include the `.ts` extension (`from "./hello.ts"`).
 

@@ -74,6 +74,10 @@ pub fn run_streaming(
     on_case: &mut dyn FnMut(usize, bool),
 ) -> Result<CheckResult> {
     backends::generate(backend, all_specs, track_dir)?;
+    let types = typecheck(backend, spec, track_dir)?;
+    if let Some(t) = &types {
+        on_case(0, t.passed);
+    }
     let inv = backend.command(spec, tool, track_dir);
     let out = toolchain::run_streaming(&inv, &mut |line| {
         for (index, passed) in backend.parse_results(line) {
@@ -96,10 +100,57 @@ pub fn run_streaming(
     for c in cases.iter_mut().filter(|c| c.passed == Some(false)) {
         c.message = backend.failure_reason(&out.output, &crate::naming::case_name(c.index, &c.description));
     }
-    let passed = out.success && !out.timed_out && cases.iter().all(|c| c.passed == Some(true));
     let setup_problem = if cases.iter().all(|c| c.passed.is_none()) { backend.setup_problem(&out.output) } else { None };
+    let (mut command, mut output) = (inv.display(), out.output);
+    if let (Some(t), Some(first)) = (types, cases.first_mut()) {
+        first.passed = Some(t.passed);
+        first.message = (!t.passed).then_some(t.message);
+        if !t.command.is_empty() {
+            command = format!("{}\n{command}", t.command);
+        }
+        output = format!("{}\n{output}", t.output);
+    }
+    let passed = out.success && !out.timed_out && cases.iter().all(|c| c.passed == Some(true));
     let timeout_secs = inv.timeout.as_secs();
-    Ok(CheckResult { cases, passed, timed_out: out.timed_out, command: inv.display(), output: out.output, setup_problem, timeout_secs })
+    Ok(CheckResult { cases, passed, timed_out: out.timed_out, command, output, setup_problem, timeout_secs })
+}
+
+/// The type checker's verdict, which becomes the first case's result.
+struct TypeCheck {
+    passed: bool,
+    /// Shown as the failing case's message.
+    message: String,
+    /// Empty when the checker couldn't run.
+    command: String,
+    output: String,
+}
+
+/// Run the backend's type checker on the exercise's `typecheck` files, if it lists any.
+fn typecheck(backend: &dyn Backend, spec: &Spec, track_dir: &Path) -> Result<Option<TypeCheck>> {
+    let Some(native) = spec.native.as_ref().filter(|n| !n.typecheck.is_empty()) else { return Ok(None) };
+    let Some(tool) = backend.checker() else { bail!("{} has no type checker for `typecheck`", backend.name()) };
+    let not_run = |message: String| Ok(Some(TypeCheck { passed: false, command: String::new(), output: message.clone(), message }));
+    let Some(found) = tool.find() else {
+        return not_run(format!(
+            "{} isn't installed (or isn't on PATH), so the types can't be checked. Run `learn doctor` to see how to install it.",
+            tool.label
+        ));
+    };
+    if let Some(problem) = backend.check_checker(&found) {
+        return not_run(problem);
+    }
+    let files: Vec<std::path::PathBuf> = native.typecheck.iter().map(|f| Path::new(&spec.slug).join(f)).collect();
+    let inv = backend.typecheck_command(&found, &files, track_dir);
+    let out = toolchain::run(&inv)?;
+    let lines: Vec<&str> = out.output.lines().map(str::trim_end).filter(|l| !l.trim().is_empty()).collect();
+    let message = if out.timed_out {
+        format!("the type check took longer than {} s", inv.timeout.as_secs())
+    } else if lines.len() > 8 {
+        format!("{}\n… and {} more", lines[..8].join("\n"), lines.len() - 8)
+    } else {
+        lines.join("\n")
+    };
+    Ok(Some(TypeCheck { passed: out.success && !out.timed_out, message, command: inv.display(), output: out.output }))
 }
 
 /// Mark an exercise done on a track after a passing check.

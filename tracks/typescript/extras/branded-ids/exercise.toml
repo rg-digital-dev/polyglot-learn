@@ -1,0 +1,21 @@
+title = "Branded IDs"
+concept = "branded-types"
+summary = "Make the type checker tell a user ID from an order ID, and cents from any other number, with branded types and constructor functions that check the value once. Then keep a price table's exact keys with `satisfies`. The first case is the type check: learn runs tsc on your file and branded-ids.types.ts."
+stubs = ["branded-ids.ts"]
+typecheck = ["branded-ids.ts", "branded-ids.types.ts"]
+hints = [
+  "A brand is an intersection with a property that no real value has: `declare const brand: unique symbol;` and `export type Brand<T, B extends string> = T & { readonly [brand]: B };`. Then `export type UserId = Brand<string, \"UserId\">;`, and so on. `declare` is erased when Node runs the file.",
+  "The constructor functions check the value and then *assert* the type: `if (!/^u_[a-z0-9]+$/.test(raw)) throw new Error(`not a user id: ${raw}`); return raw as UserId;`. That cast is the only place a plain value becomes a branded one. `addCents` needs the same cast: `(a + b) as Cents`.",
+  "`const PRICES: Record<string, Cents> = { ... }` forgets the keys, so `priceOf(\"cake\")` compiles. `const PRICES = { ... } satisfies Record<string, Cents>` checks every value but keeps the object's own type, and `item: keyof typeof PRICES` is then exactly `\"coffee\" | \"tea\"`. `priceOf` itself is one line: `return PRICES[item];`.",
+]
+cases = [
+  "types check",
+  "userId accepts a valid id",
+  "userId rejects anything else",
+  "orderId accepts and rejects",
+  "cents accepts whole non negative numbers",
+  "cents rejects fractions negatives and nan",
+  "addCents adds two amounts",
+  "formatCents writes euros",
+  "priceOf looks up a price",
+]

@@ -84,6 +84,23 @@ pub trait Backend: Sync {
     fn setup_problem(&self, _output: &str) -> Option<String> {
         None
     }
+
+    /// A type checker for track-only exercises that list `typecheck` files, run
+    /// before the tests. Its result is the exercise's first case ("types check").
+    fn checker(&self) -> Option<&'static Tool> {
+        None
+    }
+
+    /// Like `check_tool`, for the type checker: a version that can't be used.
+    fn check_checker(&self, _checker: &Found) -> Option<String> {
+        None
+    }
+
+    /// How to type-check `files` (relative to the track folder). Only called
+    /// when `checker` is `Some`.
+    fn typecheck_command(&self, _checker: &Found, _files: &[PathBuf], _track_dir: &Path) -> Invocation {
+        unreachable!("{} has no type checker", self.id())
+    }
 }
 
 static BACKENDS: &[&dyn Backend] = &[

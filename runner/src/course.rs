@@ -151,6 +151,11 @@ mod tests {
                 read_all(&native.files, &native.stubs, Path::new(""), &mut tests);
                 for (_, c) in spec.cases() {
                     let name = crate::naming::case_name(c.index, &c.description);
+                    if c.index == 0 && !native.typecheck.is_empty() {
+                        // Filled in by the type checker, not by a test.
+                        assert!(!tests.contains(&name), "{track}/{slug}: {name} comes from the type checker; remove the test");
+                        continue;
+                    }
                     assert!(tests.contains(&name), "{track}/{slug}: no test named {name}");
                 }
                 let next = crate::naming::case_name(spec.cases().len(), "");

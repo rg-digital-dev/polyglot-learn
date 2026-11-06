@@ -81,6 +81,17 @@ exercises = [
 ]
 
 [[module]]
+id = "typescript-in-practice"
+title = "TypeScript in Practice"
+track = "typescript"
+exercises = [
+  "cancellable-task",
+  "disposable-resource",
+  "branded-ids",
+  "infer-types",
+]
+
+[[module]]
 id = "deeper-php"
 title = "Deeper PHP"
 track = "php"

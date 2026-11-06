@@ -212,6 +212,27 @@ fn doctor(ctx: &Ctx) -> Result<ExitCode> {
                 missing.push(*b);
             }
         }
+        // The type checker some track-only exercises use, on its own line under the track.
+        if let Some(checker) = b.checker() {
+            let label = format!("{:<11}", format!("+ {}", checker.label));
+            match checker.find() {
+                Some(found) => {
+                    let version = format!("{:<8}", short_version(&found.version));
+                    println!("{MARGIN}  {label} {version} {}", ui.muted(&ui::short_path(&found.path)));
+                    if let Some(problem) = b.check_checker(&found) {
+                        for l in ui.wrap(&problem, "      ! ", "        ") {
+                            println!("{}", ui.warning(&l));
+                        }
+                    }
+                }
+                None => {
+                    println!("{MARGIN}  {label} {}", ui.failure(&format!("{} not found (needed for type-check exercises)", checker.label)));
+                    if !missing.iter().any(|m| m.id() == b.id()) {
+                        missing.push(*b);
+                    }
+                }
+            }
+        }
     }
     println!();
     println!("{MARGIN}{} {}", ui.muted("Workspace"), ui.path(&ctx.workspace));

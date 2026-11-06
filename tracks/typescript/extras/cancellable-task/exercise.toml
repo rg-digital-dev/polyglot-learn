@@ -1,0 +1,21 @@
+title = "Cancellable Task"
+concept = "abort-signals"
+summary = "Make async work cancellable with AbortController and AbortSignal: a delay that stops when aborted, a timeout wrapper that reports the cause, and a race that cancels the losers."
+stubs = ["cancellable-task.ts"]
+hints = [
+  "In `delay`, call `signal?.throwIfAborted()` first (inside the Promise executor, or reject with `signal.reason`). Otherwise start a `setTimeout`, and add an `\"abort\"` listener with `{ once: true }` that clears the timer and rejects with `signal.reason`.",
+  "`AbortSignal.timeout(ms)` aborts by itself after `ms`. Pass it to `work`, and race the work against the signal's `\"abort\"` event: whichever comes first settles your Promise. On timeout, reject with `new Error(`timed out after ${ms} ms`, { cause: signal.reason })`; other errors go through untouched.",
+  "In `firstOf`, make one `AbortController`, start every task with `controller.signal`, and wait with `Promise.any`. Call `controller.abort()` in a `finally`, so the slower tasks are cancelled whether a task won or all of them failed.",
+]
+cases = [
+  "delay resolves after the time",
+  "delay rejects at once when already aborted",
+  "delay stops waiting when aborted",
+  "withTimeout returns the result of fast work",
+  "withTimeout throws a timeout error with a cause",
+  "withTimeout aborts the work's signal",
+  "withTimeout passes other errors through",
+  "firstOf returns the fastest result",
+  "firstOf aborts the slower tasks",
+  "firstOf skips failures and throws when all fail",
+]

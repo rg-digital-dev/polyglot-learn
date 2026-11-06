@@ -26,17 +26,50 @@ export function task(ms: number): Promise<number> {
 
 ";
 
-/// Node strips types by default from 22.18 (22.x line) and 23.6; 22.6+ has it
-/// behind `--experimental-strip-types`.
-fn strip_types_flag(version: (u64, u64, u64)) -> Option<bool> {
-    match version {
-        (major, _, _) if major >= 24 => Some(false),
-        (23, minor, _) => Some(minor < 6),
-        (22, minor, _) if minor >= 18 => Some(false),
-        (22, minor, _) if minor >= 6 => Some(true),
-        _ => None,
-    }
+/// Node 24 is the oldest supported: type stripping is on by default there, and
+/// it runs `using` declarations (Explicit Resource Management).
+fn node_supported(version: (u64, u64, u64)) -> bool {
+    version.0 >= 24
 }
+
+/// TypeScript 7's native `tsc`, for exercises that list `typecheck` files. After
+/// PATH, pnpm's default global folders (`pnpm add -g`, the Arch install), for a
+/// terminal opened before `pnpm setup` changed PATH.
+static TSC: Tool = Tool {
+    label: "tsc",
+    candidates: &[
+        "tsc",
+        "~/.local/share/pnpm/tsc",
+        "~/.local/share/pnpm/bin/tsc",
+        "~/Library/pnpm/tsc",
+        "~/Library/pnpm/bin/tsc",
+        "~/AppData/Local/pnpm/tsc.cmd",
+        "~/AppData/Local/pnpm/bin/tsc.cmd",
+    ],
+    version_args: &["--version"],
+    prefer: Some("Version 7"),
+};
+
+/// Settings that match the workspace's tsconfig.json. Files given on the command
+/// line make tsc ignore tsconfig.json, so they're spelled out here.
+const TSC_ARGS: &[&str] = &[
+    "--noEmit",
+    "--ignoreConfig",
+    "--pretty",
+    "false",
+    "--strict",
+    "--target",
+    "es2024",
+    "--module",
+    "nodenext",
+    "--moduleResolution",
+    "nodenext",
+    "--allowImportingTsExtensions",
+    "--verbatimModuleSyntax",
+    "--erasableSyntaxOnly",
+    "--lib",
+    "es2024,esnext.iterator,esnext.disposable",
+];
 
 impl TypeScript {
     fn params(&self, spec: &Spec, params: &[Param]) -> String {
@@ -322,20 +355,18 @@ impl Backend for TypeScript {
     }
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
-        // Only for editors: Node itself ignores tsconfig and never type-checks.
-        // The lib matches the oldest supported Node (22.6): ES2024 (toSorted,
-        // Object.groupBy) plus iterator helpers. Both names need TypeScript 5.7+.
+        // For editors, and the same settings as TSC_ARGS: Node itself ignores
+        // tsconfig and never type-checks. The lib matches the oldest supported
+        // Node (24): ES2024 (toSorted, Object.groupBy), iterator helpers, and
+        // `using` with Symbol.dispose. The names need TypeScript 5.7+.
         // `types` names Node's own type definitions, an optional install
         // (TypeScript 6+ no longer picks up @types packages by itself).
-        let tsconfig = "{\n  \"compilerOptions\": {\n    \"target\": \"ES2024\",\n    \"lib\": [\"ES2024\", \"ESNext.Iterator\"],\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"allowImportingTsExtensions\": true,\n    \"verbatimModuleSyntax\": true,\n    \"erasableSyntaxOnly\": true,\n    \"types\": [\"node\"]\n  }\n}\n";
+        let tsconfig = "{\n  \"compilerOptions\": {\n    \"target\": \"ES2024\",\n    \"lib\": [\"ES2024\", \"ESNext.Iterator\", \"ESNext.Disposable\"],\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"allowImportingTsExtensions\": true,\n    \"verbatimModuleSyntax\": true,\n    \"erasableSyntaxOnly\": true,\n    \"types\": [\"node\"]\n  }\n}\n";
         vec![(PathBuf::from("tsconfig.json"), tsconfig.into())]
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
         let mut args = vec!["--disable-warning=ExperimentalWarning".to_string()];
-        if parse_version(&tool.version).and_then(strip_types_flag) == Some(true) {
-            args.push("--experimental-strip-types".into());
-        }
         args.extend(["--test".into(), "--test-reporter=tap".into()]);
         args.push(format!("{}/{}.test.ts", spec.slug, spec.slug));
         Invocation::new(&tool.path, track_dir).args(args).timeout(Duration::from_secs(60))
@@ -382,24 +413,33 @@ impl Backend for TypeScript {
 
     fn check_tool(&self, tool: &Found) -> Option<String> {
         let v = parse_version(&tool.version)?;
-        strip_types_flag(v)
-            .is_none()
-            .then(|| format!("Node 22.6 or newer is needed for TypeScript type stripping (found {})", tool.version))
+        (!node_supported(v)).then(|| format!("Node 24 or newer is needed for TypeScript type stripping (found {})", tool.version))
+    }
+
+    fn checker(&self) -> Option<&'static Tool> {
+        Some(&TSC)
+    }
+
+    fn check_checker(&self, checker: &Found) -> Option<String> {
+        let v = parse_version(&checker.version)?;
+        (v.0 < 7).then(|| format!("TypeScript 7 or newer is needed for type checks (found {}): npm install -g typescript", checker.version))
+    }
+
+    fn typecheck_command(&self, checker: &Found, files: &[PathBuf], track_dir: &Path) -> Invocation {
+        let files = files.iter().map(|f| f.to_string_lossy().replace('\\', "/"));
+        Invocation::new(&checker.path, track_dir).args(TSC_ARGS.iter().map(|a| a.to_string()).chain(files)).timeout(Duration::from_secs(60))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::strip_types_flag;
+    use super::node_supported;
 
     #[test]
-    fn strip_flag_by_version() {
-        assert_eq!(strip_types_flag((20, 11, 0)), None);
-        assert_eq!(strip_types_flag((22, 5, 0)), None);
-        assert_eq!(strip_types_flag((22, 6, 0)), Some(true));
-        assert_eq!(strip_types_flag((22, 18, 0)), Some(false));
-        assert_eq!(strip_types_flag((23, 5, 0)), Some(true));
-        assert_eq!(strip_types_flag((23, 6, 0)), Some(false));
-        assert_eq!(strip_types_flag((24, 0, 0)), Some(false));
+    fn node_24_or_newer() {
+        assert!(!node_supported((22, 18, 0)));
+        assert!(!node_supported((23, 6, 0)));
+        assert!(node_supported((24, 0, 0)));
+        assert!(node_supported((26, 13, 0)));
     }
 }

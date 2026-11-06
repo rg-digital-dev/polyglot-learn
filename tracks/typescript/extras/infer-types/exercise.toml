@@ -1,0 +1,18 @@
+title = "Infer Types"
+concept = "conditional-types"
+summary = "Write types that compute other types: conditional types that pull a part out of a type with `infer`, and template literal types that build and take apart strings. Then give a few small functions return types that follow their arguments. The first case is the type check: learn runs tsc on your file and infer-types.types.ts."
+stubs = ["infer-types.ts"]
+typecheck = ["infer-types.ts", "infer-types.types.ts"]
+hints = [
+  "A conditional type has the shape `T extends Pattern ? Yes : No`, and `infer X` names a part of the pattern: `type ElementOf<T> = T extends readonly (infer E)[] ? E : never;`. `ReturnOf` and `FirstArg` match a function type: `F extends (...args: any[]) => infer R ? R : never`.",
+  "A type may refer to itself: `type Unwrap<T> = T extends Promise<infer V> ? Unwrap<V> : T;`. Template literal types work like template strings for types: `type EventName<T extends string> = `on${Capitalize<T>}`;`, and `T extends `on${infer E}` ? Uncapitalize<E> : never` takes one apart.",
+  "At run time the functions are ordinary JavaScript; only the return type says more than TypeScript can work out alone, so finish with a cast: `return (\"on\" + name.slice(0, 1).toUpperCase() + name.slice(1)) as EventName<T>;`. In `memoize`, keep a `Map<FirstArg<F>, ReturnOf<F>>` and call `fn(arg) as ReturnOf<F>` on a miss.",
+]
+cases = [
+  "types check",
+  "first returns the first element",
+  "eventName capitalizes the event",
+  "eventOf strips the on prefix",
+  "memoize calls the function once per argument",
+  "memoize returns the cached value",
+]

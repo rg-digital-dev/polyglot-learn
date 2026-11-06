@@ -1,0 +1,20 @@
+title = "Disposable Resource"
+concept = "resource-management"
+summary = "Clean up with `using`: give a class a Symbol.dispose method so it closes itself at the end of the block on every way out, then do the same for async cleanup with `await using`, and manage a whole group with DisposableStack."
+stubs = ["disposable-resource.ts"]
+hints = [
+  "`[Symbol.dispose]()` is an ordinary method with a computed name. Keep a `committed` field (start it at `false`); `commit()` only sets it to true, and the dispose method pushes `commit <name>` or `rollback <name>` depending on it.",
+  "`using tx = new Transaction(\"transfer\", log);` at the top of `transfer` is all the cleanup code you need: when `checkStep` throws, the block is left early and the transaction rolls back by itself. For the connection, `await using conn = await Connection.open(name, log);` and an `async [Symbol.asyncDispose]()` that awaits `delay(5)` before logging.",
+  "In `openAll`, `using stack = new DisposableStack();` and `stack.use(new Transaction(name, log))` for each name, after `checkName(name)`. If a later name throws, the stack disposes the ones already opened, newest first. Commit them all at the end; the stack still closes them when the function returns.",
+]
+cases = [
+  "a transaction logs begin and records entries",
+  "using rolls back at the end of the block",
+  "commit logs commit instead of rollback",
+  "transactions are disposed in reverse order",
+  "transfer commits when every step succeeds",
+  "transfer rolls back when a step throws",
+  "await using closes a connection after the query",
+  "openAll commits every transaction and closes them newest first",
+  "openAll rolls back what it opened when a name is bad",
+]
