@@ -20,6 +20,9 @@ pub enum Type {
     Int,
     Bool,
     Str,
+    /// A file in the exercise folder, given by name (`"notes.txt"`); tests pass
+    /// the backend's full path to it. Only as a parameter. See `files`.
+    Path,
     List(Box<Type>),
     Map(Box<Type>),
     /// A record, class or interface declared in the spec's `types`.
@@ -54,7 +57,7 @@ impl Type {
         let s: String = src.chars().filter(|c| !c.is_whitespace()).collect();
         Self::parse_compact(&s).ok_or_else(|| {
             Error(format!(
-                "unknown type `{src}` (allowed: int, bool, string, list<T>, map<string,T>, fn(..) -> T, or a name from `types`)"
+                "unknown type `{src}` (allowed: int, bool, string, path, list<T>, map<string,T>, fn(..) -> T, or a name from `types`)"
             ))
         })
     }
@@ -64,6 +67,7 @@ impl Type {
             "int" => Some(Type::Int),
             "bool" => Some(Type::Bool),
             "string" => Some(Type::Str),
+            "path" => Some(Type::Path),
             _ => {
                 if let Some(inner) = s.strip_prefix("list<").and_then(|r| r.strip_suffix('>')) {
                     Some(Type::List(Box::new(Self::parse_compact(inner)?)))
@@ -123,6 +127,8 @@ impl Type {
             (Type::Int, Value::Number(n)) if n.is_i64() => Ok(()),
             (Type::Bool, Value::Bool(_)) => Ok(()),
             (Type::Str, Value::String(_)) => Ok(()),
+            (Type::Path, Value::String(s)) if is_file_name(s) => Ok(()),
+            (Type::Path, Value::String(s)) => Err(format!("{s:?} isn't a plain file name (letters, digits, `.`, `-`, `_`)")),
             (Type::List(inner), Value::Array(items)) => {
                 for (i, item) in items.iter().enumerate() {
                     inner.check(item, defs).map_err(|e| format!("[{i}]: {e}"))?;
@@ -185,6 +191,7 @@ impl fmt::Display for Type {
             Type::Int => f.write_str("int"),
             Type::Bool => f.write_str("bool"),
             Type::Str => f.write_str("string"),
+            Type::Path => f.write_str("path"),
             Type::List(t) => write!(f, "list<{t}>"),
             Type::Map(t) => write!(f, "map<string,{t}>"),
             Type::Named(n) => f.write_str(n),
@@ -233,6 +240,11 @@ pub enum Outcome {
     Value(Value),
     /// An error whose message contains each of these strings (`error_contains`).
     Error(Vec<String>),
+}
+
+/// A plain file name for `files` and `path` values: no folders, nothing hidden.
+fn is_file_name(s: &str) -> bool {
+    !s.is_empty() && !s.starts_with('.') && s.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_'))
 }
 
 /// How an expected error reads in a case listing: "an error", or "an error mentioning `a` and `b`".
@@ -297,6 +309,11 @@ pub struct Spec {
     /// The main function must not change its list and map arguments; tests
     /// check that they're unchanged after the call.
     pub pure: bool,
+    /// Files written next to the tests (name -> contents), for `path` parameters.
+    pub files: BTreeMap<String, String>,
+    /// The tracks this exercise is on, when its module lists them (`tracks` in
+    /// course.toml). `None`: every track (or the native exercise's own track).
+    pub tracks: Option<Vec<String>>,
     /// Set for a track-only exercise written natively instead of generated.
     pub native: Option<Native>,
 }
@@ -364,6 +381,8 @@ struct RawSpec {
     concurrency: bool,
     #[serde(default)]
     pure: bool,
+    #[serde(default)]
+    files: BTreeMap<String, String>,
 }
 
 #[derive(Deserialize)]
@@ -577,8 +596,14 @@ fn parse_function(raw: FnParts, defs: &[TypeDef], next_index: &mut usize) -> Res
     let params = parse_params(raw.params, &format!("{what} param"))?;
     for p in &params {
         check_type_refs(&p.ty, defs, &format!("{what} param `{}`", p.name), false)?;
+        if p.ty != Type::Path && p.ty.any(defs, &mut |t| *t == Type::Path, &mut HashSet::new()) {
+            bail!("{what} param `{}`: `path` can only be a parameter's whole type", p.name);
+        }
     }
     let returns = Type::parse(&raw.returns).map_err(|e| Error(format!("{what} returns: {e}")))?;
+    if returns.any(defs, &mut |t| *t == Type::Path, &mut HashSet::new()) {
+        bail!("{what} returns: `path` can only be a parameter's type");
+    }
     check_type_refs(&returns, defs, &format!("{what} returns"), true)?;
     let returns_fn = matches!(returns, Type::Fn(..));
     if returns_fn && raw.fallible {
@@ -776,8 +801,18 @@ impl Spec {
             main,
             concurrency: raw.concurrency,
             pure: raw.pure,
+            files: raw.files,
+            tracks: None,
             native: None,
         };
+        for name in spec.files.keys() {
+            if !is_file_name(name) {
+                bail!("file {name:?} must be a plain file name (letters, digits, `.`, `-`, `_`)");
+            }
+        }
+        if !spec.files.is_empty() && !spec.uses_paths() {
+            bail!("`files` are only for specs with a `path` parameter");
+        }
         let mut seen = HashSet::new();
         for (_, c) in spec.cases() {
             if !seen.insert(crate::naming::ident(&c.description)) {
@@ -864,13 +899,20 @@ impl Spec {
             main,
             concurrency: false,
             pure: false,
+            files: BTreeMap::new(),
+            tracks: None,
             native: Some(Native { track: track.to_string(), files, stubs, lesson, typecheck }),
         })
     }
 
     /// Is this exercise part of `track`? Shared specs are part of every track.
     pub fn on_track(&self, track: &str) -> bool {
-        self.native.as_ref().is_none_or(|n| n.track == track)
+        self.native.as_ref().is_none_or(|n| n.track == track) && self.tracks.as_ref().is_none_or(|t| t.iter().any(|x| x == track))
+    }
+
+    /// Does any function take a `path` (a file the tests provide)?
+    pub fn uses_paths(&self) -> bool {
+        self.functions().any(|f| f.params.iter().any(|p| p.ty == Type::Path))
     }
 
     /// Helpers first (their tests come first), then the main function.
@@ -1041,6 +1083,26 @@ mod tests {
         }
         let unknown = SHAPES.replace("list<shape>", "list<circle>").replace("CASES", r#"{"description":"a","input":[[]],"expected":0}"#);
         assert!(Spec::parse(&unknown).unwrap_err().0.contains("unknown type `circle`"));
+    }
+
+    #[test]
+    fn path_parameters_and_files() {
+        let spec = |params: &str, returns: &str, input: &str, files: &str| {
+            Spec::parse(&format!(
+                r#"{{"slug":"r","title":"R","concept":"files","summary":"S.","function":"f","params":[{params}],
+                    "returns":"{returns}","files":{{{files}}},"cases":[{{"description":"a","input":[{input}],"expected":0}}]}}"#
+            ))
+        };
+        let ok = spec(r#"{"name":"p","type":"path"}"#, "int", r#""notes.txt""#, r#""notes.txt":"x""#).unwrap();
+        assert!(ok.uses_paths());
+        assert_eq!(ok.files["notes.txt"], "x");
+
+        let err = |r: Result<Spec>| r.unwrap_err().0;
+        assert!(err(spec(r#"{"name":"p","type":"path"}"#, "int", r#""../x.txt""#, "")).contains("plain file name"));
+        assert!(err(spec(r#"{"name":"p","type":"list<path>"}"#, "int", "[]", "")).contains("whole type"));
+        assert!(err(spec(r#"{"name":"p","type":"int"}"#, "path", "1", "")).contains("parameter's type"));
+        assert!(err(spec(r#"{"name":"p","type":"int"}"#, "int", "1", r#""a.txt":"x""#)).contains("only for specs with a `path`"));
+        assert!(err(spec(r#"{"name":"p","type":"path"}"#, "int", r#""a.txt""#, r#"".hidden":"x""#)).contains("plain file name"));
     }
 
     #[test]

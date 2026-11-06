@@ -26,11 +26,12 @@ By contributing you agree that code is licensed under MIT and lesson text under 
    ```
    - Types: `int`, `bool`, `string`, `list<T>`, `map<string,T>`. Names are snake_case; slugs and concepts are kebab-case.
    - Each case has either `expected` or `"error": true`. Error cases need `"fallible": true`.
+   - A `path` parameter takes a file name (`"notes.txt"`) and the tests pass the full path to it. List the files' contents in `"files": { "notes.txt": "..." }`; `learn` writes them next to the tests. A name that isn't in `files` is a missing file. QML can't read files, so put such an exercise in a module with a `tracks` list.
    - An error case can add `"error_contains": ["port", "not a number"]`: text the error's message must contain (in every track: the `Err` string, `err.Error()`, the exception's or Lua error's message).
    - **The first case must expect a value.** Stubs that throw would otherwise "pass" error cases.
    - Descriptions must be unique; they become test names. Aim for 6–10 cases including edge cases.
    - Keep values in the 64-bit integer range, and use ASCII whitespace only (trim functions disagree about Unicode).
-2. Add the slug to a module in `course.toml`.
+2. Add the slug to a module in `course.toml`. A shared module is on every track unless it lists some: `tracks = ["typescript", "rust", "go", "php", "lua"]`.
 
 ### Richer specs
 

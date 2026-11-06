@@ -227,3 +227,14 @@ url = "https://www.php.net/manual/en/class.generator.php"
 kind = "docs"
 title = "PHP manual: Exception::getPrevious"
 url = "https://www.php.net/manual/en/exception.getprevious.php"
+
+# files (read-file)
+[[links.files]]
+kind = "docs"
+title = "PHP manual: file_get_contents"
+url = "https://www.php.net/manual/en/function.file-get-contents.php"
+
+[[links.files]]
+kind = "docs"
+title = "PHP manual: file"
+url = "https://www.php.net/manual/en/function.file.php"

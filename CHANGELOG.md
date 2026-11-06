@@ -18,6 +18,14 @@ All notable changes to this project are listed here. The format follows
 - *Real-world Basics*, a third shared module for every track, starting with
   `error-context`: wrap a helper's error with the setting's key without
   losing the reason. With a concept note and a note per track.
+- *Files and Resources*, a shared module for every track except QML, starting
+  with `read-file`: read a text file, skip blank and comment lines, and name
+  the file when it can't be read.
+- A shared module can list the tracks it's on (`tracks = [...]` in
+  course.toml); status, generate, selftest and the web UI follow it, and
+  `learn` refuses a course that puts an exercise on a track that can't run it.
+- Specs can take files: a `path` parameter plus `files` (name -> contents)
+  that `learn` writes next to the tests; each track's tests pass the full path.
 - Error cases in specs can check the message: `"error_contains": [...]` lists
   text the error must mention, checked in all six tracks.
 - Type-checked exercises: a track-only exercise can list `typecheck` files in

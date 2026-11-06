@@ -270,7 +270,7 @@ impl Backend for Lua {
         match ty {
             Type::Int => "integer".into(),
             Type::Bool => "boolean".into(),
-            Type::Str => "string".into(),
+            Type::Str | Type::Path => "string".into(),
             Type::List(t) => format!("{}[]", self.type_name(spec, t, false)),
             Type::Map(t) => format!("table<string, {}>", self.type_name(spec, t, false)),
             Type::Named(n) => naming::pascal(n),
@@ -287,6 +287,7 @@ impl Backend for Lua {
             (Type::Int, Value::Number(n)) => n.to_string(),
             (Type::Bool, Value::Bool(b)) => b.to_string(),
             (Type::Str, Value::String(s)) => str_lit(s),
+            (Type::Path, Value::String(s)) => self.path_literal(s).unwrap_or_default(),
             (Type::List(t), Value::Array(items)) => {
                 let parts: Vec<String> = items.iter().map(|v| self.literal(spec, v, t)).collect();
                 format!("{{{}}}", parts.join(", "))
@@ -441,6 +442,11 @@ impl Backend for Lua {
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
         vec![(PathBuf::from("harness.lua"), HARNESS.to_string())]
+    }
+
+    /// `dir` is the test file's folder (set at the top of every test file).
+    fn path_literal(&self, name: &str) -> Option<String> {
+        Some(format!("dir .. {}", str_lit(&format!("/{name}"))))
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {

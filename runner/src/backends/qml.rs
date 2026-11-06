@@ -146,7 +146,7 @@ impl Backend for Qml {
         match ty {
             Type::Int => "int".into(),
             Type::Bool => "bool".into(),
-            Type::Str => "string".into(),
+            Type::Str | Type::Path => "string".into(),
             Type::List(_) | Type::Map(_) | Type::Named(_) | Type::Fn(..) => "var".into(),
         }
     }

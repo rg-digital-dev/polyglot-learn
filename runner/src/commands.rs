@@ -504,7 +504,10 @@ fn compare(ctx: &Ctx, concept: &str, langs: &[String]) -> Result<ExitCode> {
     let ui = ui::get();
     let concept = resolve_concept(ctx, concept)?;
     let selected: Vec<&dyn Backend> = if langs.is_empty() {
-        backends::all().to_vec()
+        // Only the tracks that have an exercise for the concept (`files` isn't on QML).
+        let has = |b: &&dyn Backend| ctx.specs.iter().any(|s| s.concept == concept && s.on_track(b.id()));
+        let on: Vec<&dyn Backend> = backends::all().iter().copied().filter(has).collect();
+        if on.is_empty() { backends::all().to_vec() } else { on }
     } else {
         langs.iter().map(|l| backends::get(l)).collect::<Result<_>>()?
     };

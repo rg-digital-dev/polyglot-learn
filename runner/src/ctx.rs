@@ -119,6 +119,19 @@ impl Ctx {
                     bail!("course.toml: module `{}` has unknown track `{track}`", m.id);
                 }
             }
+            if let Some(tracks) = &m.tracks {
+                if m.track.is_some() {
+                    bail!("course.toml: module `{}` has both `track` and `tracks`; a track-only module needs just `track`", m.id);
+                }
+                if tracks.is_empty() {
+                    bail!("course.toml: module `{}` has an empty `tracks` list; leave it out for every track", m.id);
+                }
+                for track in tracks {
+                    if crate::backends::get(track).ok().map(|b| b.id()) != Some(track.as_str()) {
+                        bail!("course.toml: module `{}` lists unknown track `{track}`", m.id);
+                    }
+                }
+            }
             for slug in &m.exercises {
                 let spec = match &m.track {
                     Some(track) => {
@@ -133,9 +146,20 @@ impl Ctx {
                         if !path.exists() {
                             bail!("course.toml lists `{slug}` but {} doesn't exist", path.display());
                         }
-                        let spec = Spec::load(&path)?;
+                        let mut spec = Spec::load(&path)?;
                         if spec.slug != *slug {
                             bail!("{} has slug `{}`; it must match the file name", path.display(), spec.slug);
+                        }
+                        spec.tracks = m.tracks.clone();
+                        // Every track the exercise is on must be able to run it.
+                        for b in crate::backends::all().iter().filter(|b| spec.on_track(b.id())) {
+                            if spec.uses_paths() && b.path_literal("x").is_none() {
+                                bail!(
+                                    "{slug} reads files, which the {} track can't do; list the tracks of module `{}` without it (`tracks = [...]`)",
+                                    b.name(),
+                                    m.id
+                                );
+                            }
                         }
                         spec
                     }

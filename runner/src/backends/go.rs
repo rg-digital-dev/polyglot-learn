@@ -189,7 +189,7 @@ impl Backend for Go {
         match ty {
             Type::Int => "int".into(),
             Type::Bool => "bool".into(),
-            Type::Str => "string".into(),
+            Type::Str | Type::Path => "string".into(),
             Type::List(t) => format!("[]{}", self.type_name(spec, t, false)),
             Type::Map(t) => format!("map[string]{}", self.type_name(spec, t, false)),
             Type::Named(n) => naming::pascal(n),
@@ -205,6 +205,7 @@ impl Backend for Go {
             (Type::Int, Value::Number(n)) => n.to_string(),
             (Type::Bool, Value::Bool(b)) => b.to_string(),
             (Type::Str, Value::String(s)) => str_lit(s),
+            (Type::Path, Value::String(s)) => self.path_literal(s).unwrap_or_default(),
             (Type::List(t), Value::Array(items)) => {
                 let parts: Vec<String> = items.iter().map(|v| self.literal(spec, v, t)).collect();
                 format!("{}{{{}}}", self.type_name(spec, ty, false), parts.join(", "))
@@ -365,6 +366,11 @@ impl Backend for Go {
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
         vec![(PathBuf::from("go.mod"), "module learn\n\ngo 1.22\n".to_string())]
+    }
+
+    /// `go test` runs in the package's folder, so the name is enough.
+    fn path_literal(&self, name: &str) -> Option<String> {
+        Some(str_lit(name))
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {

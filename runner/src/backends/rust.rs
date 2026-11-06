@@ -40,6 +40,7 @@ impl Rust {
     fn arg_literal(&self, spec: &Spec, value: &Value, ty: &Type) -> String {
         match (ty, value) {
             (Type::Str, Value::String(s)) => str_lit(s),
+            (Type::Path, Value::String(s)) => self.path_literal(s).unwrap_or_default(),
             (Type::List(t), Value::Array(items)) => {
                 let parts: Vec<String> = items.iter().map(|v| self.literal(spec, v, t)).collect();
                 format!("&[{}]", parts.join(", "))
@@ -196,8 +197,8 @@ impl Backend for Rust {
         match ty {
             Type::Int => "i64".into(),
             Type::Bool => "bool".into(),
-            Type::Str if param => "&str".into(),
-            Type::Str => "String".into(),
+            Type::Str | Type::Path if param => "&str".into(),
+            Type::Str | Type::Path => "String".into(),
             Type::List(t) if param => format!("&[{}]", self.type_name(spec, t, false)),
             Type::List(t) => format!("Vec<{}>", self.type_name(spec, t, false)),
             Type::Map(t) if param => format!("&HashMap<String, {}>", self.type_name(spec, t, false)),
@@ -378,6 +379,11 @@ impl Backend for Rust {
             members.join("\n")
         );
         vec![(PathBuf::from("Cargo.toml"), manifest)]
+    }
+
+    /// The exercise's crate folder, where `learn` writes the files.
+    fn path_literal(&self, name: &str) -> Option<String> {
+        Some(format!("concat!(env!(\"CARGO_MANIFEST_DIR\"), {})", str_lit(&format!("/{name}"))))
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {

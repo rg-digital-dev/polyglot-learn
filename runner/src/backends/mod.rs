@@ -85,6 +85,13 @@ pub trait Backend: Sync {
         None
     }
 
+    /// The expression a test passes for a `path` parameter: the full path of
+    /// `name`, a file `learn` writes next to the tests. `None` when this track
+    /// can't read files (then exercises with `path` parameters can't be on it).
+    fn path_literal(&self, _name: &str) -> Option<String> {
+        None
+    }
+
     /// A type checker for track-only exercises that list `typecheck` files, run
     /// before the tests. Its result is the exercise's first case ("types check").
     fn checker(&self) -> Option<&'static Tool> {
@@ -217,6 +224,10 @@ pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Resu
         }
         for (rel, contents) in backend.tests(spec) {
             write(&track_dir.join(rel), &contents)?;
+        }
+        // Files the tests read: overwritten like tests, so they stay as the spec says.
+        for (name, contents) in &spec.files {
+            write(&track_dir.join(&spec.slug).join(name), contents)?;
         }
         for (rel, contents) in backend.scaffold(spec) {
             let path = track_dir.join(rel);

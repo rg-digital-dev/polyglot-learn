@@ -167,7 +167,7 @@ fn phpdoc(ty: &Type) -> String {
     match ty {
         Type::Int => "int".into(),
         Type::Bool => "bool".into(),
-        Type::Str => "string".into(),
+        Type::Str | Type::Path => "string".into(),
         Type::List(t) => format!("list<{}>", phpdoc(t)),
         Type::Map(t) => format!("array<string, {}>", phpdoc(t)),
         Type::Named(n) => naming::pascal(n),
@@ -286,7 +286,7 @@ impl Backend for Php {
         match ty {
             Type::Int => "int".into(),
             Type::Bool => "bool".into(),
-            Type::Str => "string".into(),
+            Type::Str | Type::Path => "string".into(),
             Type::List(_) | Type::Map(_) => "array".into(),
             Type::Named(n) => naming::pascal(n),
             Type::Fn(..) => "Closure".into(),
@@ -298,6 +298,7 @@ impl Backend for Php {
             (Type::Int, Value::Number(n)) => n.to_string(),
             (Type::Bool, Value::Bool(b)) => b.to_string(),
             (Type::Str, Value::String(s)) => str_lit(s),
+            (Type::Path, Value::String(s)) => self.path_literal(s).unwrap_or_default(),
             (Type::List(t), Value::Array(items)) => {
                 let parts: Vec<String> = items.iter().map(|v| self.literal(spec, v, t)).collect();
                 format!("[{}]", parts.join(", "))
@@ -415,6 +416,10 @@ impl Backend for Php {
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
         vec![(PathBuf::from("harness.php"), HARNESS.to_string())]
+    }
+
+    fn path_literal(&self, name: &str) -> Option<String> {
+        Some(format!("__DIR__ . {}", str_lit(&format!("/{name}"))))
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {

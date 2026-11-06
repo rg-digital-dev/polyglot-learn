@@ -506,3 +506,14 @@ url = "https://doc.rust-lang.org/rust-by-example/error/result/result_map.html"
 kind = "docs"
 title = "std: Result::map_err"
 url = "https://doc.rust-lang.org/std/result/enum.Result.html#method.map_err"
+
+# files (read-file)
+[[links.files]]
+kind = "docs"
+title = "std::fs::read_to_string"
+url = "https://doc.rust-lang.org/std/fs/fn.read_to_string.html"
+
+[[links.files]]
+kind = "docs"
+title = "Rust by Example: read_lines"
+url = "https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html"

@@ -349,3 +349,14 @@ url = "https://go.dev/blog/go1.13-errors"
 kind = "docs"
 title = "Package errors (Is, As, Unwrap)"
 url = "https://pkg.go.dev/errors"
+
+# files (read-file)
+[[links.files]]
+kind = "docs"
+title = "Package os: ReadFile"
+url = "https://pkg.go.dev/os#ReadFile"
+
+[[links.files]]
+kind = "docs"
+title = "Go by Example: Reading Files"
+url = "https://gobyexample.com/reading-files"

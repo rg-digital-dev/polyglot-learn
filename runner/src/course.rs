@@ -26,12 +26,16 @@ pub struct Module {
     /// `tracks/<track>/extras/<slug>/` instead of `specs/`.
     #[serde(default)]
     pub track: Option<String>,
+    /// For a shared module that suits only some languages: the tracks it's on.
+    /// Not together with `track`; leave both out for every track.
+    #[serde(default)]
+    pub tracks: Option<Vec<String>>,
     pub exercises: Vec<String>,
 }
 
 impl Module {
     pub fn on_track(&self, track: &str) -> bool {
-        self.track.as_deref().is_none_or(|t| t == track)
+        self.track.as_deref().is_none_or(|t| t == track) && self.tracks.as_ref().is_none_or(|ts| ts.iter().any(|t| t == track))
     }
 }
 

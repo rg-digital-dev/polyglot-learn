@@ -588,7 +588,7 @@ pub fn status_all(ctx: &Ctx, ui: &Ui) -> String {
             let cells: String = tracks
                 .iter()
                 .map(|b| {
-                    let cell = if only.is_none_or(|t| t == b.id()) { mark(ctx, b.id(), slug, ui) } else { String::new() };
+                    let cell = if m.on_track(b.id()) { mark(ctx, b.id(), slug, ui) } else { String::new() };
                     format!("{cell}{}", " ".repeat(col.saturating_sub(ui::visible_width(&cell))))
                 })
                 .collect();
@@ -776,12 +776,16 @@ mod tests {
         let ctx = ctx();
         let out = status_track(&ctx, go(), &Ui::plain(80));
         let head: Vec<&str> = out.lines().take(5).collect();
-        assert_eq!(head, ["  Go · 0 of 18 done", "", "  Foundations        ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
-        assert!(out.contains("  Deeper Go          ░░░░░░░░░░░░  0/5"), "{out}");
+        assert_eq!(head, ["  Go · 0 of 19 done", "", "  Foundations          ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
+        assert!(out.contains("  Deeper Go            ░░░░░░░░░░░░  0/5"), "{out}");
         assert!(!out.contains("Deeper Rust"), "other tracks' modules aren't listed: {out}");
         let all = status_all(&ctx, &Ui::plain(80));
         assert!(all.lines().next().unwrap().ends_with("ts    rust  go    php   lua   qml"), "{all}");
         assert!(all.contains("  Deeper Rust  6 exercises · not started"), "{all}");
+        // A module with a `tracks` list leaves the other tracks' cells empty.
+        let read_file = all.lines().find(|l| l.trim_start().starts_with("Read File")).unwrap();
+        assert!(read_file.ends_with("○     ○     ○     ○     ○"), "QML has no read-file: {all}");
+        assert!(!status_track(&ctx, crate::backends::get("qml").unwrap(), &Ui::plain(80)).contains("Files and Resources"));
     }
 
     #[test]
@@ -789,7 +793,7 @@ mod tests {
         let ctx = ctx();
         let ui = Ui { unicode: false, ..Ui::plain(80) };
         let out = status_track(&ctx, go(), &ui);
-        assert!(out.contains("    - Hello") && out.contains("Foundations        ............  0/6"), "{out}");
+        assert!(out.contains("    - Hello") && out.contains("Foundations          ............  0/6"), "{out}");
         assert!(out.is_ascii(), "{out}");
     }
 

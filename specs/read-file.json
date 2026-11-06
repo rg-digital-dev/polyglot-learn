@@ -1,0 +1,32 @@
+{
+  "slug": "read-file",
+  "title": "Read File",
+  "concept": "files",
+  "summary": "Read the text file at `path` and return its lines, each trimmed, without blank lines and without comment lines (lines whose first non-blank character is `#`). Accept both `\\n` and `\\r\\n` line endings. If the file can't be read, fail with an error whose message includes the path, so the reader knows which file it was.",
+  "function": "read_lines",
+  "params": [{ "name": "path", "type": "path" }],
+  "returns": "list<string>",
+  "fallible": true,
+  "files": {
+    "notes.txt": "first line\nsecond line\n",
+    "todo.txt": "# shopping\n\nbuy milk\n   # remember the receipt\n  call the bank  \n\n",
+    "windows.txt": "one\r\ntwo\r\n",
+    "no-newline.txt": "last line",
+    "empty.txt": "",
+    "blank.txt": "\n   \n\t\n"
+  },
+  "hints": [
+    "Every language has a one-call way to read a whole text file into a string. Look up how yours reports a file that isn't there: an error value, an exception, or `nil` plus a message.",
+    "Split the text on `\\n`, then trim each line: trimming also removes the `\\r` that Windows line endings leave behind. Skip empty lines and lines that start with `#` after trimming.",
+    "Some languages' read errors don't mention the path (Rust's `io::Error` doesn't). Add it yourself, the way you added the key in error-context: put the path in front of the original message."
+  ],
+  "cases": [
+    { "description": "reads every line", "input": ["notes.txt"], "expected": ["first line", "second line"] },
+    { "description": "skips blank lines and comments", "input": ["todo.txt"], "expected": ["buy milk", "call the bank"] },
+    { "description": "handles windows line endings", "input": ["windows.txt"], "expected": ["one", "two"] },
+    { "description": "reads a last line without a newline", "input": ["no-newline.txt"], "expected": ["last line"] },
+    { "description": "an empty file has no lines", "input": ["empty.txt"], "expected": [] },
+    { "description": "a file of blank lines has no lines", "input": ["blank.txt"], "expected": [] },
+    { "description": "a missing file is an error that names it", "input": ["missing.txt"], "error": true, "error_contains": ["missing.txt"] }
+  ]
+}

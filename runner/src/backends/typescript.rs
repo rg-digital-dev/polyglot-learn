@@ -178,7 +178,7 @@ impl Backend for TypeScript {
         match ty {
             Type::Int => "number".into(),
             Type::Bool => "boolean".into(),
-            Type::Str => "string".into(),
+            Type::Str | Type::Path => "string".into(),
             Type::List(t) => match **t {
                 Type::List(_) | Type::Map(_) | Type::Fn(..) => format!("Array<{}>", self.type_name(spec, t, false)),
                 _ => format!("{}[]", self.type_name(spec, t, false)),
@@ -195,6 +195,7 @@ impl Backend for TypeScript {
 
     fn literal(&self, spec: &Spec, value: &Value, ty: &Type) -> String {
         match (ty, value) {
+            (Type::Path, Value::String(s)) => self.path_literal(s).unwrap_or_default(),
             (Type::List(t), Value::Array(items)) => {
                 let parts: Vec<String> = items.iter().map(|v| self.literal(spec, v, t)).collect();
                 format!("[{}]", parts.join(", "))
@@ -369,6 +370,11 @@ impl Backend for TypeScript {
         // (TypeScript 6+ no longer picks up @types packages by itself).
         let tsconfig = "{\n  \"compilerOptions\": {\n    \"target\": \"ES2024\",\n    \"lib\": [\"ES2024\", \"ESNext.Iterator\", \"ESNext.Disposable\"],\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"allowImportingTsExtensions\": true,\n    \"verbatimModuleSyntax\": true,\n    \"erasableSyntaxOnly\": true,\n    \"types\": [\"node\"]\n  }\n}\n";
         vec![(PathBuf::from("tsconfig.json"), tsconfig.into())]
+    }
+
+    /// The test file's own folder (Node 20.11+), where `learn` writes the files.
+    fn path_literal(&self, name: &str) -> Option<String> {
+        Some(format!("import.meta.dirname + {}", json(&Value::String(format!("/{name}")))))
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
