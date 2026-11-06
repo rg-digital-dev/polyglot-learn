@@ -1,0 +1,21 @@
+title = "Custom Iterator"
+concept = "iterator-trait"
+summary = "Implement the Iterator trait for your own types by writing a single next() method, and get map, filter, take, sum and the rest for free. Then return an iterator built from adapters with impl Iterator."
+stubs = ["src/lib.rs"]
+hints = [
+  "`next` returns `Some(value)` while there's more and `None` at the end. For `Steps`, check whether `current` has reached `end` (which way depends on the sign of `step`), remember the value, then move `current` on. `checked_add` returns None instead of overflowing.",
+  "For `Words`, trim the start of `rest`, return None if nothing is left, otherwise split at the first whitespace with `find(char::is_whitespace)`. Return a slice of `rest` (it has the lifetime `'a`) and keep the remainder for the next call.",
+  "`cells` doesn't need a struct: `(0..h).flat_map(move |y| (0..w).map(move |x| (x, y)))`. Copy `width` and `height` into locals first, so the closures don't borrow `self`.",
+]
+cases = [
+  "steps counts up to the end",
+  "steps counts down with a negative step",
+  "steps is empty when it has nowhere to go",
+  "steps works with iterator adapters",
+  "steps is lazy",
+  "steps stops instead of overflowing",
+  "words yields slices of the original text",
+  "words of blank text is empty",
+  "grid cells go row by row",
+  "grid cells can be chained further",
+]

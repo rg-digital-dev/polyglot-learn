@@ -1,0 +1,20 @@
+title = "Channel Workers"
+concept = "message-passing"
+summary = "Share work between threads by sending messages instead of sharing memory: a pipeline of threads joined by mpsc channels, a pool of workers that pull jobs from one queue, and per-thread results merged at the end."
+stubs = ["src/lib.rs"]
+hints = [
+  "A channel is `let (tx, rx) = mpsc::channel();`. Move `tx` into the thread that sends and `rx` into the one that receives; `for x in rx` ends when every sender has been dropped. In `pipeline`, each stage is a thread that owns one receiver and one sender.",
+  "Several workers can't own one `Receiver`, but they can share it as `Arc<Mutex<Receiver<_>>>`: each takes the lock, calls `recv()`, and lets go of the lock before it does the work. Send `(index, job)` and get `(index, result)` back, so you can put results in job order. Count finished jobs with an `Arc<AtomicUsize>`.",
+  "In `count_words`, each thread builds its own HashMap and sends the whole map back. The main thread merges them; no lock needed. Drop the original sender (or clone it into each thread and drop it after the loop) so the receiving loop ends.",
+]
+cases = [
+  "pipeline doubles then keeps big numbers",
+  "pipeline keeps the order",
+  "pipeline of nothing is empty",
+  "squares returns results in job order",
+  "squares counts every finished job",
+  "squares works with more workers than jobs",
+  "squares runs jobs at the same time",
+  "count_words merges every thread's counts",
+  "count_words of no chunks is empty",
+]

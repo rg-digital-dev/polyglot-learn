@@ -1,0 +1,21 @@
+title = "Error Conversion"
+concept = "from-into"
+summary = "Turn a library's error into your own with a From implementation, so ? converts it for you. Give your error a Display message and a source(), and pass it up through a Box<dyn Error>."
+stubs = ["src/lib.rs"]
+hints = [
+  "`impl From<ParseIntError> for AppError` only needs `AppError::Parse(e)`. Once it exists, `Ok(text.trim().parse::<i64>()?)` compiles in `parse_field`: `?` calls `From::from` on the error.",
+  "In `parse_rgb`, split on `,` and walk the names `[\"red\", \"green\", \"blue\"]` with `parts.next()`: a missing part is `Missing(name)`. After the three, `parts.count()` tells you whether there were extras.",
+  "`source()` returns `Some(e)` only for the variant that wraps another error. In `run`, `parse_rgb(text)?` turns an AppError into a `Box<dyn Error>` by itself, and `format!(\"#{r:02x}{g:02x}{b:02x}\")` writes the hex code.",
+]
+cases = [
+  "from turns a parse error into an app error",
+  "parse_field converts errors with the question mark",
+  "parse_rgb reads three numbers",
+  "parse_rgb reports missing and extra parts",
+  "parse_rgb reports a value out of range",
+  "parse_rgb passes parse errors up",
+  "errors display readable messages",
+  "source returns the underlying parse error",
+  "run formats a hex colour",
+  "run returns app errors in a box",
+]

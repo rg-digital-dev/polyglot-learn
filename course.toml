@@ -44,6 +44,19 @@ exercises = [
 ]
 
 [[module]]
+id = "rust-in-practice"
+title = "Rust in Practice"
+track = "rust"
+exercises = [
+  "scoped-guard",
+  "error-conversion",
+  "custom-iterator",
+  "borrow-or-own",
+  "id-registry",
+  "channel-workers",
+]
+
+[[module]]
 id = "deeper-go"
 title = "Deeper Go"
 track = "go"

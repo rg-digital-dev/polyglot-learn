@@ -1,0 +1,22 @@
+title = "Scoped Guard"
+concept = "drop"
+summary = "Write a transaction guard that rolls back on its own unless it was committed. Implement Drop so cleanup runs on every way out of a scope: the end of a block, an early return through ?, an explicit drop() and even a panic."
+stubs = ["src/lib.rs"]
+hints = [
+  "`begin` builds the struct and logs the line in one go: push `format!(\"begin {name}\")` with `log.borrow_mut().push(...)`, store `Rc::clone(log)` and start with `committed: false`.",
+  "Drop runs on its own when the value goes out of scope. In `fn drop(&mut self)`, push `commit {name}` if `self.committed` is true and `rollback {name}` otherwise. `commit(mut self)` only needs to set the flag: `self` is dropped when `commit` returns, so Drop writes the line.",
+  "In `transfer`, `check_step(step)?` returns the error early and the transaction is dropped on the way out, so the rollback happens without any code from you. `batch` is a loop that counts the groups where `transfer(...).is_ok()`.",
+]
+cases = [
+  "begin logs a begin line",
+  "record logs entries with the transaction name",
+  "a transaction rolls back when it goes out of scope",
+  "commit logs commit instead of rollback",
+  "transactions are dropped in reverse order",
+  "drop ends a transaction early",
+  "transfer commits when every step succeeds",
+  "transfer rolls back and stops at a failing step",
+  "transfer with no steps still commits",
+  "batch commits good groups and rolls back failed ones",
+  "a panic still rolls back",
+]

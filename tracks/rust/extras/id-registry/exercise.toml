@@ -1,0 +1,18 @@
+title = "ID Registry"
+concept = "statics"
+summary = "Keep global state without unsafe: a static atomic counter for unique IDs, a LazyLock table that's built once on first use, and a OnceLock that can be set exactly once. All of it safe to use from many threads."
+stubs = ["src/lib.rs"]
+hints = [
+  "`static NEXT_ID: AtomicU64 = AtomicU64::new(1);` and `NEXT_ID.fetch_add(1, Ordering::Relaxed)` returns the old value and adds one in a single step, so no two threads get the same number.",
+  "`static COLORS: LazyLock<HashMap<&'static str, u32>> = LazyLock::new(|| { ... });` runs the closure on first use only. Count the builds inside it with a second static, an `AtomicUsize`. Look names up with `COLORS.get(name.to_ascii_lowercase().as_str()).copied()`.",
+  "`static APP_NAME: OnceLock<String> = OnceLock::new();` `APP_NAME.set(name.to_string())` returns `Err` with your value if it was already set; `APP_NAME.get()` returns `Option<&String>`, and `.map(String::as_str)` makes it an `Option<&'static str>`.",
+]
+cases = [
+  "next_id starts above zero and increases",
+  "next_id is unique across threads",
+  "color_code finds known colours",
+  "color_code ignores case",
+  "color_code returns none for an unknown colour",
+  "the colour table is built only once",
+  "the app name can be set exactly once",
+]

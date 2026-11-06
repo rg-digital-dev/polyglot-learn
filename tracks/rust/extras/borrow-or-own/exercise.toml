@@ -1,0 +1,20 @@
+title = "Borrow or Own"
+concept = "cow"
+summary = "Return a Cow<str>: a borrowed slice of the input when nothing needed to change, and a new String only when something did. Then accept both &str and String in one function with AsRef<str>."
+stubs = ["src/lib.rs"]
+hints = [
+  "Check first, build second. If the text needs no change, return `Cow::Borrowed(text)` (or a sub-slice of it, like `text.trim()`). Only then build a String and return `Cow::Owned(s)`.",
+  "In `normalize_spaces`, trimming alone never needs a new String: a trimmed slice still points into the input. You only need to build one when the trimmed text has two spaces in a row or a whitespace character that isn't a space. `split_whitespace().collect::<Vec<_>>().join(\" \")` builds it.",
+  "`total_len<S: AsRef<str>>(items: &[S])` calls `item.as_ref()` to get a `&str` from each one, whether it's a `&str` or a `String`. Count characters with `.chars().count()`.",
+]
+cases = [
+  "normalize_spaces borrows clean text",
+  "normalize_spaces borrows when it only trims",
+  "normalize_spaces builds a new string when it must",
+  "escape_html borrows text without special characters",
+  "escape_html escapes every special character",
+  "with_extension keeps a name that already has it",
+  "with_extension adds a missing extension",
+  "total_len accepts strs and strings",
+  "cow values work like strs",
+]

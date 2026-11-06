@@ -384,3 +384,114 @@ url = "https://doc.rust-lang.org/book/ch16-03-shared-state.html"
 kind = "lings"
 title = "Rustlings: 19_smart_pointers"
 url = "https://github.com/rust-lang/rustlings/tree/main/exercises/19_smart_pointers"
+
+# drop (scoped-guard)
+[[links.drop]]
+kind = "docs"
+title = "The Rust Book: 15.3 Running Code on Cleanup with the Drop Trait"
+url = "https://doc.rust-lang.org/book/ch15-03-drop.html"
+
+[[links.drop]]
+kind = "docs"
+title = "Rust by Example: RAII"
+url = "https://doc.rust-lang.org/rust-by-example/scope/raii.html"
+
+[[links.drop]]
+kind = "docs"
+title = "std::ops::Drop"
+url = "https://doc.rust-lang.org/std/ops/trait.Drop.html"
+
+# from-into (error-conversion)
+[[links.from-into]]
+kind = "docs"
+title = "Rust by Example: From and Into"
+url = "https://doc.rust-lang.org/rust-by-example/conversion/from_into.html"
+
+[[links.from-into]]
+kind = "docs"
+title = "Rust by Example: Wrapping errors"
+url = "https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/wrap_error.html"
+
+[[links.from-into]]
+kind = "docs"
+title = "The Rust Book: 9.2 A Shortcut for Propagating Errors: the ? Operator"
+url = "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--operator"
+
+[[links.from-into]]
+kind = "lings"
+title = "Rustlings: 23_conversions"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/23_conversions"
+
+# iterator trait (custom-iterator)
+[[links.iterator-trait]]
+kind = "docs"
+title = "The Rust Book: 13.2 Processing a Series of Items with Iterators"
+url = "https://doc.rust-lang.org/book/ch13-02-iterators.html"
+
+[[links.iterator-trait]]
+kind = "docs"
+title = "Rust by Example: Iterators"
+url = "https://doc.rust-lang.org/rust-by-example/trait/iter.html"
+
+[[links.iterator-trait]]
+kind = "docs"
+title = "std::iter::Iterator"
+url = "https://doc.rust-lang.org/std/iter/trait.Iterator.html"
+
+[[links.iterator-trait]]
+kind = "lings"
+title = "Rustlings: 18_iterators"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/18_iterators"
+
+# cow (borrow-or-own)
+[[links.cow]]
+kind = "docs"
+title = "std::borrow::Cow"
+url = "https://doc.rust-lang.org/std/borrow/enum.Cow.html"
+
+[[links.cow]]
+kind = "docs"
+title = "Rust by Example: To and from Strings"
+url = "https://doc.rust-lang.org/rust-by-example/conversion/string.html"
+
+# statics (id-registry)
+[[links.statics]]
+kind = "docs"
+title = "The Rust Reference: Static items"
+url = "https://doc.rust-lang.org/reference/items/static-items.html"
+
+[[links.statics]]
+kind = "docs"
+title = "std::sync::atomic"
+url = "https://doc.rust-lang.org/std/sync/atomic/index.html"
+
+[[links.statics]]
+kind = "docs"
+title = "std::sync::LazyLock"
+url = "https://doc.rust-lang.org/std/sync/struct.LazyLock.html"
+
+[[links.statics]]
+kind = "docs"
+title = "std::sync::OnceLock"
+url = "https://doc.rust-lang.org/std/sync/struct.OnceLock.html"
+
+# message passing (channel-workers)
+[[links.message-passing]]
+kind = "docs"
+title = "The Rust Book: 16.2 Using Message Passing to Transfer Data Between Threads"
+url = "https://doc.rust-lang.org/book/ch16-02-message-passing.html"
+
+[[links.message-passing]]
+kind = "docs"
+title = "The Rust Book: 16.4 Extensible Concurrency with Send and Sync"
+url = "https://doc.rust-lang.org/book/ch16-04-extensible-concurrency-sync-and-send.html"
+
+[[links.message-passing]]
+kind = "docs"
+title = "std::sync::mpsc"
+url = "https://doc.rust-lang.org/std/sync/mpsc/index.html"
+
+[[links.message-passing]]
+kind = "lings"
+title = "Rustlings: 20_threads"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/20_threads"
