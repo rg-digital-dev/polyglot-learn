@@ -207,6 +207,10 @@ Exercises: {}", all.join(", "));
         match &spec.native {
             Some(n) if n.track != track => bail!("`{slug}` is part of the {} track only.
 Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
+            _ if !spec.on_track(track) => bail!(
+                "`{slug}` isn't on the {track} track; it's on {}.",
+                spec.tracks.as_deref().unwrap_or_default().join(", ")
+            ),
             _ => Ok(spec),
         }
     }

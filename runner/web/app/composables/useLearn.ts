@@ -31,7 +31,8 @@ export interface CourseState {
   backgrounds: { id: string; label: string }[]
   tracks: TrackInfo[]
   /** `track` is set for a track-only module. */
-  modules: { id: string; title: string; track: string | null; exercises: ExerciseSummary[] }[]
+  /** `track`: a track-only module's track. `tracks`: every track the module is on. */
+  modules: { id: string; title: string; track: string | null; tracks: string[]; exercises: ExerciseSummary[] }[]
   concepts: string[]
   workspace: string
 }

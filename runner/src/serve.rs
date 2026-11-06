@@ -243,7 +243,9 @@ async fn state(State(app): State<Shared>) -> ApiResult<Json<Value>> {
                     json!({ "slug": s.slug, "title": s.title, "concept": s.concept, "done": done })
                 })
                 .collect();
-            json!({ "id": m.id, "title": m.title, "track": m.track, "exercises": exercises })
+            // Every track the module is on: all of them, its own (`track`), or its `tracks` list.
+            let tracks: Vec<&str> = backends::ids().into_iter().filter(|t| m.on_track(t)).collect();
+            json!({ "id": m.id, "title": m.title, "track": m.track, "tracks": tracks, "exercises": exercises })
         })
         .collect();
     let backgrounds: Vec<Value> =
@@ -384,6 +386,7 @@ async fn exercise(
         "done": ctx.is_done(b.id(), &slug),
         "files": files,
         "native": spec.native.is_some(),
+        "tracks": backends::ids().into_iter().filter(|t| spec.on_track(t)).collect::<Vec<_>>(),
         "lesson": match spec.native {
             Some(_) => notes::read_native_lesson(spec, from_of(&ctx)),
             None => notes::read_concept(&ctx.root, &spec.concept, from_of(&ctx)),
@@ -428,6 +431,10 @@ async fn compare(
     let mut columns = Vec::new();
     for b in backends::all() {
         if !wanted.is_empty() && !wanted.iter().any(|w| w == b.id()) {
+            continue;
+        }
+        // Only tracks that have an exercise for the concept (`files` isn't on QML).
+        if !ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept && s.on_track(b.id())) {
             continue;
         }
         let meta = TrackMeta::load(&ctx.root, b.id())?;

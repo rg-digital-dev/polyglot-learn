@@ -5,10 +5,16 @@ import IconAlert from '~icons/lucide/triangle-alert'
 import type { CourseState } from '~/composables/useLearn'
 
 const { state, refresh } = useLearn()
-/** Exercises on a track: the shared modules plus that track's own. */
+/** Exercises on a track: the modules that are on it (shared, limited to some tracks, or its own). */
 const totalFor = (track: string) =>
-  state.value?.modules.filter((m) => !m.track || m.track === track).reduce((n, m) => n + m.exercises.length, 0) ?? 0
-const tracksOf = (m: CourseState['modules'][number]) => state.value?.tracks.filter((t) => !m.track || t.id === m.track) ?? []
+  state.value?.modules.filter((m) => m.tracks.includes(track)).reduce((n, m) => n + m.exercises.length, 0) ?? 0
+const tracksOf = (m: CourseState['modules'][number]) => state.value?.tracks.filter((t) => m.tracks.includes(t.id)) ?? []
+/** Tracks a shared module leaves out, for its "not on" label. */
+const missingFrom = (m: CourseState['modules'][number]) =>
+  m.track ? [] : (state.value?.tracks.filter((t) => !m.tracks.includes(t.id)) ?? [])
+/** Where an exercise's title links to: the active track if the module is on it. */
+const linkTrack = (m: CourseState['modules'][number]) =>
+  m.track ?? (state.value?.track && m.tracks.includes(state.value.track) ? state.value.track : m.tracks[0])
 const busy = ref(false)
 
 async function pickTrack(id: string) {
@@ -92,6 +98,7 @@ const resumeSlug = computed(() => active.value?.current ?? null)
       <h2 class="h-card-lg section-title">
         {{ m.title }}
         <span v-if="m.track" class="pill">{{ trackName(state, m.track) }} only</span>
+        <span v-else-if="missingFrom(m).length" class="pill">not on {{ missingFrom(m).map((t) => t.name).join(', ') }}</span>
       </h2>
       <div class="panel grid-wrap">
         <table class="grid">
@@ -107,7 +114,7 @@ const resumeSlug = computed(() => active.value?.current ?? null)
           <tbody>
             <tr v-for="e in m.exercises" :key="e.slug">
               <th scope="row">
-                <NuxtLink :to="`/exercise/${e.slug}?track=${m.track ?? state.track ?? 'typescript'}`" class="grid__title">{{ e.title }}</NuxtLink>
+                <NuxtLink :to="`/exercise/${e.slug}?track=${linkTrack(m)}`" class="grid__title">{{ e.title }}</NuxtLink>
               </th>
               <td>
                 <span v-if="m.track" class="chip chip--static">{{ e.concept }}</span>

@@ -23,6 +23,8 @@ interface Exercise {
   done: boolean
   /** A track-only exercise: one lesson, no cross-track note or comparison. */
   native: boolean
+  /** The tracks this exercise is on, for the track picker. */
+  tracks: string[]
   files: { path: string; absolute: string; signatures: string[] }[]
   lesson: string | null
   note: string | null
@@ -119,7 +121,7 @@ function onSaved() {
       <label class="field">
         <span class="tag">Track</span>
         <select :value="ex.track" :disabled="ex.native" @change="setTrack">
-          <option v-for="t in state?.tracks ?? []" :key="t.id" :value="t.id">{{ t.name }}</option>
+          <option v-for="t in (state?.tracks ?? []).filter((t) => ex.tracks.includes(t.id))" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
       </label>
     </header>
