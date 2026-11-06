@@ -21,6 +21,12 @@ All notable changes to this project are listed here. The format follows
 - *Files and Resources*, a shared module for every track except QML, starting
   with `read-file`: read a text file, skip blank and comment lines, and name
   the file when it can't be read.
+- `close-everything` in Files and Resources: open a group of resources,
+  read them, and close every one on every way out (`Drop`, `defer`,
+  `DisposableStack`, `finally`, Lua's `<close>` and a table).
+- Specs can use a provided resource module (`"resources": true`): each track
+  gets an `open(name)` whose resources record being closed, and the tests
+  fail when one is left open or closed twice.
 - A shared module can list the tracks it's on (`tracks = [...]` in
   course.toml); status, generate, selftest and the web UI follow it, and
   `learn` refuses a course that puts an exercise on a track that can't run it.

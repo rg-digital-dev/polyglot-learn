@@ -348,3 +348,14 @@ url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_
 kind = "docs"
 title = "Node.js: fs.readFileSync"
 url = "https://nodejs.org/api/fs.html#fsreadfilesyncpath-options"
+
+# cleanup (close-everything)
+[[links.cleanup]]
+kind = "docs"
+title = "MDN: try...catch (the finally block)"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch"
+
+[[links.cleanup]]
+kind = "docs"
+title = "MDN: DisposableStack"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DisposableStack"

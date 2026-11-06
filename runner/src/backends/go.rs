@@ -13,6 +13,82 @@ use crate::toolchain::{Found, Invocation, Tool};
 
 pub struct Go;
 
+const GO_RESOURCE: &str = r#"// Provided by learn: don't edit this file, it's overwritten on every run.
+// A resource that has to be closed, and a record of which ones are still open.
+
+package PKG
+
+import (
+	"fmt"
+	"strings"
+)
+
+// Resource is an open resource. Close it with Close, usually deferred.
+type Resource struct {
+	name   string
+	closed bool
+}
+
+var (
+	openNames       []string
+	cleanupProblems []string
+)
+
+// Open opens the resource name. It fails for a name starting with "!" (it can't be opened).
+func Open(name string) (*Resource, error) {
+	if strings.HasPrefix(name, "!") {
+		return nil, fmt.Errorf("can't open %s", name)
+	}
+	openNames = append(openNames, name)
+	return &Resource{name: name}, nil
+}
+
+// Name is the resource's name.
+func (r *Resource) Name() string { return r.name }
+
+// Read returns its contents. It fails for a name starting with "?" (a read that fails).
+func (r *Resource) Read() (string, error) {
+	if r.closed {
+		return "", fmt.Errorf("%s is already closed", r.name)
+	}
+	if strings.HasPrefix(r.name, "?") {
+		return "", fmt.Errorf("can't read %s", r.name)
+	}
+	return "data from " + r.name, nil
+}
+
+// Close closes it.
+func (r *Resource) Close() error {
+	if r.closed {
+		cleanupProblems = append(cleanupProblems, r.name+" was closed twice")
+		return nil
+	}
+	r.closed = true
+	for i, n := range openNames {
+		if n == r.name {
+			openNames = append(openNames[:i], openNames[i+1:]...)
+			break
+		}
+	}
+	return nil
+}
+
+// checked is for the tests: it runs f, then checks every resource f opened was closed exactly once.
+func checked[T any](f func() (T, error)) (T, error) {
+	openNames, cleanupProblems = nil, nil
+	v, err := f()
+	var zero T
+	// Counts, not names: a name in the message could look like the expected error.
+	if len(openNames) > 0 {
+		return zero, fmt.Errorf("cleanup: %d still open after the call", len(openNames))
+	}
+	if len(cleanupProblems) > 0 {
+		return zero, fmt.Errorf("cleanup: %d closed twice", len(cleanupProblems))
+	}
+	return v, err
+}
+"#;
+
 static TOOL: Tool = Tool {
     label: "go",
     candidates: &[
@@ -163,7 +239,12 @@ impl Go {
             Some(m) => format!("{}.{}", naming::flat(m), self.function_name(f)),
             None => self.function_name(f),
         };
-        format!("{path}({})", render_args(&f.params, input, |v, t| self.literal(spec, v, t)))
+        let call = format!("{path}({})", render_args(&f.params, input, |v, t| self.literal(spec, v, t)));
+        if spec.resources && f.module.is_none() {
+            format!("checked(func() ({}, error) {{ return {call} }})", self.type_name(spec, &f.returns, false))
+        } else {
+            call
+        }
     }
 }
 
@@ -366,6 +447,10 @@ impl Backend for Go {
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
         vec![(PathBuf::from("go.mod"), "module learn\n\ngo 1.22\n".to_string())]
+    }
+
+    fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
+        Some((PathBuf::from(&spec.slug).join("resource.go"), GO_RESOURCE.replace("PKG", &Self::package(spec))))
     }
 
     /// `go test` runs in the package's folder, so the name is enough.

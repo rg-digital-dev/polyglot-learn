@@ -517,3 +517,9 @@ url = "https://doc.rust-lang.org/std/fs/fn.read_to_string.html"
 kind = "docs"
 title = "Rust by Example: read_lines"
 url = "https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html"
+
+# cleanup (close-everything)
+[[links.cleanup]]
+kind = "docs"
+title = "The Rust Book: 15.3 Running Code on Cleanup with the Drop Trait"
+url = "https://doc.rust-lang.org/book/ch15-03-drop.html"

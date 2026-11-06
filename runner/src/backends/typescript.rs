@@ -12,6 +12,72 @@ use crate::toolchain::{parse_version, Found, Invocation, Tool};
 
 pub struct TypeScript;
 
+const TS_RESOURCE: &str = r#"// Provided by learn: don't edit this file, it's overwritten on every run.
+// A resource that has to be closed, and a record of which ones are still open.
+
+/** An open resource. Close it with close(), or let `using` dispose of it. */
+export interface Resource extends Disposable {
+  readonly name: string;
+  /** Its contents. Throws for a name starting with "?" (a read that fails). */
+  read(): string;
+  close(): void;
+}
+
+let openNames: string[] = [];
+let problems: string[] = [];
+
+/** Open the resource `name`. Throws for a name starting with "!" (it can't be opened). */
+export function open(name: string): Resource {
+  if (name.startsWith("!")) throw new Error(`can't open ${name}`);
+  openNames.push(name);
+  let closed = false;
+  const resource: Resource = {
+    name,
+    read() {
+      if (closed) throw new Error(`${name} is already closed`);
+      if (name.startsWith("?")) throw new Error(`can't read ${name}`);
+      return `data from ${name}`;
+    },
+    close() {
+      if (closed) {
+        problems.push(`${name} was closed twice`);
+        return;
+      }
+      closed = true;
+      openNames.splice(openNames.indexOf(name), 1);
+    },
+    [Symbol.dispose]() {
+      resource.close();
+    },
+  };
+  return resource;
+}
+
+function cleanupProblem(): string | undefined {
+  // Counts, not names: a name in the message could look like the expected error.
+  if (openNames.length > 0) return `cleanup: ${openNames.length} still open after the call`;
+  if (problems.length > 0) return `cleanup: ${problems.length} closed twice`;
+  return undefined;
+}
+
+/** For the tests: run `fn`, then check that every resource it opened was closed exactly once. */
+export function checked<T>(fn: () => T): T {
+  openNames = [];
+  problems = [];
+  let result: T;
+  try {
+    result = fn();
+  } catch (e) {
+    const problem = cleanupProblem();
+    if (problem) throw new Error(problem, { cause: e });
+    throw e;
+  }
+  const problem = cleanupProblem();
+  if (problem) throw new Error(problem);
+  return result;
+}
+"#;
+
 static TOOL: Tool = Tool {
     label: "node",
     candidates: &["node", "C:/Program Files/nodejs/node.exe", "/usr/local/bin/node", "/opt/homebrew/bin/node"],
@@ -152,7 +218,8 @@ impl TypeScript {
             Some(m) => format!("{}.{}", naming::camel(m), self.function_name(f)),
             None => self.function_name(f),
         };
-        format!("{path}({})", render_args(&f.params, input, |v, t| self.literal(spec, v, t)))
+        let call = format!("{path}({})", render_args(&f.params, input, |v, t| self.literal(spec, v, t)));
+        if spec.resources && f.module.is_none() { format!("checked(() => {call})") } else { call }
     }
 }
 
@@ -247,6 +314,9 @@ impl Backend for TypeScript {
         if spec.concurrency {
             main.push_str(TASK);
         }
+        if spec.resources {
+            main.push_str("import { open } from \"./resource.ts\";\n\n");
+        }
         main.push_str(&self.type_defs(spec));
         main.push_str(&self.fn_stub(spec, &spec.main));
         let mut out = vec![(self.stub_path(spec), main)];
@@ -271,6 +341,9 @@ impl Backend for TypeScript {
         s.push_str(&format!("import {{ {} }} from \"./{}.ts\";\n", names.join(", "), spec.slug));
         for m in spec.modules() {
             s.push_str(&format!("import * as {} from \"./{}.ts\";\n", naming::camel(m), naming::kebab(m)));
+        }
+        if spec.resources {
+            s.push_str("import { checked } from \"./resource.ts\";\n");
         }
         s.push_str(
             "\n// The untouched stub throws this; it doesn't count as the expected error.\n\
@@ -370,6 +443,10 @@ impl Backend for TypeScript {
         // (TypeScript 6+ no longer picks up @types packages by itself).
         let tsconfig = "{\n  \"compilerOptions\": {\n    \"target\": \"ES2024\",\n    \"lib\": [\"ES2024\", \"ESNext.Iterator\", \"ESNext.Disposable\"],\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"allowImportingTsExtensions\": true,\n    \"verbatimModuleSyntax\": true,\n    \"erasableSyntaxOnly\": true,\n    \"types\": [\"node\"]\n  }\n}\n";
         vec![(PathBuf::from("tsconfig.json"), tsconfig.into())]
+    }
+
+    fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
+        Some((PathBuf::from(&spec.slug).join("resource.ts"), TS_RESOURCE.to_string()))
     }
 
     /// The test file's own folder (Node 20.11+), where `learn` writes the files.

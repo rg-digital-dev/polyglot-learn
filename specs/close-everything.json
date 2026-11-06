@@ -1,0 +1,25 @@
+{
+  "slug": "close-everything",
+  "title": "Close Everything",
+  "concept": "cleanup",
+  "summary": "Open every resource in `names` with the provided `open` (from the resource module) first, then read each one and return the contents in order. Every resource you opened must be closed by the time you return, also when an open or a read fails halfway: then fail with that error. A name starting with `!` can't be opened, and one starting with `?` can't be read. The tests check that nothing is left open and nothing is closed twice.",
+  "function": "read_all",
+  "params": [{ "name": "names", "type": "list<string>" }],
+  "returns": "list<string>",
+  "fallible": true,
+  "resources": true,
+  "hints": [
+    "Open them all in one loop, keeping each resource, then read them in a second loop. The question is what happens to the ones already open when an open or a read fails.",
+    "Let the language do the closing: Rust closes a resource when it's dropped (a Vec of them is enough), Go's `defer r.Close()` inside the loop runs when the function returns, TypeScript's `DisposableStack` (`stack.use(open(name))`) disposes of everything at the end of a `using` block, and PHP needs a `finally` that closes every resource opened so far.",
+    "Lua's `<close>` works for one variable, not a list. Keep the opened resources in a table, and close all of them before every `return`, the error returns included."
+  ],
+  "cases": [
+    { "description": "reads one resource", "input": [["a"]], "expected": ["data from a"] },
+    { "description": "reads several in order", "input": [["a", "b", "c"]], "expected": ["data from a", "data from b", "data from c"] },
+    { "description": "no names opens nothing", "input": [[]], "expected": [] },
+    { "description": "the same name twice is opened twice", "input": [["a", "a"]], "expected": ["data from a", "data from a"] },
+    { "description": "a failed first open", "input": [["!a", "b"]], "error": true, "error_contains": ["!a"] },
+    { "description": "a failed open closes the ones already open", "input": [["a", "b", "!c", "d"]], "error": true, "error_contains": ["!c"] },
+    { "description": "a failed read closes everything", "input": [["a", "?b", "c"]], "error": true, "error_contains": ["?b"] }
+  ]
+}

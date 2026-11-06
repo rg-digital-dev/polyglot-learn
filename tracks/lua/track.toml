@@ -285,3 +285,9 @@ url = "https://www.lua.org/manual/5.4/manual.html#pdf-io.open"
 kind = "docs"
 title = "Programming in Lua (1st ed., Lua 5.0): 21.1 The Simple I/O Model"
 url = "https://www.lua.org/pil/21.1.html"
+
+# cleanup (close-everything)
+[[links.cleanup]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 3.3.8 To-be-closed Variables"
+url = "https://www.lua.org/manual/5.4/manual.html#3.3.8"

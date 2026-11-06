@@ -251,6 +251,48 @@ fn error_cases_can_check_the_message() {
 }
 
 #[test]
+fn resource_specs_wrap_the_call_and_provide_the_module() {
+    let parse = |cases: &str| {
+        Spec::parse(&format!(
+            r#"{{"slug":"close-all","title":"T","concept":"cleanup","summary":"S.","function":"read_all","resources":true,
+                "params":[{{"name":"names","type":"list<string>"}}],"returns":"list<string>","fallible":true,"cases":[{cases}]}}"#
+        ))
+    };
+    let s = parse(r#"{"description":"one","input":[["a"]],"expected":["data from a"]},{"description":"bad","input":[["!a"]],"error":true,"error_contains":["!a"]}"#).unwrap();
+    let test = |id: &str| get(id).unwrap().tests(&s).remove(0).1;
+    let stub = |id: &str| get(id).unwrap().stubs(&s).remove(0).1;
+
+    assert!(test("typescript").contains("checked(() => readAll([\"a\"]))"));
+    assert!(test("typescript").contains("import { checked } from \"./resource.ts\";"));
+    assert!(stub("typescript").contains("import { open } from \"./resource.ts\";"));
+    assert!(test("rust").contains("resource::checked(|| read_all(&[String::from(\"a\")]))"));
+    assert!(stub("rust").starts_with("pub mod resource;\n\nuse resource::open;"));
+    assert!(test("go").contains("checked(func() ([]string, error) { return ReadAll([]string{\"a\"}) })"));
+    assert!(test("php").contains("\\Resource\\checked(fn() => readAll([\"a\"]))"));
+    assert!(stub("php").contains("use function Resource\\open;"));
+    assert!(test("lua").contains("resource.checked(function() return M.read_all({\"a\"}) end)"));
+    assert!(stub("lua").contains("local resource = require(\"resource\")"));
+
+    // Each track with the module writes it next to the exercise; QML has none.
+    for (id, file) in [("typescript", "resource.ts"), ("rust", "src/resource.rs"), ("go", "resource.go"), ("php", "resource.php"), ("lua", "resource.lua")] {
+        let (path, contents) = get(id).unwrap().resource_module(&s).unwrap();
+        assert_eq!(path, std::path::Path::new("close-all").join(file), "{id}");
+        assert!(contents.contains("still open after the call"), "{id}");
+    }
+    assert!(get("qml").unwrap().resource_module(&s).is_none());
+
+    // Error cases must say what they expect: a leak turns any error into "cleanup: ...".
+    let err = parse(r#"{"description":"one","input":[["a"]],"expected":[]},{"description":"bad","input":[["!a"]],"error":true}"#).unwrap_err();
+    assert!(err.0.contains("need `error_contains`"), "{}", err.0);
+    let err = Spec::parse(
+        r#"{"slug":"x","title":"T","concept":"c","summary":"S.","function":"f","resources":true,
+            "params":[{"name":"n","type":"int"}],"returns":"int","fallible":true,"cases":[{"description":"d","input":[1],"expected":1}]}"#,
+    )
+    .unwrap_err();
+    assert!(err.0.contains("list<string>"), "{}", err.0);
+}
+
+#[test]
 fn error_contains_needs_an_error_case() {
     let err = Spec::parse(
         r#"{"slug":"x","title":"T","concept":"c","summary":"S.","function":"f","fallible":true,

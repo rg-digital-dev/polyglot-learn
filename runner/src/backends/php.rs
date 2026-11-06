@@ -13,6 +13,103 @@ use crate::toolchain::{parse_version, Found, Invocation, Tool};
 
 pub struct Php;
 
+const PHP_RESOURCE: &str = r#"<?php
+
+// Provided by learn: don't edit this file, it's overwritten on every run.
+// A resource that has to be closed, and a record of which ones are still open.
+
+declare(strict_types=1);
+
+namespace Resource;
+
+/** An open resource. Close it with close(), usually in a `finally`. */
+final class Resource
+{
+    private bool $closed = false;
+
+    public function __construct(public readonly string $name)
+    {
+    }
+
+    /** Its contents. Throws for a name starting with "?" (a read that fails). */
+    public function read(): string
+    {
+        if ($this->closed) {
+            throw new \LogicException("{$this->name} is already closed");
+        }
+        if (str_starts_with($this->name, '?')) {
+            throw new \RuntimeException("can't read {$this->name}");
+        }
+        return "data from {$this->name}";
+    }
+
+    public function close(): void
+    {
+        if ($this->closed) {
+            Registry::$problems[] = "{$this->name} was closed twice";
+            return;
+        }
+        $this->closed = true;
+        $i = array_search($this->name, Registry::$open, true);
+        if ($i !== false) {
+            array_splice(Registry::$open, $i, 1);
+        }
+    }
+}
+
+/** @internal which resources are open, for checked() */
+final class Registry
+{
+    /** @var list<string> */
+    public static array $open = [];
+    /** @var list<string> */
+    public static array $problems = [];
+}
+
+/** Open the resource $name. Throws for a name starting with "!" (it can't be opened). */
+function open(string $name): Resource
+{
+    if (str_starts_with($name, '!')) {
+        throw new \RuntimeException("can't open $name");
+    }
+    Registry::$open[] = $name;
+    return new Resource($name);
+}
+
+function cleanupProblem(): ?string
+{
+    // Counts, not names: a name in the message could look like the expected error.
+    if (Registry::$open !== []) {
+        return 'cleanup: ' . count(Registry::$open) . ' still open after the call';
+    }
+    if (Registry::$problems !== []) {
+        return 'cleanup: ' . count(Registry::$problems) . ' closed twice';
+    }
+    return null;
+}
+
+/** For the tests: run $fn, then check that every resource it opened was closed exactly once. */
+function checked(callable $fn): mixed
+{
+    Registry::$open = [];
+    Registry::$problems = [];
+    try {
+        $result = $fn();
+    } catch (\Throwable $e) {
+        $problem = cleanupProblem();
+        if ($problem !== null) {
+            throw new \RuntimeException($problem, 0, $e);
+        }
+        throw $e;
+    }
+    $problem = cleanupProblem();
+    if ($problem !== null) {
+        throw new \RuntimeException($problem);
+    }
+    return $result;
+}
+"#;
+
 static TOOL: Tool = Tool {
     label: "php",
     candidates: &["php", "php8.5", "php8.4", "php8.3", "php8.2", "php8.1", "/opt/homebrew/bin/php", "C:/php/php.exe"],
@@ -260,7 +357,8 @@ impl Php {
             Some(m) => format!("\\{}\\{}", naming::pascal(m), self.function_name(f)),
             None => self.function_name(f),
         };
-        format!("{path}({})", render_args(&f.params, input, |v, t| self.literal(spec, v, t)))
+        let call = format!("{path}({})", render_args(&f.params, input, |v, t| self.literal(spec, v, t)));
+        if spec.resources && f.module.is_none() { format!("\\Resource\\checked(fn() => {call})") } else { call }
     }
 }
 
@@ -342,6 +440,9 @@ impl Backend for Php {
         if spec.concurrency {
             main.push_str(CLOCK);
         }
+        if spec.resources {
+            main.push_str("require_once __DIR__ . '/resource.php';\n\nuse function Resource\\open;\n\n");
+        }
         main.push_str(&self.type_defs(spec));
         main.push_str(&self.fn_stub(spec, &spec.main, false));
         let mut out = vec![(self.stub_path(spec), main)];
@@ -362,6 +463,9 @@ impl Backend for Php {
         s.push_str("\ndeclare(strict_types=1);\n\nrequire __DIR__ . '/../harness.php';\n");
         for m in spec.modules() {
             s.push_str(&format!("require_once __DIR__ . '/{}.php';\n", naming::kebab(m)));
+        }
+        if spec.resources {
+            s.push_str("require_once __DIR__ . '/resource.php';\n");
         }
         s.push_str(&format!("require_once __DIR__ . '/{}.php';\n\n$t = new Harness();\n", spec.slug));
 
@@ -420,6 +524,10 @@ impl Backend for Php {
 
     fn path_literal(&self, name: &str) -> Option<String> {
         Some(format!("__DIR__ . {}", str_lit(&format!("/{name}"))))
+    }
+
+    fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
+        Some((PathBuf::from(&spec.slug).join("resource.php"), PHP_RESOURCE.to_string()))
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {

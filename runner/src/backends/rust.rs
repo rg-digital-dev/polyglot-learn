@@ -13,6 +13,71 @@ use crate::toolchain::{Found, Invocation, Tool};
 
 pub struct Rust;
 
+const RS_RESOURCE: &str = r#"//! Provided by learn: don't edit this file, it's overwritten on every run.
+//! A resource that has to be closed, and a record of which ones are still open.
+
+use std::cell::RefCell;
+
+thread_local! {
+    static OPEN: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+}
+
+/// An open resource. It's closed when it's dropped (or when you call `close`).
+#[derive(Debug)]
+pub struct Resource {
+    name: String,
+}
+
+impl Resource {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Its contents. Fails for a name starting with "?" (a read that fails).
+    pub fn read(&self) -> Result<String, String> {
+        if self.name.starts_with('?') {
+            return Err(format!("can't read {}", self.name));
+        }
+        Ok(format!("data from {}", self.name))
+    }
+
+    /// Close it now instead of when it's dropped.
+    pub fn close(self) {}
+}
+
+impl Drop for Resource {
+    fn drop(&mut self) {
+        OPEN.with(|open| {
+            let mut open = open.borrow_mut();
+            if let Some(i) = open.iter().position(|n| *n == self.name) {
+                open.remove(i);
+            }
+        });
+    }
+}
+
+/// Open the resource `name`. Fails for a name starting with "!" (it can't be opened).
+pub fn open(name: &str) -> Result<Resource, String> {
+    if name.starts_with('!') {
+        return Err(format!("can't open {name}"));
+    }
+    OPEN.with(|open| open.borrow_mut().push(name.to_string()));
+    Ok(Resource { name: name.to_string() })
+}
+
+/// For the tests: run `f`, then check that every resource it opened was closed.
+pub fn checked<T>(f: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+    OPEN.with(|open| open.borrow_mut().clear());
+    let result = f();
+    let left = OPEN.with(|open| open.borrow().clone());
+    if !left.is_empty() {
+        // A count, not names: a name in the message could look like the expected error.
+        return Err(format!("cleanup: {} still open after the call", left.len()));
+    }
+    result
+}
+"#;
+
 static TOOL: Tool = Tool {
     label: "cargo",
     candidates: &["cargo", "~/.cargo/bin/cargo", "~/.cargo/bin/cargo.exe"],
@@ -171,7 +236,8 @@ impl Rust {
             Some(m) => format!("{}::{}", naming::snake(m), self.function_name(f)),
             None => self.function_name(f),
         };
-        format!("{path}({})", render_args(&f.params, input, |v, t| self.arg_literal(spec, v, t)))
+        let call = format!("{path}({})", render_args(&f.params, input, |v, t| self.arg_literal(spec, v, t)));
+        if spec.resources && f.module.is_none() { format!("resource::checked(|| {call})") } else { call }
     }
 }
 
@@ -269,6 +335,9 @@ impl Backend for Rust {
         }
         if !spec.modules().is_empty() {
             main.push('\n');
+        }
+        if spec.resources {
+            main.push_str("pub mod resource;\n\nuse resource::open;\n\n");
         }
         if spec.uses_map() {
             main.push_str("use std::collections::HashMap;\n\n");
@@ -379,6 +448,10 @@ impl Backend for Rust {
             members.join("\n")
         );
         vec![(PathBuf::from("Cargo.toml"), manifest)]
+    }
+
+    fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
+        Some((PathBuf::from(&spec.slug).join("src").join("resource.rs"), RS_RESOURCE.to_string()))
     }
 
     /// The exercise's crate folder, where `learn` writes the files.

@@ -92,6 +92,13 @@ pub trait Backend: Sync {
         None
     }
 
+    /// The provided `resource` module for a `resources` spec: its path (from
+    /// the track folder) and contents, overwritten on every run. `None` when
+    /// this track doesn't have one (then such exercises can't be on it).
+    fn resource_module(&self, _spec: &Spec) -> Option<(PathBuf, String)> {
+        None
+    }
+
     /// A type checker for track-only exercises that list `typecheck` files, run
     /// before the tests. Its result is the exercise's first case ("types check").
     fn checker(&self) -> Option<&'static Tool> {
@@ -224,6 +231,11 @@ pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Resu
         }
         for (rel, contents) in backend.tests(spec) {
             write(&track_dir.join(rel), &contents)?;
+        }
+        if spec.resources {
+            if let Some((rel, contents)) = backend.resource_module(spec) {
+                write(&track_dir.join(rel), &contents)?;
+            }
         }
         // Files the tests read: overwritten like tests, so they stay as the spec says.
         for (name, contents) in &spec.files {

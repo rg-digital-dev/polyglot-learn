@@ -360,3 +360,14 @@ url = "https://pkg.go.dev/os#ReadFile"
 kind = "docs"
 title = "Go by Example: Reading Files"
 url = "https://gobyexample.com/reading-files"
+
+# cleanup (close-everything)
+[[links.cleanup]]
+kind = "docs"
+title = "The Go Blog: Defer, Panic, and Recover"
+url = "https://go.dev/blog/defer-panic-and-recover"
+
+[[links.cleanup]]
+kind = "docs"
+title = "Go by Example: Defer"
+url = "https://gobyexample.com/defer"

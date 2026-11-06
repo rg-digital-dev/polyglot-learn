@@ -34,13 +34,15 @@ exercises = [
   "error-context",
 ]
 
-# Shared, but not on every track: QML can't read files without C++.
+# Shared, but not on every track: QML can't read files without C++, and has no
+# provided resource module.
 [[module]]
 id = "files-and-resources"
 title = "Files and Resources"
 tracks = ["typescript", "rust", "go", "php", "lua"]
 exercises = [
   "read-file",
+  "close-everything",
 ]
 
 # Track-only modules: exercises written natively for one language, for the

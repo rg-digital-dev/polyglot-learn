@@ -153,6 +153,13 @@ impl Ctx {
                         spec.tracks = m.tracks.clone();
                         // Every track the exercise is on must be able to run it.
                         for b in crate::backends::all().iter().filter(|b| spec.on_track(b.id())) {
+                            if spec.resources && b.resource_module(&spec).is_none() {
+                                bail!(
+                                    "{slug} uses the resource module, which the {} track doesn't have; list the tracks of module `{}` without it (`tracks = [...]`)",
+                                    b.name(),
+                                    m.id
+                                );
+                            }
                             if spec.uses_paths() && b.path_literal("x").is_none() {
                                 bail!(
                                     "{slug} reads files, which the {} track can't do; list the tracks of module `{}` without it (`tracks = [...]`)",

@@ -14,6 +14,72 @@ use crate::toolchain::{Found, Invocation, Tool};
 
 pub struct Lua;
 
+const LUA_RESOURCE: &str = r#"-- Provided by learn: don't edit this file, it's overwritten on every run.
+-- A resource that has to be closed, and a record of which ones are still open.
+
+local R = {}
+
+local open_names, problems = {}, {}
+
+--- An open resource. Close it with resource:close(), or declare it `local r <close> = ...`.
+local Resource = {}
+Resource.__index = Resource
+
+--- Its contents, or nil plus an error for a name starting with "?" (a read that fails).
+function Resource:read()
+  if self.closed then
+    return nil, self.name .. " is already closed"
+  end
+  if self.name:sub(1, 1) == "?" then
+    return nil, "can't read " .. self.name
+  end
+  return "data from " .. self.name
+end
+
+function Resource:close()
+  if self.closed then
+    problems[#problems + 1] = self.name .. " was closed twice"
+    return
+  end
+  self.closed = true
+  for i, n in ipairs(open_names) do
+    if n == self.name then
+      table.remove(open_names, i)
+      break
+    end
+  end
+end
+
+Resource.__close = function(self)
+  self:close()
+end
+
+--- Open the resource `name`, or return nil plus an error for a name starting with "!".
+function R.open(name)
+  if name:sub(1, 1) == "!" then
+    return nil, "can't open " .. name
+  end
+  open_names[#open_names + 1] = name
+  return setmetatable({ name = name, closed = false }, Resource)
+end
+
+--- For the tests: run `fn`, then check that every resource it opened was closed exactly once.
+function R.checked(fn)
+  open_names, problems = {}, {}
+  local result, err = fn()
+  -- Counts, not names: a name in the message could look like the expected error.
+  if #open_names > 0 then
+    return nil, "cleanup: " .. #open_names .. " still open after the call"
+  end
+  if #problems > 0 then
+    return nil, "cleanup: " .. #problems .. " closed twice"
+  end
+  return result, err
+end
+
+return R
+"#;
+
 static TOOL: Tool = Tool {
     label: "lua",
     candidates: &[
@@ -243,7 +309,8 @@ impl Lua {
 
     fn call(&self, spec: &Spec, f: &Function, input: &[Value]) -> String {
         let table = f.module.as_deref().map(naming::snake).unwrap_or_else(|| "M".into());
-        format!("{table}.{}({})", self.function_name(f), render_args(&f.params, input, |v, t| self.literal(spec, v, t)))
+        let call = format!("{table}.{}({})", self.function_name(f), render_args(&f.params, input, |v, t| self.literal(spec, v, t)));
+        if spec.resources && f.module.is_none() { format!("resource.checked(function() return {call} end)") } else { call }
     }
 }
 
@@ -337,6 +404,9 @@ impl Backend for Lua {
         if !spec.modules().is_empty() {
             main.push('\n');
         }
+        if spec.resources {
+            main.push_str("local resource = require(\"resource\")\n\n");
+        }
         if spec.concurrency {
             main.push_str(CLOCK);
         }
@@ -367,6 +437,9 @@ impl Backend for Lua {
         s.push_str("local H = require(\"harness\")\n");
         for m in spec.modules() {
             s.push_str(&format!("local {0} = require(\"{0}\")\n", naming::snake(m)));
+        }
+        if spec.resources {
+            s.push_str("local resource = require(\"resource\")\n");
         }
         s.push_str(&format!("local M = require(\"{module}\")\n\nlocal t = H.new()\n"));
 
@@ -442,6 +515,10 @@ impl Backend for Lua {
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
         vec![(PathBuf::from("harness.lua"), HARNESS.to_string())]
+    }
+
+    fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
+        Some((PathBuf::from(&spec.slug).join("resource.lua"), LUA_RESOURCE.to_string()))
     }
 
     /// `dir` is the test file's folder (set at the top of every test file).

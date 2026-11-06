@@ -311,6 +311,9 @@ pub struct Spec {
     pub pure: bool,
     /// Files written next to the tests (name -> contents), for `path` parameters.
     pub files: BTreeMap<String, String>,
+    /// The main function uses the provided `resource` module (`open(name)`),
+    /// and the tests check that everything it opened was closed exactly once.
+    pub resources: bool,
     /// The tracks this exercise is on, when its module lists them (`tracks` in
     /// course.toml). `None`: every track (or the native exercise's own track).
     pub tracks: Option<Vec<String>>,
@@ -383,6 +386,8 @@ struct RawSpec {
     pure: bool,
     #[serde(default)]
     files: BTreeMap<String, String>,
+    #[serde(default)]
+    resources: bool,
 }
 
 #[derive(Deserialize)]
@@ -802,9 +807,28 @@ impl Spec {
             concurrency: raw.concurrency,
             pure: raw.pure,
             files: raw.files,
+            resources: raw.resources,
             tracks: None,
             native: None,
         };
+        if spec.resources {
+            let list = Type::List(Box::new(Type::Str));
+            let ok = spec.main.params.len() == 1
+                && spec.main.params[0].ty == list
+                && spec.main.returns == list
+                && spec.main.fallible
+                && spec.helpers.is_empty()
+                && !spec.concurrency;
+            if !ok {
+                bail!("a `resources` spec's function must take one list<string> of names, return list<string>, and be fallible");
+            }
+            // A leak turns any error into "cleanup: ...", so error cases must say what they expect.
+            for c in &spec.main.cases {
+                if matches!(&c.kind, CaseKind::Call { outcome: Outcome::Error(parts), .. } if parts.is_empty()) {
+                    bail!("case {:?}: error cases in a `resources` spec need `error_contains`", c.description);
+                }
+            }
+        }
         for name in spec.files.keys() {
             if !is_file_name(name) {
                 bail!("file {name:?} must be a plain file name (letters, digits, `.`, `-`, `_`)");
@@ -900,6 +924,7 @@ impl Spec {
             concurrency: false,
             pure: false,
             files: BTreeMap::new(),
+            resources: false,
             tracks: None,
             native: Some(Native { track: track.to_string(), files, stubs, lesson, typecheck }),
         })
