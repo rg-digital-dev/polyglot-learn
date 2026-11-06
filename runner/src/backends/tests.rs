@@ -102,6 +102,7 @@ fn function_names_follow_conventions() {
         names,
         [
             "typescript=sumOfMultiples",
+            "python=sum_of_multiples",
             "rust=sum_of_multiples",
             "go=SumOfMultiples",
             "php=sumOfMultiples",
@@ -244,7 +245,7 @@ fn error_cases_can_check_the_message() {
     // Without `error_contains`, error tests stay as they were (and Go needs no `strings`).
     let plain = parse("");
     assert!(!plain.checks_error_messages());
-    for id in ["typescript", "rust", "go", "php", "lua", "qml"] {
+    for id in ["typescript", "python", "rust", "go", "php", "lua", "qml"] {
         let t = get(id).unwrap().tests(&plain).remove(0).1;
         assert!(!t.contains("should mention") && !t.contains("\"strings\""), "{id}: {t}");
     }

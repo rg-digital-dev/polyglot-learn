@@ -7,6 +7,7 @@ An error from deep inside a program usually knows *what* went wrong but not *whe
 | Rust | `.map_err(\|e\| format!("{key}: {e}"))?`, or your own error type with `source()` | `source()`, or keep it in an enum variant |
 | Go | `fmt.Errorf("%s: %w", key, err)` | `errors.Is`, `errors.As`, `errors.Unwrap` |
 | TypeScript | ``new Error(`${key}: ${e.message}`, { cause: e })`` | `error.cause` |
+| Python | `raise ValueError(f"{key}: {e}") from e` | `e.__cause__` |
 | PHP | `new InvalidArgumentException("$key: ...", 0, $e)` | `$e->getPrevious()` |
 | QML | `const w = new Error(key + ": " + e.message); w.cause = e` | `error.cause` |
 | Lua | `return nil, key .. ": " .. err` | keep a table error with a `cause` field |
@@ -29,5 +30,5 @@ The message is shorter, but both the key and the reason are lost. Wrap instead.
 
 ## Go deeper
 
-- `learn compare error-context` puts all six versions side by side.
+- `learn compare error-context` puts every track's version side by side.
 - Go's [Working with Errors in Go 1.13](https://go.dev/blog/go1.13-errors) explains wrapping with `%w`; the ideas carry over to the other languages.

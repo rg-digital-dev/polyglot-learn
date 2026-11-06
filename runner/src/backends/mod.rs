@@ -13,6 +13,7 @@ use crate::toolchain::{Found, Invocation, Tool};
 mod go;
 mod lua;
 mod php;
+mod python;
 mod qml;
 mod rust;
 mod typescript;
@@ -119,6 +120,7 @@ pub trait Backend: Sync {
 
 static BACKENDS: &[&dyn Backend] = &[
     &typescript::TypeScript,
+    &python::Python,
     &rust::Rust,
     &go::Go,
     &php::Php,

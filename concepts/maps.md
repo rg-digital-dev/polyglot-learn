@@ -7,6 +7,7 @@ Each language has its own map type:
 | Track | Type in this course | "Add 1, starting from 0" |
 |---|---|---|
 | TypeScript | `Record<string, number>` | `c[k] = (c[k] ?? 0) + 1` |
+| Python | `dict[str, int]` | `c[k] = c.get(k, 0) + 1` |
 | Rust | `HashMap<String, i64>` | `*c.entry(k).or_insert(0) += 1` |
 | Go | `map[string]int` | `c[k]++` (missing keys read as 0) |
 | PHP | `array` | `$c[$k] = ($c[$k] ?? 0) + 1` |

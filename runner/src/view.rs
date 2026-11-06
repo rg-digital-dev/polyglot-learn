@@ -555,7 +555,14 @@ pub fn status_track(ctx: &Ctx, backend: &dyn Backend, ui: &Ui) -> String {
 /// that track has been started.
 pub fn status_all(ctx: &Ctx, ui: &Ui) -> String {
     let tracks: Vec<&dyn Backend> = backends::all().to_vec();
-    let labels: Vec<&str> = tracks.iter().map(|b| if b.id() == "typescript" { "ts" } else { b.id() }).collect();
+    let labels: Vec<&str> = tracks
+        .iter()
+        .map(|b| match b.id() {
+            "typescript" => "ts",
+            "python" => "py",
+            id => id,
+        })
+        .collect();
     // Columns as narrow as the labels allow on a small terminal; titles get the rest.
     let label_w = labels.iter().map(|l| l.len()).max().unwrap_or(4);
     let col = if ui.width >= 72 { label_w + 2 } else { label_w + 1 };
@@ -780,11 +787,11 @@ mod tests {
         assert!(out.contains("  Deeper Go            ░░░░░░░░░░░░  0/5"), "{out}");
         assert!(!out.contains("Deeper Rust"), "other tracks' modules aren't listed: {out}");
         let all = status_all(&ctx, &Ui::plain(80));
-        assert!(all.lines().next().unwrap().ends_with("ts    rust  go    php   lua   qml"), "{all}");
+        assert!(all.lines().next().unwrap().ends_with("ts    py    rust  go    php   lua   qml"), "{all}");
         assert!(all.contains("  Deeper Rust  6 exercises · not started"), "{all}");
         // A module with a `tracks` list leaves the other tracks' cells empty.
         let read_file = all.lines().find(|l| l.trim_start().starts_with("Read File")).unwrap();
-        assert!(read_file.ends_with("○     ○     ○     ○     ○"), "QML has no read-file: {all}");
+        assert!(read_file.ends_with("○     ○     ○     ○     ○     ○"), "QML has no read-file: {all}");
         assert!(!status_track(&ctx, crate::backends::get("qml").unwrap(), &Ui::plain(80)).contains("Files and Resources"));
     }
 

@@ -1,0 +1,20 @@
+title = "Lazy Pipeline"
+concept = "generators"
+summary = "Write generator functions with `yield`: a countdown, an endless sequence, a `take` that pulls only what it needs, `chunks` that groups any iterable, and a recursive `flatten` with `yield from`. Nothing is computed until someone asks for the next item."
+stubs = ["lazy_pipeline.py"]
+hints = [
+  "A function with `yield` in its body is a generator function: calling it returns a generator, and the body runs only as items are requested. `countdown` is a `while` loop that yields and counts down; `naturals` is `n = 1` and `while True: yield n; n += 1`.",
+  "`take` must not pull a single item more than `n`: loop over the iterable and stop (`return` or `break`) as soon as you have `n`, before asking for the next one. `itertools.islice(iterable, n)` does exactly this.",
+  "In `chunks`, collect items into a list and `yield` it when it reaches `size`; after the loop, yield what's left if it isn't empty. In `flatten`, `yield from flatten(item)` for a list and `yield item` otherwise.",
+]
+cases = [
+  "countdown yields from n down to 1",
+  "countdown is lazy",
+  "take stops an endless generator",
+  "take pulls only what it needs",
+  "chunks groups items with a shorter last chunk",
+  "chunks works on an endless generator",
+  "flatten walks nested lists in order",
+  "flatten of nothing is empty",
+  "every function is a generator",
+]

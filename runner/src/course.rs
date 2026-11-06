@@ -180,7 +180,7 @@ mod tests {
         let bare = |c: &str| c.split("   #").next().unwrap().trim().to_string();
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
         let mut problems = Vec::new();
-        for track in ["rust", "typescript", "php", "lua", "go", "qml"] {
+        for track in ["rust", "typescript", "python", "php", "lua", "go", "qml"] {
             let meta = TrackMeta::load(&root, track).unwrap();
             let readme = std::fs::read_to_string(root.join("tracks").join(track).join("README.md")).unwrap();
             let start = readme.find("## Install").unwrap_or_else(|| panic!("{track}: README has no ## Install"));
@@ -219,7 +219,7 @@ mod tests {
     #[test]
     fn repo_track_tomls_parse() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-        for track in ["rust", "typescript", "php", "lua", "go", "qml"] {
+        for track in ["rust", "typescript", "python", "php", "lua", "go", "qml"] {
             let meta = TrackMeta::load(&root, track).unwrap();
             for links in meta.links.values() {
                 for l in links {

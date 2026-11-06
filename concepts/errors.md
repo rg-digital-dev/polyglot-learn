@@ -7,6 +7,7 @@ Code that parses outside input has to say "this didn't work" somehow, and every 
 | Rust | return `Result<T, String>` | `Err("not a number".into())` |
 | Go | return `(T, error)` | `return 0, errors.New("not a number")` |
 | TypeScript | throw | `throw new Error("not a number")` |
+| Python | raise | `raise ValueError("not a number")` |
 | PHP | throw | `throw new InvalidArgumentException(...)` |
 | QML | throw | `throw new Error("not a number")` |
 | Lua | return `nil, err` | `return nil, "not a number"` |
@@ -26,4 +27,4 @@ Relying on the parser to reject bad input. In JavaScript, `Number("")` is `0` an
 ## Go deeper
 
 - The real range of TCP ports: [IANA service name and port registry](https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml)
-- `learn compare errors` puts all six conventions side by side.
+- `learn compare errors` puts every track's convention side by side.

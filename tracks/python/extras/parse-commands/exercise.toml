@@ -1,0 +1,20 @@
+title = "Parse Commands"
+concept = "pattern-matching"
+summary = "Use the `match` statement three ways: sequence patterns to parse a text command into a dataclass, class patterns to describe a parsed command, and mapping patterns with guards to summarise an event dictionary."
+stubs = ["parse_commands.py"]
+hints = [
+  "`match line.split():` then `case [\"go\", direction] if direction in DIRECTIONS:`; `case [\"take\", *words] if words:` captures the rest of the list. `case [\"quit\"] | [\"exit\"]:` matches either. End with `case _:` and raise ValueError.",
+  "Class patterns match a dataclass by type and pull out fields: `case Go(direction=d):` or, using the dataclass's field order, `case Go(d):`. `case Quit():` matches any Quit.",
+  "Mapping patterns match dictionaries that have *at least* these keys: `case {\"type\": \"login\", \"user\": user}:`. `case {\"type\": \"error\", \"code\": int(code)} if code >= 500:` checks a type and adds a guard. Order matters: the first matching case wins.",
+]
+cases = [
+  "parse reads go with a direction",
+  "parse joins the words of take",
+  "parse reads drop and quit",
+  "parse rejects anything else",
+  "describe matches each command class",
+  "summarize reads a login",
+  "summarize counts purchased items",
+  "summarize uses guards on error codes",
+  "summarize handles unknown and bad events",
+]

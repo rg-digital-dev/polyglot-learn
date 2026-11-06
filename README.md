@@ -6,9 +6,9 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 
 **Who it's for:** working developers picking up another language. The notes explain each idea relative to a language you already know (TypeScript/JavaScript to start with), instead of from scratch.
 
-**Tracks:** TypeScript (Node), Rust, Go, PHP, Lua 5.4 and QML (Qt 6).
+**Tracks:** TypeScript (Node), Python 3.12+, Rust, Go, PHP, Lua 5.4 and QML (Qt 6).
 
-**Modules:** *Foundations* (functions, conditionals, loops, maps, errors, sorting) and *Building Blocks* (structs, interfaces, closures, iterators, modules, concurrency). There are 12 exercises, each available in every track, followed by *Real-world Basics* (`error-context`: adding context to an error without losing its cause) and *Files and Resources* (`read-file`, and `close-everything`: closing every resource on every way out), which is on every track except QML, since QML can't read files without C++. Then each track has its own *Deeper* module (4 to 6 exercises) for what doesn't exist everywhere: ownership, lifetimes, enums and smart pointers in Rust; embedding, channels, `select` and generics in Go; unions, narrowing and generators in TypeScript; enums, readonly objects and traits in PHP; metatables and coroutines in Lua; bindings, signals and models in QML. Rust and TypeScript continue with *in Practice* modules: `Drop` guards, error conversion, custom iterators, `Cow`, statics and channels in Rust; cancellation with `AbortSignal`, `using`, branded types and conditional types in TypeScript (the last two are type-checked with TypeScript 7's `tsc`).
+**Modules:** *Foundations* (functions, conditionals, loops, maps, errors, sorting) and *Building Blocks* (structs, interfaces, closures, iterators, modules, concurrency). There are 12 exercises, each available in every track, followed by *Real-world Basics* (`error-context`: adding context to an error without losing its cause) and *Files and Resources* (`read-file`, and `close-everything`: closing every resource on every way out), which is on every track except QML, since QML can't read files without C++. Then each track has its own *Deeper* module (4 to 6 exercises) for what doesn't exist everywhere: ownership, lifetimes, enums and smart pointers in Rust; embedding, channels, `select` and generics in Go; unions, narrowing and generators in TypeScript; generators, decorators, context managers, `match` and dunder methods in Python; enums, readonly objects and traits in PHP; metatables and coroutines in Lua; bindings, signals and models in QML. Rust and TypeScript continue with *in Practice* modules: `Drop` guards, error conversion, custom iterators, `Cow`, statics and channels in Rust; cancellation with `AbortSignal`, `using`, branded types and conditional types in TypeScript (the last two are type-checked with TypeScript 7's `tsc`).
 
 ## Quick start
 
@@ -31,7 +31,7 @@ Then:
 ```bash
 cd polyglot-learn
 learn init          # which language do you already know?
-learn start rust    # or typescript, go, php, lua, qml
+learn start rust    # or typescript, python, go, php, lua, qml
 learn watch         # edit the file it shows you, then save
 ```
 

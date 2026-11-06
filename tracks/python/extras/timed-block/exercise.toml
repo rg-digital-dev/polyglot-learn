@@ -1,0 +1,19 @@
+title = "Context Managers"
+concept = "context-managers"
+summary = "Write your own context managers for the `with` statement: one with @contextlib.contextmanager and a try/finally around `yield`, a class with __enter__ and __exit__ that commits or rolls back depending on whether the block raised, and one whose __exit__ swallows a ValueError by returning True."
+stubs = ["timed_block.py"]
+hints = [
+  "With `@contextmanager`, everything before `yield` runs on entering the `with`, and everything after it on leaving. Wrap the `yield` in `try:` / `finally:` so the closing tag is written even when the block raises.",
+  "`__exit__(self, exc_type, exc, tb)` gets the exception's class, value and traceback, or three `None`s when the block finished normally. Return a false value (or nothing) to let an exception continue; `__enter__` returns what `as` binds, usually `self`.",
+  "For `IgnoreValueErrors`, `__exit__` returns `True` only when `exc_type` is a `ValueError` (subclasses included: `issubclass(exc_type, ValueError)`), after logging `ignored: <message>`. Returning `True` tells Python the exception is handled.",
+]
+cases = [
+  "tag writes opening and closing tags",
+  "tags nest",
+  "tag closes on an exception",
+  "a transaction commits when the block succeeds",
+  "a transaction rolls back and lets the exception through",
+  "with gives you the transaction",
+  "IgnoreValueErrors swallows a ValueError and logs it",
+  "IgnoreValueErrors lets other exceptions through",
+]

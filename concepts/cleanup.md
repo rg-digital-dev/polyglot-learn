@@ -7,10 +7,11 @@ Files, connections and locks have to be closed again, and *every* way out of a f
 | Rust | `Drop` (automatic) | when the value goes out of scope; a `Vec` drops all its elements |
 | Go | `defer r.Close()` | when the *function* returns, last deferred first |
 | TypeScript | `using r = ...`, `DisposableStack` | at the end of the block, in reverse order |
+| Python | `with r:`, `contextlib.ExitStack` | at the end of the block, last entered first |
 | PHP | `try { ... } finally { ... }` | when the `try` block is left, by return or exception |
 | Lua | `local r <close> = ...` | at the end of the block, for one variable |
 
-The hard case is a *group* of resources: open three, and the third fails. The two that did open must be closed before the error goes up. Rust's `Vec`, Go's deferred calls and TypeScript's `DisposableStack` handle any number; with PHP's `finally` you loop over what you opened, and in Lua you keep a table and close it on every path yourself.
+The hard case is a *group* of resources: open three, and the third fails. The two that did open must be closed before the error goes up. Rust's `Vec`, Go's deferred calls, TypeScript's `DisposableStack` and Python's `ExitStack` handle any number; with PHP's `finally` you loop over what you opened, and in Lua you keep a table and close it on every path yourself.
 
 ## Common mistake
 

@@ -1,0 +1,20 @@
+title = "Vector Dunder"
+concept = "dunder-methods"
+summary = "Make a Vector class feel built in by implementing Python's special (\"dunder\") methods: __repr__, __eq__ and __hash__, the arithmetic operators including reflected multiplication, abs(), truthiness and unpacking. Return NotImplemented for types you don't support, so Python can raise a proper TypeError."
+stubs = ["vector_dunder.py"]
+hints = [
+  "`__repr__` returns the text for `repr(v)` and the interactive prompt: `f\"Vector({self.x}, {self.y})\"`. `__eq__(self, other)` compares fields when `other` is a Vector and returns `NotImplemented` otherwise; `__hash__` returns `hash((self.x, self.y))`, so equal vectors hash alike.",
+  "`__add__` and `__sub__` return a new Vector. `__mul__(self, k)` handles `v * 3`; `3 * v` asks `int.__mul__` first, which returns NotImplemented, and then Python calls your `__rmul__`. For anything that isn't an int, return `NotImplemented` (don't raise).",
+  "`__abs__` returns `math.hypot(self.x, self.y)`. `__bool__` is false for the zero vector. `__iter__` can be a generator, `yield self.x` then `yield self.y`, which makes `x, y = v` work.",
+]
+cases = [
+  "repr shows the coordinates",
+  "equal vectors compare equal",
+  "vectors work as dict keys",
+  "plus and minus add and subtract",
+  "times scales by a number on either side",
+  "abs gives the length",
+  "a zero vector is falsy",
+  "vectors unpack into x and y",
+  "unsupported operands raise TypeError",
+]

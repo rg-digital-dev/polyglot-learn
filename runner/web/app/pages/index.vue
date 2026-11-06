@@ -107,7 +107,7 @@ const resumeSlug = computed(() => active.value?.current ?? null)
               <th scope="col" class="tag">Exercise</th>
               <th scope="col" class="tag">Concept</th>
               <th v-for="t in tracksOf(m)" :key="t.id" scope="col" class="tag grid__track" :class="{ active: t.id === state.track }">
-                {{ t.id === 'typescript' ? 'ts' : t.id }}
+                {{ t.id === 'typescript' ? 'ts' : t.id === 'python' ? 'py' : t.id }}
               </th>
             </tr>
           </thead>

@@ -7,6 +7,12 @@ All notable changes to this project are listed here. The format follows
 ## [Unreleased]
 
 ### Added
+- A Python track (3.12 or newer, standard library only): a runner backend with
+  its own small harness, all 20 shared exercises, a note per concept, and a
+  *Deeper Python* module: `lazy-pipeline` (generators), `retry-decorator`
+  (decorators), `timed-block` (context managers), `parse-commands` (`match`)
+  and `vector-dunder` (special methods). `learn doctor` checks for it, and CI
+  runs it on Python 3.12.
 - *Rust in Practice*, a second Rust-only module: `scoped-guard` (Drop),
   `error-conversion` (From and ?), `custom-iterator`, `borrow-or-own` (Cow and
   AsRef), `id-registry` (atomics, LazyLock, OnceLock) and `channel-workers`

@@ -1,0 +1,19 @@
+title = "Retry Decorator"
+concept = "decorators"
+summary = "Write decorators: functions that take a function and return a new one that wraps it. `shout` changes the result, `count_calls` keeps state on the wrapper, and `retry(times)` is a decorator factory that calls the function again when it raises. Keep each wrapped function's name with functools.wraps."
+stubs = ["retry_decorator.py"]
+hints = [
+  "A decorator is `def deco(fn):`, an inner `def wrapper(*args, **kwargs):` that calls `fn(*args, **kwargs)`, and `return wrapper`. Put `@functools.wraps(fn)` above `def wrapper` so the wrapper keeps `fn`'s `__name__` and `__doc__`.",
+  "Functions are objects, so `count_calls` can store the count on the wrapper itself: set `wrapper.calls = 0` before returning it, and `wrapper.calls += 1` inside.",
+  "`retry(times)` returns a decorator, which returns a wrapper: three levels of `def`. In the wrapper, loop `times` times; `return fn(...)` on success, and remember the exception on failure. After the loop, `raise` the last exception.",
+]
+cases = [
+  "shout uppercases the result",
+  "shout keeps the function's name and docstring",
+  "count_calls counts every call",
+  "count_calls passes arguments and results through",
+  "retry returns the first success",
+  "retry gives up after the given number of attempts",
+  "retry doesn't call a working function twice",
+  "decorators stack",
+]

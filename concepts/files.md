@@ -7,6 +7,7 @@ Reading a whole text file is a one-liner in every language here. What differs is
 | Rust | `std::fs::read_to_string(path)` | `Err(io::Error)` | No: add the path yourself |
 | Go | `os.ReadFile(path)` | `err` (a `*fs.PathError`) | Yes |
 | TypeScript | `readFileSync(path, "utf8")` from `node:fs` | throws (`ENOENT`, ...) | Yes |
+| Python | `open(path, encoding="utf-8").read()` | raises an `OSError` | Yes |
 | PHP | `file_get_contents($path)` | returns `false` *and* emits a warning | Only in the warning: check and throw yourself |
 | Lua | `io.open(path)` then `file:read("a")` | `nil, message` | Yes |
 

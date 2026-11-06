@@ -1,0 +1,227 @@
+id = "python"
+name = "Python"
+
+# No [lings] table: no "pythonlings" with rustlings-style folders is maintained
+# well enough to link to exercise by exercise.
+
+[install]
+windows = ["winget install --id Python.Python.3.14 -e"]
+macos = ["brew install python"]
+arch = ["sudo pacman -S python"]
+debian = ["sudo apt install python3"]
+fedora = ["sudo dnf install python3"]
+
+# functions (hello)
+[[links.functions]]
+kind = "docs"
+title = "The Python Tutorial: 4.8 Defining Functions"
+url = "https://docs.python.org/3/tutorial/controlflow.html#defining-functions"
+
+[[links.functions]]
+kind = "docs"
+title = "Built-in Types: String Methods"
+url = "https://docs.python.org/3/library/stdtypes.html#string-methods"
+
+[[links.functions]]
+kind = "exercism"
+title = "Exercism Python: Two Fer"
+url = "https://exercism.org/tracks/python/exercises/two-fer"
+
+# conditionals (leap-year)
+[[links.conditionals]]
+kind = "docs"
+title = "The Python Tutorial: 4.1 if Statements"
+url = "https://docs.python.org/3/tutorial/controlflow.html#if-statements"
+
+[[links.conditionals]]
+kind = "docs"
+title = "Language Reference: Boolean operations"
+url = "https://docs.python.org/3/reference/expressions.html#boolean-operations"
+
+[[links.conditionals]]
+kind = "exercism"
+title = "Exercism Python: Leap"
+url = "https://exercism.org/tracks/python/exercises/leap"
+
+# loops (sum-of-multiples)
+[[links.loops]]
+kind = "docs"
+title = "The Python Tutorial: 4.2 for Statements"
+url = "https://docs.python.org/3/tutorial/controlflow.html#for-statements"
+
+[[links.loops]]
+kind = "docs"
+title = "Built-in Types: range"
+url = "https://docs.python.org/3/library/stdtypes.html#range"
+
+# maps (word-count)
+[[links.maps]]
+kind = "docs"
+title = "The Python Tutorial: 5.5 Dictionaries"
+url = "https://docs.python.org/3/tutorial/datastructures.html#dictionaries"
+
+[[links.maps]]
+kind = "docs"
+title = "collections.Counter"
+url = "https://docs.python.org/3/library/collections.html#collections.Counter"
+
+[[links.maps]]
+kind = "exercism"
+title = "Exercism Python: Word Count"
+url = "https://exercism.org/tracks/python/exercises/word-count"
+
+# errors (parse-port)
+[[links.errors]]
+kind = "docs"
+title = "The Python Tutorial: 8. Errors and Exceptions"
+url = "https://docs.python.org/3/tutorial/errors.html"
+
+[[links.errors]]
+kind = "docs"
+title = "Built-in Exceptions: ValueError"
+url = "https://docs.python.org/3/library/exceptions.html#ValueError"
+
+# sorting (top-scores)
+[[links.sorting]]
+kind = "docs"
+title = "Sorting Techniques"
+url = "https://docs.python.org/3/howto/sorting.html"
+
+[[links.sorting]]
+kind = "exercism"
+title = "Exercism Python: Grade School"
+url = "https://exercism.org/tracks/python/exercises/grade-school"
+
+# structs (order-total)
+[[links.structs]]
+kind = "docs"
+title = "dataclasses"
+url = "https://docs.python.org/3/library/dataclasses.html"
+
+# interfaces (shapes)
+[[links.interfaces]]
+kind = "docs"
+title = "typing.Protocol"
+url = "https://docs.python.org/3/library/typing.html#typing.Protocol"
+
+[[links.interfaces]]
+kind = "exercism"
+title = "Exercism Python: Clock"
+url = "https://exercism.org/tracks/python/exercises/clock"
+
+# closures (make-counter)
+[[links.closures]]
+kind = "docs"
+title = "Language Reference: The nonlocal statement"
+url = "https://docs.python.org/3/reference/simple_stmts.html#the-nonlocal-statement"
+
+# iterators (top-words)
+[[links.iterators]]
+kind = "docs"
+title = "The Python Tutorial: 9.8 Iterators"
+url = "https://docs.python.org/3/tutorial/classes.html#iterators"
+
+[[links.iterators]]
+kind = "docs"
+title = "The Python Tutorial: 5.1.3 List Comprehensions"
+url = "https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions"
+
+# modules (slugify)
+[[links.modules]]
+kind = "docs"
+title = "The Python Tutorial: 6. Modules"
+url = "https://docs.python.org/3/tutorial/modules.html"
+
+# concurrency (run-all)
+[[links.concurrency]]
+kind = "docs"
+title = "concurrent.futures"
+url = "https://docs.python.org/3/library/concurrent.futures.html"
+
+[[links.concurrency]]
+kind = "docs"
+title = "Glossary: global interpreter lock"
+url = "https://docs.python.org/3/glossary.html#term-global-interpreter-lock"
+
+# error-context (error-context)
+[[links.error-context]]
+kind = "docs"
+title = "The Python Tutorial: 8.5 Exception Chaining"
+url = "https://docs.python.org/3/tutorial/errors.html#exception-chaining"
+
+# files (read-file)
+[[links.files]]
+kind = "docs"
+title = "The Python Tutorial: 7.2 Reading and Writing Files"
+url = "https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files"
+
+[[links.files]]
+kind = "docs"
+title = "pathlib"
+url = "https://docs.python.org/3/library/pathlib.html"
+
+# cleanup (close-everything)
+[[links.cleanup]]
+kind = "docs"
+title = "Language Reference: The with statement"
+url = "https://docs.python.org/3/reference/compound_stmts.html#the-with-statement"
+
+[[links.cleanup]]
+kind = "docs"
+title = "contextlib.ExitStack"
+url = "https://docs.python.org/3/library/contextlib.html#contextlib.ExitStack"
+
+# generators (lazy-pipeline)
+[[links.generators]]
+kind = "docs"
+title = "The Python Tutorial: 9.9 Generators"
+url = "https://docs.python.org/3/tutorial/classes.html#generators"
+
+[[links.generators]]
+kind = "docs"
+title = "itertools"
+url = "https://docs.python.org/3/library/itertools.html"
+
+# decorators (retry-decorator)
+[[links.decorators]]
+kind = "docs"
+title = "Glossary: decorator"
+url = "https://docs.python.org/3/glossary.html#term-decorator"
+
+[[links.decorators]]
+kind = "docs"
+title = "functools.wraps"
+url = "https://docs.python.org/3/library/functools.html#functools.wraps"
+
+# context-managers (timed-block)
+[[links.context-managers]]
+kind = "docs"
+title = "Built-in Types: Context Manager Types"
+url = "https://docs.python.org/3/library/stdtypes.html#context-manager-types"
+
+[[links.context-managers]]
+kind = "docs"
+title = "contextlib.contextmanager"
+url = "https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager"
+
+# pattern-matching (parse-commands)
+[[links.pattern-matching]]
+kind = "docs"
+title = "PEP 636: Structural Pattern Matching tutorial"
+url = "https://peps.python.org/pep-0636/"
+
+[[links.pattern-matching]]
+kind = "docs"
+title = "Language Reference: The match statement"
+url = "https://docs.python.org/3/reference/compound_stmts.html#the-match-statement"
+
+# dunder-methods (vector-dunder)
+[[links.dunder-methods]]
+kind = "docs"
+title = "Language Reference: Special method names"
+url = "https://docs.python.org/3/reference/datamodel.html#special-method-names"
+
+[[links.dunder-methods]]
+kind = "docs"
+title = "Language Reference: Emulating numeric types"
+url = "https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types"

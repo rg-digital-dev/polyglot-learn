@@ -7,13 +7,14 @@ Concurrency means making progress on several tasks over the same stretch of time
 - **The results come back in input order**, even though the tasks finish in a different order.
 - **The time is about the slowest task, not the sum.** Running the tasks one by one fails, and so does skipping them.
 
-The tools are very different across the six tracks:
+The tools are very different across the tracks:
 
 | Track | Mechanism | Runs in parallel? | Time in the tests |
 |---|---|---|---|
 | Rust | OS threads (`std::thread::scope`) | yes | real milliseconds |
 | Go | goroutines + `sync.WaitGroup` | yes | real milliseconds |
 | TypeScript | promises on one event loop (`Promise.all`) | no: tasks take turns while waiting | real milliseconds |
+| Python | threads (`ThreadPoolExecutor`) | while waiting, yes; Python code itself, no (the GIL) | real milliseconds |
 | PHP | Fibers you resume yourself | no | virtual ticks |
 | Lua | coroutines you resume yourself | no | virtual ticks |
 | QML | generators you advance yourself | no | virtual ticks |

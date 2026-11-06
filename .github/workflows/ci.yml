@@ -41,6 +41,10 @@ jobs:
       - name: Install TypeScript 7 (tsc, for the type-check exercises)
         run: npm install -g typescript@7
 
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"   # the oldest the Python track supports
+
       - uses: actions/setup-go@v7
         with:
           go-version: stable

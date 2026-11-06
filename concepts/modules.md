@@ -9,6 +9,7 @@ Each language answers three questions differently:
 | Rust | a file declared with `mod words;` | `pub fn` | `use crate::words::split;` |
 | Go | a folder (package) | a Capitalised name | `import "learn/slugify/words"` |
 | TypeScript | a file | `export` | `import { split } from "./words.ts"` |
+| Python | a file | every top-level name (`_name` is internal by convention) | `import words` |
 | PHP | a namespace (+ a file to load) | everything in it | `require_once` + `use function Words\split;` |
 | Lua | whatever table a file returns | what you put in the table | `local words = require("words")` |
 | QML | a `.mjs` ES module (or a component file) | `export` | `import "words.mjs" as Words` |

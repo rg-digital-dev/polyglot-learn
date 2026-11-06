@@ -39,7 +39,7 @@ exercises = [
 [[module]]
 id = "files-and-resources"
 title = "Files and Resources"
-tracks = ["typescript", "rust", "go", "php", "lua"]
+tracks = ["typescript", "python", "rust", "go", "php", "lua"]
 exercises = [
   "read-file",
   "close-everything",
@@ -107,6 +107,18 @@ exercises = [
   "disposable-resource",
   "branded-ids",
   "infer-types",
+]
+
+[[module]]
+id = "deeper-python"
+title = "Deeper Python"
+track = "python"
+exercises = [
+  "lazy-pipeline",
+  "retry-decorator",
+  "timed-block",
+  "parse-commands",
+  "vector-dunder",
 ]
 
 [[module]]
