@@ -26,6 +26,7 @@ By contributing you agree that code is licensed under MIT and lesson text under 
    ```
    - Types: `int`, `bool`, `string`, `list<T>`, `map<string,T>`. Names are snake_case; slugs and concepts are kebab-case.
    - Each case has either `expected` or `"error": true`. Error cases need `"fallible": true`.
+   - An error case can add `"error_contains": ["port", "not a number"]`: text the error's message must contain (in every track: the `Err` string, `err.Error()`, the exception's or Lua error's message).
    - **The first case must expect a value.** Stubs that throw would otherwise "pass" error cases.
    - Descriptions must be unique; they become test names. Aim for 6–10 cases including edge cases.
    - Keep values in the 64-bit integer range, and use ASCII whitespace only (trim functions disagree about Unicode).
@@ -91,6 +92,7 @@ cases = ["total_len counts characters of every word", "..."]   # in test order
 - **Layout:** follow the layout and test command of the track's generated exercises, because `learn` runs native exercises the same way. Generate a track (`learn --workspace /tmp/ws generate --lang go`) and copy what you see: the test file name, the shared harness, and how stub errors are told apart from expected errors.
 - **Test names:** name each test `cNN_<description>`. NN is the case's position in `cases`, and the description is lowercased with every run of other characters replaced by `_`, up to 48 characters, e.g. `c03_total_len_leaves_the_list_usable`. `cargo test` checks that every listed case has a test.
 - **Stubs and solutions:** every case must fail on the untouched stub, and pass with your reference solution. Check both with `learn selftest --lang <lang> --solutions <dir>`.
+- **Type checks (TypeScript):** `typecheck = ["<slug>.ts", "<slug>.types.ts"]` makes `learn` run `tsc` (TypeScript 7) on those files before the tests and report the result as the first case, which must be called `"types check"` and has no test of its own. Put `@ts-expect-error` lines in the `.types.ts` file for what the types must reject; the untouched stub's types should let them through, so it fails.
 - **Links:** add "Go deeper" links for the new concept to `tracks/<lang>/track.toml`.
 
 Track-only exercises are left out of `learn compare`; there's nothing to compare them with.

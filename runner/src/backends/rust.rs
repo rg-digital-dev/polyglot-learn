@@ -325,9 +325,17 @@ impl Backend for Rust {
                                 s.push_str(&format!("    assert_eq!({call}, expected);\n"));
                             }
                         }
-                        Outcome::Error => s.push_str(&format!(
-                            "    let result = {call};\n    assert!(result.is_err(), \"expected an error, got {{result:?}}\");\n"
-                        )),
+                        Outcome::Error(parts) => {
+                            s.push_str(&format!(
+                                "    let result = {call};\n    assert!(result.is_err(), \"expected an error, got {{result:?}}\");\n"
+                            ));
+                            if !parts.is_empty() {
+                                let list = parts.iter().map(|p| format!("{p:?}")).collect::<Vec<_>>().join(", ");
+                                s.push_str(&format!(
+                                    "    let message = result.unwrap_err();\n    for part in [{list}] {{\n        assert!(message.contains(part), \"the error message {{message:?}} should mention {{part:?}}\");\n    }}\n"
+                                ));
+                            }
+                        }
                     }
                 }
                 CaseKind::Scenario { create, steps } => {

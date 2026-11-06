@@ -90,11 +90,19 @@ function H:equals(name, fn, expected)
 end
 
 --- The function must return nil plus an error value. Raising doesn't count.
-function H:returns_error(name, fn)
+--- `mentions` (optional) lists text the error's message must contain.
+function H:returns_error(name, fn, mentions)
   local ok, result, err = pcall(fn)
   if not ok then
     self:fail(name, "raised an error instead of returning nil, err: " .. tostring(result))
   elseif result == nil and err ~= nil then
+    local message = type(err) == "table" and err.message ~= nil and tostring(err.message) or tostring(err)
+    for _, part in ipairs(mentions or {}) do
+      if not string.find(message, part, 1, true) then
+        self:fail(name, "the error message " .. show(message) .. " should mention " .. show(part))
+        return
+      end
+    end
     print("ok " .. name)
   else
     self:fail(name, "expected nil plus an error, got " .. show(result) .. ", " .. show(err))
@@ -398,8 +406,12 @@ impl Backend for Lua {
                             "t:equals(\"{name}\", function() return {call} end, {})\n",
                             self.literal(spec, v, &f.returns)
                         )),
-                        Outcome::Error => {
+                        Outcome::Error(parts) if parts.is_empty() => {
                             s.push_str(&format!("t:returns_error(\"{name}\", function() return {call} end)\n"))
+                        }
+                        Outcome::Error(parts) => {
+                            let list = parts.iter().map(|p| self.literal(spec, &Value::String(p.clone()), &Type::Str)).collect::<Vec<_>>().join(", ");
+                            s.push_str(&format!("t:returns_error(\"{name}\", function() return {call} end, {{ {list} }})\n"))
                         }
                     }
                 }

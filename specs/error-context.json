@@ -1,0 +1,50 @@
+{
+  "slug": "error-context",
+  "title": "Error Context",
+  "concept": "error-context",
+  "summary": "Read one setting from a small `key = value` config, using parse_number from the numbers module for the value. When something goes wrong, the error must say which key it was about and keep the reason parse_number gave, so `port = eighty` fails with an error that mentions both `port` and `not a number`. A key that isn't there is an error that mentions the key and `missing`.",
+  "helpers": [
+    {
+      "module": "numbers",
+      "function": "parse_number",
+      "summary": "Parse a whole number from 0 to 1000000. Surrounding whitespace is allowed. Anything that isn't only ASCII digits is an error mentioning `not a number`; a number above 1000000 is an error mentioning `too large`.",
+      "params": [{ "name": "text", "type": "string" }],
+      "returns": "int",
+      "fallible": true,
+      "cases": [
+        { "description": "parse_number reads digits", "input": ["42"], "expected": 42 },
+        { "description": "parse_number allows surrounding whitespace", "input": [" 7 "], "expected": 7 },
+        { "description": "parse_number accepts the limits", "input": ["1000000"], "expected": 1000000 },
+        { "description": "parse_number rejects letters", "input": ["abc"], "error": true, "error_contains": ["not a number"] },
+        { "description": "parse_number rejects empty text", "input": [""], "error": true, "error_contains": ["not a number"] },
+        { "description": "parse_number rejects a sign", "input": ["-5"], "error": true, "error_contains": ["not a number"] },
+        { "description": "parse_number rejects a number over the limit", "input": ["1000001"], "error": true, "error_contains": ["too large"] },
+        { "description": "parse_number rejects digits that overflow", "input": ["99999999999999999999"], "error": true, "error_contains": ["too large"] }
+      ]
+    }
+  ],
+  "function": "load_setting",
+  "params": [
+    { "name": "config", "type": "string" },
+    { "name": "key", "type": "string" }
+  ],
+  "returns": "int",
+  "fallible": true,
+  "hints": [
+    "Implement parse_number in the numbers module first: its cases run before load_setting's. Check that the trimmed text is non-empty and all digits before converting, and compare the length before converting too, so twenty digits can't overflow.",
+    "In load_setting, go through the lines, split each at the first `=`, trim both sides, and stop at the first line whose key matches. Lines without `=` don't count. If no line matches, the error names the key and says `missing`.",
+    "Don't build a new message from scratch when parse_number fails: wrap its error, adding the key in front. Rust: `map_err(|e| format!(\"{key}: {e}\"))`; Go: `fmt.Errorf(\"%s: %w\", key, err)`; TypeScript and QML: `new Error(`${key}: ${e.message}`, { cause: e })`; PHP: pass the caught exception as `previous`; Lua: `return nil, key .. \": \" .. err`."
+  ],
+  "cases": [
+    { "description": "load_setting reads a key", "input": ["port = 8080\nworkers = 4", "port"], "expected": 8080 },
+    { "description": "load_setting reads a later key", "input": ["port = 8080\nworkers = 4", "workers"], "expected": 4 },
+    { "description": "load_setting trims keys and values", "input": ["  port=80  ", "port"], "expected": 80 },
+    { "description": "load_setting skips blank lines and lines without an equals sign", "input": ["\n# settings\n\nport = 1\n", "port"], "expected": 1 },
+    { "description": "load_setting uses the first match", "input": ["port = 1\nport = 2", "port"], "expected": 1 },
+    { "description": "load_setting names a missing key", "input": ["port = 1", "workers"], "error": true, "error_contains": ["workers", "missing"] },
+    { "description": "load_setting names a key missing from empty config", "input": ["", "port"], "error": true, "error_contains": ["port", "missing"] },
+    { "description": "load_setting keeps the reason for a bad value", "input": ["port = eighty", "port"], "error": true, "error_contains": ["port", "not a number"] },
+    { "description": "load_setting keeps the reason for a large value", "input": ["workers = 5000000", "workers"], "error": true, "error_contains": ["workers", "too large"] },
+    { "description": "load_setting names the key it was asked for", "input": ["port = 80\ntimeout = soon", "timeout"], "error": true, "error_contains": ["timeout", "not a number"] }
+  ]
+}

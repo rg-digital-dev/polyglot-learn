@@ -363,7 +363,7 @@ fn failure_detail(spec: &Spec, c: &CaseResult, verbose: bool, ui: &Ui) -> Vec<St
                     out.push(format!("{ind}{} {}", label("call"), ui.code(&format!("{}({})", f.name, join(input)))));
                     let expected = match outcome {
                         Outcome::Value(v) => backends::json(v),
-                        Outcome::Error => "an error".to_string(),
+                        Outcome::Error(contains) => crate::spec::describe_error(contains),
                     };
                     out.push(format!("{ind}{} {}", label("expected"), ui.success(&expected)));
                     expected_value = Some(expected);
@@ -776,8 +776,8 @@ mod tests {
         let ctx = ctx();
         let out = status_track(&ctx, go(), &Ui::plain(80));
         let head: Vec<&str> = out.lines().take(5).collect();
-        assert_eq!(head, ["  Go · 0 of 17 done", "", "  Foundations      ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
-        assert!(out.contains("  Deeper Go        ░░░░░░░░░░░░  0/5"), "{out}");
+        assert_eq!(head, ["  Go · 0 of 18 done", "", "  Foundations        ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
+        assert!(out.contains("  Deeper Go          ░░░░░░░░░░░░  0/5"), "{out}");
         assert!(!out.contains("Deeper Rust"), "other tracks' modules aren't listed: {out}");
         let all = status_all(&ctx, &Ui::plain(80));
         assert!(all.lines().next().unwrap().ends_with("ts    rust  go    php   lua   qml"), "{all}");
@@ -789,7 +789,7 @@ mod tests {
         let ctx = ctx();
         let ui = Ui { unicode: false, ..Ui::plain(80) };
         let out = status_track(&ctx, go(), &ui);
-        assert!(out.contains("    - Hello") && out.contains("Foundations      ............  0/6"), "{out}");
+        assert!(out.contains("    - Hello") && out.contains("Foundations        ............  0/6"), "{out}");
         assert!(out.is_ascii(), "{out}");
     }
 

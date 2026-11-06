@@ -263,3 +263,14 @@ url = "https://www.lua.org/pil/8.4.html"
 kind = "docs"
 title = "Programming in Lua (1st ed., Lua 5.0): 8.5 Error Messages and Tracebacks"
 url = "https://www.lua.org/pil/8.5.html"
+
+# error-context (error-context)
+[[links.error-context]]
+kind = "docs"
+title = "Programming in Lua (1st ed., Lua 5.0): 8.4 Error Handling and Exceptions"
+url = "https://www.lua.org/pil/8.4.html"
+
+[[links.error-context]]
+kind = "docs"
+title = "Lua 5.4 Reference Manual: 2.3 Error Handling"
+url = "https://www.lua.org/manual/5.4/manual.html#2.3"

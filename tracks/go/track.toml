@@ -338,3 +338,14 @@ url = "https://pkg.go.dev/errors"
 kind = "exercism"
 title = "Exercism Go: Error Wrapping"
 url = "https://exercism.org/tracks/go/concepts/error-wrapping"
+
+# error-context (error-context)
+[[links.error-context]]
+kind = "docs"
+title = "The Go Blog: Working with Errors in Go 1.13"
+url = "https://go.dev/blog/go1.13-errors"
+
+[[links.error-context]]
+kind = "docs"
+title = "Package errors (Is, As, Unwrap)"
+url = "https://pkg.go.dev/errors"

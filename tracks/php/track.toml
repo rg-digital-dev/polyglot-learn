@@ -221,3 +221,9 @@ url = "https://www.php.net/manual/en/language.generators.syntax.php"
 kind = "docs"
 title = "PHP manual: The Generator class"
 url = "https://www.php.net/manual/en/class.generator.php"
+
+# error-context (error-context)
+[[links.error-context]]
+kind = "docs"
+title = "PHP manual: Exception::getPrevious"
+url = "https://www.php.net/manual/en/exception.getprevious.php"

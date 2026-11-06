@@ -320,8 +320,14 @@ impl Backend for TypeScript {
                                 self.literal(spec, v, &f.returns)
                             ));
                         }
-                        Outcome::Error => {
+                        Outcome::Error(parts) if parts.is_empty() => {
                             s.push_str(&format!("\ntest(\"{name}\", () => {{\n  assert.throws(() => {call}, notStub);\n}});\n"));
+                        }
+                        Outcome::Error(parts) => {
+                            let list = parts.iter().map(|p| self.literal(spec, &Value::String(p.clone()), &Type::Str)).collect::<Vec<_>>().join(", ");
+                            s.push_str(&format!(
+                                "\ntest(\"{name}\", () => {{\n  let error: unknown;\n  try {{\n    {call};\n  }} catch (e) {{\n    error = e;\n  }}\n  assert.ok(error !== undefined, \"expected an error to be thrown\");\n  assert.ok(notStub(error), \"still the stub: \" + String(error));\n  const message = error instanceof Error ? error.message : String(error);\n  for (const part of [{list}]) {{\n    assert.ok(message.includes(part), `the error message ${{JSON.stringify(message)}} should mention ${{JSON.stringify(part)}}`);\n  }}\n}});\n"
+                            ));
                         }
                     }
                 }

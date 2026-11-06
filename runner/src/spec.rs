@@ -231,7 +231,18 @@ pub struct TypeDef {
 #[derive(Debug, Clone)]
 pub enum Outcome {
     Value(Value),
-    Error,
+    /// An error whose message contains each of these strings (`error_contains`).
+    Error(Vec<String>),
+}
+
+/// How an expected error reads in a case listing: "an error", or "an error mentioning `a` and `b`".
+pub fn describe_error(contains: &[String]) -> String {
+    let quoted: Vec<String> = contains.iter().map(|c| format!("\"{c}\"")).collect();
+    match quoted.len() {
+        0 => "an error".into(),
+        1 => format!("an error mentioning {}", quoted[0]),
+        n => format!("an error mentioning {} and {}", quoted[..n - 1].join(", "), quoted[n - 1]),
+    }
 }
 
 /// One call on a value returned by the function (a closure call).
@@ -408,6 +419,8 @@ struct RawCase {
     expected: Option<Value>,
     #[serde(default)]
     error: bool,
+    #[serde(default)]
+    error_contains: Vec<String>,
     #[serde(default)]
     create: Option<Vec<Vec<Value>>>,
     #[serde(default)]
@@ -600,7 +613,7 @@ fn parse_function(raw: FnParts, defs: &[TypeDef], next_index: &mut usize) -> Res
             let (Some(create), Some(calls)) = (c.create, c.calls) else {
                 bail!("{at}: `{}` returns a function, so cases need `create` and `calls`", raw.name);
             };
-            if c.input.is_some() || c.expected.is_some() || c.error {
+            if c.input.is_some() || c.expected.is_some() || c.error || !c.error_contains.is_empty() {
                 bail!("{at}: use `create` and `calls` instead of `input`/`expected`/`error`");
             }
             if create.is_empty() || calls.is_empty() {
@@ -638,9 +651,17 @@ fn parse_function(raw: FnParts, defs: &[TypeDef], next_index: &mut usize) -> Res
                     if !raw.fallible {
                         bail!("{at}: error cases are only allowed when `fallible` is true");
                     }
-                    Outcome::Error
+                    for part in &c.error_contains {
+                        if part.trim().is_empty() || !part.chars().all(|ch| ch.is_ascii_graphic() || ch == ' ') {
+                            bail!("{at}: `error_contains` entries must be non-empty printable ASCII, not {part:?}");
+                        }
+                    }
+                    Outcome::Error(c.error_contains)
                 }
                 (Some(v), false) => {
+                    if !c.error_contains.is_empty() {
+                        bail!("{at}: `error_contains` needs `\"error\": true`");
+                    }
                     returns.check(&v, defs).map_err(|e| Error(format!("{at}: expected: {e}")))?;
                     Outcome::Value(v)
                 }
@@ -652,7 +673,7 @@ fn parse_function(raw: FnParts, defs: &[TypeDef], next_index: &mut usize) -> Res
     }
     // A stub that throws "passes" error cases, so the first case must expect a
     // value: then an untouched stub fails straight away.
-    if matches!(cases[0].kind, CaseKind::Call { outcome: Outcome::Error, .. }) {
+    if matches!(cases[0].kind, CaseKind::Call { outcome: Outcome::Error(_), .. }) {
         bail!("{what}: the first case must expect a value, so an untouched stub fails straight away");
     }
     Ok(Function {
@@ -857,6 +878,11 @@ impl Spec {
         self.helpers.iter().chain(std::iter::once(&self.main))
     }
 
+    /// Does any error case check its message (`error_contains`)?
+    pub fn checks_error_messages(&self) -> bool {
+        self.cases().iter().any(|(_, c)| matches!(&c.kind, CaseKind::Call { outcome: Outcome::Error(parts), .. } if !parts.is_empty()))
+    }
+
     /// Every case in test order, with the function it belongs to.
     pub fn cases(&self) -> Vec<(&Function, &Case)> {
         self.functions().flat_map(|f| f.cases.iter().map(move |c| (f, c))).collect()
@@ -934,7 +960,7 @@ mod tests {
         ))
         .unwrap();
         assert_eq!(s.cases().len(), 2);
-        assert!(matches!(s.main.cases[1].kind, CaseKind::Call { outcome: Outcome::Error, .. }));
+        assert!(matches!(s.main.cases[1].kind, CaseKind::Call { outcome: Outcome::Error(_), .. }));
     }
 
     #[test]

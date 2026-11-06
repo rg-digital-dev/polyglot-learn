@@ -214,6 +214,61 @@ fn pure_specs_check_the_input_is_unchanged() {
 }
 
 #[test]
+fn error_cases_can_check_the_message() {
+    let parse = |extra: &str| {
+        Spec::parse(&format!(
+            r#"{{"slug":"parse-port","title":"T","concept":"errors","summary":"S.","function":"parse_port",
+                "params":[{{"name":"input","type":"string"}}],"returns":"int","fallible":true,
+                "cases":[{{"description":"ok","input":["80"],"expected":80}},{{"description":"bad","input":["x"],"error":true{extra}}}]}}"#
+        ))
+        .unwrap()
+    };
+    let s = parse(r#","error_contains":["port","not a number"]"#);
+    assert!(s.checks_error_messages());
+    let test = |id: &str| get(id).unwrap().tests(&s).remove(0).1;
+
+    let ts = test("typescript");
+    assert!(ts.contains("for (const part of [\"port\", \"not a number\"]) {\n    assert.ok(message.includes(part)"), "{ts}");
+    let rust = test("rust");
+    assert!(rust.contains("let message = result.unwrap_err();\n    for part in [\"port\", \"not a number\"] {"), "{rust}");
+    let go = test("go");
+    assert!(go.contains("\"strings\""), "{go}");
+    assert!(go.contains("for _, part := range []string{\"port\", \"not a number\"} {\n\t\t\tif !strings.Contains(err.Error(), part)"), "{go}");
+    let php = test("php");
+    assert!(php.contains("$t->throws('c02_bad', fn() => parsePort(\"x\"), [\"port\", \"not a number\"]);"), "{php}");
+    let lua = test("lua");
+    assert!(lua.contains("end, { \"port\", \"not a number\" })"), "{lua}");
+    let qml = test("qml");
+    assert!(qml.contains("for (const part of [\"port\", \"not a number\"])\n            verify(message.indexOf(part) !== -1"), "{qml}");
+
+    // Without `error_contains`, error tests stay as they were (and Go needs no `strings`).
+    let plain = parse("");
+    assert!(!plain.checks_error_messages());
+    for id in ["typescript", "rust", "go", "php", "lua", "qml"] {
+        let t = get(id).unwrap().tests(&plain).remove(0).1;
+        assert!(!t.contains("should mention") && !t.contains("\"strings\""), "{id}: {t}");
+    }
+}
+
+#[test]
+fn error_contains_needs_an_error_case() {
+    let err = Spec::parse(
+        r#"{"slug":"x","title":"T","concept":"c","summary":"S.","function":"f","fallible":true,
+            "params":[{"name":"n","type":"int"}],"returns":"int",
+            "cases":[{"description":"d","input":[1],"expected":1,"error_contains":["x"]}]}"#,
+    )
+    .unwrap_err();
+    assert!(err.0.contains("error_contains"), "{}", err.0);
+    let err = Spec::parse(
+        r#"{"slug":"x","title":"T","concept":"c","summary":"S.","function":"f","fallible":true,
+            "params":[{"name":"n","type":"int"}],"returns":"int",
+            "cases":[{"description":"d","input":[1],"expected":1},{"description":"e","input":[2],"error":true,"error_contains":[" "]}]}"#,
+    )
+    .unwrap_err();
+    assert!(err.0.contains("non-empty"), "{}", err.0);
+}
+
+#[test]
 fn pure_needs_a_list_or_map_parameter() {
     let err = Spec::parse(
         r#"{"slug":"x","title":"T","concept":"c","summary":"S.","function":"f","pure":true,

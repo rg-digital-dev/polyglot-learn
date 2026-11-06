@@ -27,6 +27,13 @@ exercises = [
   "run-all",
 ]
 
+[[module]]
+id = "real-world-basics"
+title = "Real-world Basics"
+exercises = [
+  "error-context",
+]
+
 # Track-only modules: exercises written natively for one language, for the
 # features that don't exist everywhere. They live in tracks/<track>/extras/.
 

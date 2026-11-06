@@ -495,3 +495,14 @@ url = "https://doc.rust-lang.org/std/sync/mpsc/index.html"
 kind = "lings"
 title = "Rustlings: 20_threads"
 url = "https://github.com/rust-lang/rustlings/tree/main/exercises/20_threads"
+
+# error-context (error-context)
+[[links.error-context]]
+kind = "docs"
+title = "Rust by Example: map for Result"
+url = "https://doc.rust-lang.org/rust-by-example/error/result/result_map.html"
+
+[[links.error-context]]
+kind = "docs"
+title = "std: Result::map_err"
+url = "https://doc.rust-lang.org/std/result/enum.Result.html#method.map_err"

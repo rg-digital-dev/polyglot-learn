@@ -294,9 +294,18 @@ impl Backend for Qml {
                             "\n    function test_{name}() {{\n        compare({call}, {})\n    }}\n",
                             self.literal(spec, v, &f.returns)
                         )),
-                        Outcome::Error => s.push_str(&format!(
-                            "\n    function test_{name}() {{\n        let error = null\n        try {{\n            {call}\n        }} catch (e) {{\n            error = e\n        }}\n        verify(error !== null, \"expected an error to be thrown\")\n        verify(!isStub(error), \"still the stub: \" + error)\n    }}\n"
-                        )),
+                        Outcome::Error(parts) => {
+                            s.push_str(&format!(
+                                "\n    function test_{name}() {{\n        let error = null\n        try {{\n            {call}\n        }} catch (e) {{\n            error = e\n        }}\n        verify(error !== null, \"expected an error to be thrown\")\n        verify(!isStub(error), \"still the stub: \" + error)\n"
+                            ));
+                            if !parts.is_empty() {
+                                let list = parts.iter().map(|p| self.literal(spec, &Value::String(p.clone()), &Type::Str)).collect::<Vec<_>>().join(", ");
+                                s.push_str(&format!(
+                                    "        const message = error instanceof Error ? error.message : String(error)\n        for (const part of [{list}])\n            verify(message.indexOf(part) !== -1, \"the error message \\\"\" + message + \"\\\" should mention \\\"\" + part + \"\\\"\")\n"
+                                ));
+                            }
+                            s.push_str("    }\n");
+                        }
                     }
                 }
                 CaseKind::Scenario { create, steps } => {

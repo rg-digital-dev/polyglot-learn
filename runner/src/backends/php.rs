@@ -84,16 +84,23 @@ final class Harness
         }
     }
 
-    public function throws(string $name, callable $fn): void
+    /** @param list<string> $mentions text the exception's message must contain */
+    public function throws(string $name, callable $fn, array $mentions = []): void
     {
         try {
             $actual = $fn();
         } catch (\Throwable $e) {
             if (self::isStub($e)) {
                 $this->fail($name, 'still the stub: ' . $e->getMessage());
-            } else {
-                echo "ok $name\n";
+                return;
             }
+            foreach ($mentions as $part) {
+                if (!str_contains($e->getMessage(), $part)) {
+                    $this->fail($name, 'the error message ' . self::show($e->getMessage()) . ' should mention ' . self::show($part));
+                    return;
+                }
+            }
+            echo "ok $name\n";
             return;
         }
         $this->fail($name, 'expected an exception, got ' . self::show($actual));
@@ -375,7 +382,11 @@ impl Backend for Php {
                             "$t->equals('{name}', fn() => {call}, {});\n",
                             self.literal(spec, v, &f.returns)
                         )),
-                        Outcome::Error => s.push_str(&format!("$t->throws('{name}', fn() => {call});\n")),
+                        Outcome::Error(parts) if parts.is_empty() => s.push_str(&format!("$t->throws('{name}', fn() => {call});\n")),
+                        Outcome::Error(parts) => {
+                            let list = parts.iter().map(|p| self.literal(spec, &Value::String(p.clone()), &Type::Str)).collect::<Vec<_>>().join(", ");
+                            s.push_str(&format!("$t->throws('{name}', fn() => {call}, [{list}]);\n"))
+                        }
                     }
                 }
                 CaseKind::Scenario { create, steps } => {

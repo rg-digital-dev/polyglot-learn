@@ -268,6 +268,9 @@ impl Backend for Go {
         if spec.concurrency {
             imports.push("\"time\"".into());
         }
+        if spec.checks_error_messages() {
+            imports.push("\"strings\"".into());
+        }
         for m in spec.modules() {
             imports.push(format!("\"learn/{}/{}\"", spec.slug, naming::flat(m)));
         }
@@ -321,9 +324,17 @@ impl Backend for Go {
                                 "\t\twant := {}\n\t\tgot, err := {call}\n\t\tif err != nil {{\n\t\t\tt.Fatalf(\"unexpected error: %v\", err)\n\t\t}}\n\t\tif !specEqual(got, want) {{\n\t\t\tt.Fatalf(\"got %#v, want %#v\", got, want)\n\t\t}}\n",
                                 self.literal(spec, v, &f.returns)
                             )),
-                            (Outcome::Error, _) => s.push_str(&format!(
-                                "\t\tgot, err := {call}\n\t\tif err == nil {{\n\t\t\tt.Fatalf(\"expected an error, got %#v\", got)\n\t\t}}\n"
-                            )),
+                            (Outcome::Error(parts), _) => {
+                                s.push_str(&format!(
+                                    "\t\tgot, err := {call}\n\t\tif err == nil {{\n\t\t\tt.Fatalf(\"expected an error, got %#v\", got)\n\t\t}}\n"
+                                ));
+                                if !parts.is_empty() {
+                                    let list = parts.iter().map(|p| self.literal(spec, &Value::String(p.clone()), &Type::Str)).collect::<Vec<_>>().join(", ");
+                                    s.push_str(&format!(
+                                        "\t\tfor _, part := range []string{{{list}}} {{\n\t\t\tif !strings.Contains(err.Error(), part) {{\n\t\t\t\tt.Errorf(\"the error message %q should mention %q\", err.Error(), part)\n\t\t\t}}\n\t\t}}\n"
+                                    ));
+                                }
+                            }
                         }
                     }
                     CaseKind::Scenario { create, steps } => {

@@ -15,6 +15,11 @@ All notable changes to this project are listed here. The format follows
   `disposable-resource` (`using` and DisposableStack), `branded-ids` (branded
   types and `satisfies`) and `infer-types` (conditional and template literal
   types).
+- *Real-world Basics*, a third shared module for every track, starting with
+  `error-context`: wrap a helper's error with the setting's key without
+  losing the reason. With a concept note and a note per track.
+- Error cases in specs can check the message: `"error_contains": [...]` lists
+  text the error must mention, checked in all six tracks.
 - Type-checked exercises: a track-only exercise can list `typecheck` files in
   its `exercise.toml`; `learn` runs the track's type checker on them first and
   reports the result as case 1, "types check". TypeScript uses TypeScript 7's

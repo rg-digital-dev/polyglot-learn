@@ -329,7 +329,7 @@ fn cases_json(spec: &Spec) -> Vec<Value> {
                 CaseKind::Call { input, outcome } => {
                     let expected = match outcome {
                         Outcome::Value(v) => backends::json(v),
-                        Outcome::Error => "an error".into(),
+                        Outcome::Error(contains) => crate::spec::describe_error(contains),
                     };
                     vec![format!("{}({}) → {expected}", f.name, join(input))]
                 }
