@@ -339,7 +339,7 @@ kind = "exercism"
 title = "Exercism Go: Error Wrapping"
 url = "https://exercism.org/tracks/go/concepts/error-wrapping"
 
-# error-context (error-context)
+# error-context (error-context, parse-config)
 [[links.error-context]]
 kind = "docs"
 title = "The Go Blog: Working with Errors in Go 1.13"
@@ -409,3 +409,14 @@ url = "https://go.dev/ref/spec#Arithmetic_operators"
 kind = "docs"
 title = "Go package docs: math.Round"
 url = "https://pkg.go.dev/math#Round"
+
+# error-strategies (int-setting, validate-signup)
+[[links.error-strategies]]
+kind = "docs"
+title = "Go package docs: errors.Join"
+url = "https://pkg.go.dev/errors#Join"
+
+[[links.error-strategies]]
+kind = "docs"
+title = "The Go spec: Index expressions (the comma-ok form)"
+url = "https://go.dev/ref/spec#Index_expressions"

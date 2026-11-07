@@ -45,5 +45,7 @@ try {
 }
 ```
 
-## In this exercise
+## In these exercises
 `parseNumber` in `numbers.ts` throws errors that say why. `loadSetting` finds the key, calls it inside a small `try`, and rethrows with the key in front and the original as `cause`.
+
+`parseConfig` needs the line number in its errors. Loop with an index over `text.split("\n")` and number every line, blank or not; `indexOf("=")` finds the first `=` (destructuring `line.split("=")` drops everything after a second one), and `Object.hasOwn` spots a duplicate key.

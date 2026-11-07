@@ -222,7 +222,7 @@ kind = "docs"
 title = "PHP manual: The Generator class"
 url = "https://www.php.net/manual/en/class.generator.php"
 
-# error-context (error-context)
+# error-context (error-context, parse-config)
 [[links.error-context]]
 kind = "docs"
 title = "PHP manual: Exception::getPrevious"
@@ -287,3 +287,14 @@ url = "https://www.php.net/manual/en/function.intdiv.php"
 kind = "docs"
 title = "PHP manual: Integer overflow"
 url = "https://www.php.net/manual/en/language.types.integer.php#language.types.integer.overflow"
+
+# error-strategies (int-setting, validate-signup)
+[[links.error-strategies]]
+kind = "docs"
+title = "PHP manual: array_key_exists"
+url = "https://www.php.net/manual/en/function.array-key-exists.php"
+
+[[links.error-strategies]]
+kind = "docs"
+title = "PHP manual: ctype_digit"
+url = "https://www.php.net/manual/en/function.ctype-digit.php"

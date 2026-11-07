@@ -49,5 +49,7 @@ except ValueError as e:
     raise ValueError(f"{key}: {e}") from e  # fixed
 ```
 
-## In this exercise
+## In these exercises
 `numbers.parse_number` raises `ValueError`s that say why. `load_setting` finds the key, calls it inside a small `try`, and raises a new `ValueError` with the key in front, `from` the original.
+
+`parse_config` needs the line number in its errors: `enumerate(text.split("\n"), start=1)` numbers every line, blank or not. Use `partition("=")`, not `k, v = line.split("=")`: on `url = a=b` that raises `ValueError: too many values to unpack`, an error with no line number.

@@ -1,0 +1,37 @@
+{
+  "slug": "validate-signup",
+  "title": "Validate Signup",
+  "concept": "error-strategies",
+  "summary": "Check a signup form and return it as a `signup`, with `age` as a number. The username must be 3 to 16 characters (`username: must be 3 to 16 characters`), the email must have exactly one `@` with text on both sides (`email: must look like name@host`), and the age must be only ASCII digits (`age: not a number`) and at least 13 (`age: must be at least 13`). If anything is wrong, fail once with every problem, in that order, so the user can fix them all in one go. Each field reports at most one problem.",
+  "types": [
+    { "name": "signup", "kind": "record", "fields": [
+      { "name": "username", "type": "string" },
+      { "name": "email", "type": "string" },
+      { "name": "age", "type": "int" }
+    ] }
+  ],
+  "function": "validate_signup",
+  "params": [
+    { "name": "username", "type": "string" },
+    { "name": "email", "type": "string" },
+    { "name": "age", "type": "string" }
+  ],
+  "returns": "signup",
+  "fallible": true,
+  "hints": [
+    "Don't return at the first problem. Check every field, add each problem to a list, and fail at the end if the list isn't empty.",
+    "Put every problem in the error's message, for example joined with `; `. Python's `ExceptionGroup` and JavaScript's `AggregateError` keep the parts beside the message, not in it: `str(ExceptionGroup(\"invalid\", errs))` is `invalid (2 sub-exceptions)`. Go's `errors.Join` does include them. QML has no `AggregateError`.",
+    "Check the age's characters before converting: `-1` and `+20` aren't numbers in this form. Ages have at most 3 digits here."
+  ],
+  "cases": [
+    { "description": "validate_signup accepts a valid signup", "input": ["ada_l", "ada@example.com", "36"], "expected": { "username": "ada_l", "email": "ada@example.com", "age": 36 } },
+    { "description": "validate_signup accepts the shortest values allowed", "input": ["abc", "a@b", "13"], "expected": { "username": "abc", "email": "a@b", "age": 13 } },
+    { "description": "validate_signup rejects a short username", "input": ["ab", "ada@example.com", "36"], "error": true, "error_contains": ["username", "3 to 16"] },
+    { "description": "validate_signup rejects a long username", "input": ["abcdefghijklmnopq", "ada@example.com", "36"], "error": true, "error_contains": ["username", "3 to 16"] },
+    { "description": "validate_signup rejects an email without a name", "input": ["ada_l", "@example.com", "36"], "error": true, "error_contains": ["email", "name@host"] },
+    { "description": "validate_signup rejects an age that isn't a number", "input": ["ada_l", "ada@example.com", "thirty"], "error": true, "error_contains": ["age", "not a number"] },
+    { "description": "validate_signup rejects an age under 13", "input": ["ada_l", "ada@example.com", "12"], "error": true, "error_contains": ["age", "at least 13"] },
+    { "description": "validate_signup reports two problems", "input": ["ab", "nope", "36"], "error": true, "error_contains": ["username", "3 to 16", "email", "name@host"] },
+    { "description": "validate_signup reports every problem", "input": ["", "a@b@c", "-1"], "error": true, "error_contains": ["3 to 16", "name@host", "not a number"] }
+  ]
+}

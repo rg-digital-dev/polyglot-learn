@@ -1,0 +1,26 @@
+{
+  "slug": "parse-config",
+  "title": "Parse Config",
+  "concept": "error-context",
+  "summary": "Parse a small config into a map. Each line is blank, a comment (`#` after optional whitespace), or `key = value`, split at the first `=` with both sides trimmed; values may be empty and may contain `=`. Stop at the first bad line with an error that says where: it mentions `line N`, counting from 1 and counting every line, blank and comment lines too, and the reason: `missing '='`, `empty key`, or `duplicate key` together with the key.",
+  "function": "parse_config",
+  "params": [{ "name": "text", "type": "string" }],
+  "returns": "map<string,string>",
+  "fallible": true,
+  "hints": [
+    "Count lines as you split the text, before you skip anything. If you count only the lines you keep, a blank line or comment earlier on shifts every line number after it. Lua: `text:gmatch(\"[^\\n]+\")` skips empty lines; `(text .. \"\\n\"):gmatch(\"(.-)\\n\")` doesn't.",
+    "Split at the first `=` only, so `url = a=b` keeps `a=b`. Rust `split_once`, Go `strings.Cut`, Python `partition`, PHP `explode('=', $line, 2)`, TypeScript and QML `indexOf`, Lua `^(.-)=(.*)$`.",
+    "Before you store a key, check whether it's already there. Otherwise the second one silently wins."
+  ],
+  "cases": [
+    { "description": "parse_config reads every key", "input": ["host = example.com\nport = 8080"], "expected": { "host": "example.com", "port": "8080" } },
+    { "description": "parse_config skips blank and comment lines", "input": ["# server\n\nhost = a\n  # indented\n"], "expected": { "host": "a" } },
+    { "description": "parse_config splits at the first equals sign", "input": ["url = https://x.test/?a=b"], "expected": { "url": "https://x.test/?a=b" } },
+    { "description": "parse_config allows an empty value", "input": ["name ="], "expected": { "name": "" } },
+    { "description": "parse_config reads an empty config", "input": [""], "expected": {} },
+    { "description": "parse_config counts blank and comment lines", "input": ["host = a\n\n# note\nport 8080"], "error": true, "error_contains": ["line 4", "missing '='"] },
+    { "description": "parse_config rejects an empty key", "input": ["= 5"], "error": true, "error_contains": ["line 1", "empty key"] },
+    { "description": "parse_config rejects a duplicate key", "input": ["port = 1\nhost = a\nport = 2"], "error": true, "error_contains": ["line 3", "duplicate key", "port"] },
+    { "description": "parse_config reports the first bad line", "input": ["port = 1\n\noops\n= 2"], "error": true, "error_contains": ["line 3", "missing '='"] }
+  ]
+}

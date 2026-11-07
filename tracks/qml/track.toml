@@ -217,7 +217,7 @@ kind = "docs"
 title = "Qt 6: Models and Views in Qt Quick"
 url = "https://doc.qt.io/qt-6/qtquick-modelviewsdata-modelview.html"
 
-# error-context (error-context)
+# error-context (error-context, parse-config)
 [[links.error-context]]
 kind = "docs"
 title = "MDN: Error: cause"
@@ -265,3 +265,14 @@ url = "https://doc.qt.io/qt-6/qml-int.html"
 kind = "docs"
 title = "MDN: Math.round()"
 url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round"
+
+# error-strategies (int-setting, validate-signup)
+[[links.error-strategies]]
+kind = "docs"
+title = "Qt docs: JavaScript Host Environment"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html"
+
+[[links.error-strategies]]
+kind = "docs"
+title = "MDN: Object.prototype.hasOwnProperty()"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty"

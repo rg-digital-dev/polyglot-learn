@@ -45,5 +45,7 @@ return fmt.Errorf("port: %v", err) // the text is the same, but errors.Is can't 
 return fmt.Errorf("port: %w", err) // the cause stays reachable
 ```
 
-## In this exercise
+## In these exercises
 `numbers.ParseNumber` returns errors that say why. `LoadSetting` finds the key and wraps any error with `fmt.Errorf("%s: %w", key, err)`, so the message mentions both the key and the reason.
+
+`ParseConfig` needs the line number in its errors: range over `strings.Split(text, "\n")` and use the index, so blank lines count too. `strings.Cut` splits at the first `=` and tells you whether there was one; `strings.Split(line, "=")[1]` loses everything after a second `=`.

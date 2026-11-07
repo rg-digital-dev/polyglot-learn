@@ -18,6 +18,10 @@ Everywhere, the message grows from the outside in: the outermost layer's context
 
 Add what the caller *doesn't* already know. The function that parses one value doesn't know the key; the function that reads a setting does, so that's where the key goes. Don't repeat the cause's text in your own words, and don't log the error and pass it up as well: it then appears twice.
 
+## Say where
+
+When the input is text a person wrote, the most useful context is often a position: `line 4: missing '='` gets them to the problem straight away. Count lines from 1, the way editors do, and count *every* line, blank ones and comments too. If you count only the lines you keep, one blank line near the top shifts every number after it. Some splitting functions drop empty lines for you, such as Lua's `gmatch("[^\n]+")` and PHP's `preg_split` with `PREG_SPLIT_NO_EMPTY`, so number the lines before you filter them.
+
 ## Common mistake
 
 Throwing away the original error and writing a new message from scratch:

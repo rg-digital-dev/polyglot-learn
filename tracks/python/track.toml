@@ -143,7 +143,7 @@ kind = "docs"
 title = "Glossary: global interpreter lock"
 url = "https://docs.python.org/3/glossary.html#term-global-interpreter-lock"
 
-# error-context (error-context)
+# error-context (error-context, parse-config)
 [[links.error-context]]
 kind = "docs"
 title = "The Python Tutorial: 8.5 Exception Chaining"
@@ -263,3 +263,14 @@ url = "https://docs.python.org/3/reference/expressions.html#binary-arithmetic-op
 kind = "docs"
 title = "Python docs: round()"
 url = "https://docs.python.org/3/library/functions.html#round"
+
+# error-strategies (int-setting, validate-signup)
+[[links.error-strategies]]
+kind = "docs"
+title = "Python docs: Exception groups"
+url = "https://docs.python.org/3/library/exceptions.html#exception-groups"
+
+[[links.error-strategies]]
+kind = "docs"
+title = "PEP 654: Exception Groups and except*"
+url = "https://peps.python.org/pep-0654/"

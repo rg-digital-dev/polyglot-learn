@@ -37,9 +37,13 @@ All notable changes to this project are listed here. The format follows
   `disposable-resource` (`using` and DisposableStack), `branded-ids` (branded
   types and `satisfies`) and `infer-types` (conditional and template literal
   types).
-- *Real-world Basics*, a third shared module for every track, starting with
-  `error-context`: wrap a helper's error with the setting's key without
-  losing the reason. With a concept note and a note per track.
+- *Real-world Basics*, a shared module for every track: `error-context` (wrap
+  a helper's error with the setting's key without losing the reason),
+  `parse-config` (errors that name the line, counting blank and comment
+  lines), `int-setting` (a missing key gets the default, a bad value is still
+  an error) and `validate-signup` (report every problem at once, in the
+  message). With two concept pages (`error-context`, `error-strategies`) and
+  notes per track.
 - *Files and Resources*, a shared module for every track except QML, starting
   with `read-file`: read a text file, skip blank and comment lines, and name
   the file when it can't be read.

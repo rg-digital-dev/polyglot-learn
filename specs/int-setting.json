@@ -1,0 +1,30 @@
+{
+  "slug": "int-setting",
+  "title": "Int Setting",
+  "concept": "error-strategies",
+  "summary": "Read a setting as a whole number, or return `fallback` when the key isn't in `settings`. A value that is there but isn't only ASCII digits is an error that mentions the key and `not a number`, even when the value is empty: that's a mistake in the config, and the fallback would hide it. Values have at most 9 digits.",
+  "function": "int_setting",
+  "params": [
+    { "name": "settings", "type": "map<string,string>" },
+    { "name": "key", "type": "string" },
+    { "name": "fallback", "type": "int" }
+  ],
+  "returns": "int",
+  "fallible": true,
+  "hints": [
+    "Ask \"is the key there?\" separately from \"is the value good?\". Go: `v, ok := settings[key]`; Python: `key in settings`; PHP: `array_key_exists`; Rust: `match settings.get(key)`; Lua: `settings[key] == nil`. TypeScript: `Object.hasOwn(settings, key)`; QML has no `Object.hasOwn`, so use `Object.prototype.hasOwnProperty.call(settings, key)`. A plain `settings[key]` finds `constructor` on every object.",
+    "Don't wrap the parse in a catch-all that returns the fallback, and don't use `||`, `or` or `?:` to pick it: `0` and `\"0\"` are falsy in some languages, and a bad value would quietly become the fallback.",
+    "Check the characters yourself before converting: Python's `int` accepts `8_080` and ` 7 `, PHP's `(int)` turns `eighty` into 0, and `Number(\"\")` is 0."
+  ],
+  "cases": [
+    { "description": "int_setting reads a value", "input": [{ "port": "8080" }, "port", 80], "expected": 8080 },
+    { "description": "int_setting uses the fallback for a missing key", "input": [{ "port": "8080" }, "workers", 4], "expected": 4 },
+    { "description": "int_setting uses the fallback for empty settings", "input": [{}, "port", 80], "expected": 80 },
+    { "description": "int_setting treats zero as a value", "input": [{ "retries": "0" }, "retries", 3], "expected": 0 },
+    { "description": "int_setting looks only at the settings themselves", "input": [{ "port": "80" }, "constructor", 5], "expected": 5 },
+    { "description": "int_setting ignores a bad value under another key", "input": [{ "port": "x", "workers": "2" }, "workers", 1], "expected": 2 },
+    { "description": "int_setting reports a bad value instead of using the fallback", "input": [{ "port": "eighty" }, "port", 80], "error": true, "error_contains": ["port", "not a number"] },
+    { "description": "int_setting reports an empty value", "input": [{ "port": "" }, "port", 80], "error": true, "error_contains": ["port", "not a number"] },
+    { "description": "int_setting rejects underscores", "input": [{ "port": "8_080" }, "port", 80], "error": true, "error_contains": ["port", "not a number"] }
+  ]
+}
