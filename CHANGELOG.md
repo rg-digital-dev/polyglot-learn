@@ -6,6 +6,18 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-07
+
+A Python track, five new shared modules, and Rust and TypeScript in Practice.
+
+**Before you update:**
+- The TypeScript track now needs **Node 24 or newer** (was 22.6), for `using`.
+  Check with `node --version`; `learn doctor` reports an older one.
+- QML stubs now annotate whole numbers as `real` instead of `int`: Qt 6.7 and
+  newer cut `int` to 32 bits on every call. Files you already have keep `int`,
+  which is fine for the 0.2.0 exercises. If one of your QML functions gets a
+  value above 2147483647, change its `int` annotations to `real`.
+
 ### Added
 - *Numbers and Division*, a shared module for every track: `wrap-index` (`%`
   with negative indexes), `split-evenly` (floor vs. truncating division),
