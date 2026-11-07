@@ -398,3 +398,14 @@ url = "https://go.dev/blog/strings"
 kind = "docs"
 title = "Go package docs: unicode/utf8"
 url = "https://pkg.go.dev/unicode/utf8"
+
+# numbers (wrap-index, split-evenly, round-percent, checked-multiply)
+[[links.numbers]]
+kind = "docs"
+title = "The Go spec: Arithmetic operators"
+url = "https://go.dev/ref/spec#Arithmetic_operators"
+
+[[links.numbers]]
+kind = "docs"
+title = "Go package docs: math.Round"
+url = "https://pkg.go.dev/math#Round"

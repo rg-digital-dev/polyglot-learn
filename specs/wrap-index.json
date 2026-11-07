@@ -1,0 +1,29 @@
+{
+  "slug": "wrap-index",
+  "title": "Wrap Index",
+  "concept": "numbers",
+  "summary": "Return the position that index refers to in a circular list of length items (length is at least 1), from 0 to length - 1. Indexes past the end wrap around to the start, and negative indexes count back from the end: -1 is the last item.",
+  "function": "wrap_index",
+  "params": [
+    { "name": "index", "type": "int" },
+    { "name": "length", "type": "int" }
+  ],
+  "returns": "int",
+  "fallible": false,
+  "hints": [
+    "For a non-negative index, the remainder of index divided by length is the answer. Try -1 with your language's remainder operator: does it give 4 or -1 for a length of 5?",
+    "In most languages the remainder takes the sign of the dividend, so a negative index gives a negative remainder. Adding length once brings it into range.",
+    "TypeScript: -10 % 5 is -0, and the tests tell -0 from 0. ((index % length) + length) % length never returns -0."
+  ],
+  "cases": [
+    { "description": "an index inside the list", "input": [2, 5], "expected": 2 },
+    { "description": "the length wraps to the start", "input": [5, 5], "expected": 0 },
+    { "description": "past the end", "input": [7, 5], "expected": 2 },
+    { "description": "several laps forward", "input": [23, 5], "expected": 3 },
+    { "description": "index zero", "input": [0, 5], "expected": 0 },
+    { "description": "minus one is the last item", "input": [-1, 5], "expected": 4 },
+    { "description": "several laps backward", "input": [-7, 5], "expected": 3 },
+    { "description": "a negative multiple of the length", "input": [-10, 5], "expected": 0 },
+    { "description": "a list of one", "input": [-3, 1], "expected": 0 }
+  ]
+}

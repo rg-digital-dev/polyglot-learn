@@ -7,6 +7,12 @@ All notable changes to this project are listed here. The format follows
 ## [Unreleased]
 
 ### Added
+- *Numbers and Division*, a shared module for every track: `wrap-index` (`%`
+  with negative indexes), `split-evenly` (floor vs. truncating division),
+  `round-percent` (rounding halves away from zero, without float surprises)
+  and `checked-multiply` (detecting 64-bit overflow), with a concept page and
+  a note per track. All values stay within ±(2^53 − 1), so TypeScript and QML
+  can hold them exactly.
 - *Text and Unicode*, a shared module for every track: `char-count`
   (counting code points, not bytes or UTF-16 units) and `truncate` (cutting
   text to a limit without splitting a character), with a concept page and a

@@ -386,3 +386,14 @@ url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_
 kind = "docs"
 title = "MDN: Intl.Segmenter"
 url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter"
+
+# numbers (wrap-index, split-evenly, round-percent, checked-multiply)
+[[links.numbers]]
+kind = "docs"
+title = "MDN: Remainder (%)"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder"
+
+[[links.numbers]]
+kind = "docs"
+title = "MDN: Number.MAX_SAFE_INTEGER"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER"

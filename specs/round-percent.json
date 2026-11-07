@@ -1,0 +1,30 @@
+{
+  "slug": "round-percent",
+  "title": "Round Percent",
+  "concept": "numbers",
+  "summary": "Return part as a percentage of whole (whole is at least 1; part may be negative or larger than whole), rounded to the nearest whole number. Halves round away from zero: 12.5 becomes 13 and -12.5 becomes -13.",
+  "function": "round_percent",
+  "params": [
+    { "name": "part", "type": "int" },
+    { "name": "whole", "type": "int" }
+  ],
+  "returns": "int",
+  "fallible": false,
+  "hints": [
+    "Check what your language's round does with 2.5 and -2.5. Some round halves to the even number, some toward positive infinity, and some have no round at all.",
+    "part / whole * 100 is 14.499999999999998 for 29 and 200, because 0.145 has no exact binary form. Multiply before you divide, or stay in integers.",
+    "In integers: round the absolute value with (200 * |part| + whole) / (2 * whole), using integer division, then put the sign back. TypeScript: make sure a result of zero isn't -0."
+  ],
+  "cases": [
+    { "description": "a quarter", "input": [1, 4], "expected": 25 },
+    { "description": "a third rounds down", "input": [1, 3], "expected": 33 },
+    { "description": "two thirds round up", "input": [2, 3], "expected": 67 },
+    { "description": "a half rounds up", "input": [1, 8], "expected": 13 },
+    { "description": "a half next to an even number", "input": [5, 8], "expected": 63 },
+    { "description": "a negative half rounds away from zero", "input": [-1, 8], "expected": -13 },
+    { "description": "a negative share", "input": [-2, 3], "expected": -67 },
+    { "description": "a half that floats get wrong", "input": [29, 200], "expected": 15 },
+    { "description": "a tiny loss rounds to zero", "input": [-1, 1000], "expected": 0 },
+    { "description": "more than the whole", "input": [3, 2], "expected": 150 }
+  ]
+}

@@ -276,3 +276,14 @@ url = "https://www.php.net/manual/en/function.iconv-substr.php"
 kind = "docs"
 title = "PHP manual: Multibyte String"
 url = "https://www.php.net/manual/en/book.mbstring.php"
+
+# numbers (wrap-index, split-evenly, round-percent, checked-multiply)
+[[links.numbers]]
+kind = "docs"
+title = "PHP manual: intdiv"
+url = "https://www.php.net/manual/en/function.intdiv.php"
+
+[[links.numbers]]
+kind = "docs"
+title = "PHP manual: Integer overflow"
+url = "https://www.php.net/manual/en/language.types.integer.php#language.types.integer.overflow"

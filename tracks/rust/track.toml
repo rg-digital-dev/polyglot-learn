@@ -550,3 +550,14 @@ url = "https://doc.rust-lang.org/book/ch08-02-strings.html"
 kind = "docs"
 title = "Rust std: str::char_indices"
 url = "https://doc.rust-lang.org/std/primitive.str.html#method.char_indices"
+
+# numbers (wrap-index, split-evenly, round-percent, checked-multiply)
+[[links.numbers]]
+kind = "docs"
+title = "The Rust Book: 3.2 Integer Overflow"
+url = "https://doc.rust-lang.org/book/ch03-02-data-types.html#integer-overflow"
+
+[[links.numbers]]
+kind = "docs"
+title = "Rust std docs: i64::checked_mul"
+url = "https://doc.rust-lang.org/std/primitive.i64.html#method.checked_mul"

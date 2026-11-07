@@ -1,0 +1,29 @@
+{
+  "slug": "split-evenly",
+  "title": "Split Evenly",
+  "concept": "numbers",
+  "summary": "Split amount into parts whole numbers (parts is at least 1) that add up to amount and differ by at most one, larger parts first. Think of a bill in cents: 10 in 3 is [4, 3, 3], and a refund of -7 in 2 is [-3, -4].",
+  "function": "split_evenly",
+  "params": [
+    { "name": "amount", "type": "int" },
+    { "name": "parts", "type": "int" }
+  ],
+  "returns": "list<int>",
+  "fallible": false,
+  "hints": [
+    "Use integer division: in several languages 7 / 2 is 3.5. The quotient is the smaller part, and the remainder says how many parts get one more.",
+    "For a negative amount the smaller part is the quotient rounded down (floor), not toward zero: -7 in 2 is -3 and -4, so you need a quotient of -4 and a remainder of 1.",
+    "If your language's division truncates, compute the floored quotient yourself and then the remainder as amount - quotient * parts, so the two always fit together."
+  ],
+  "cases": [
+    { "description": "splits evenly", "input": [10, 2], "expected": [5, 5] },
+    { "description": "the remainder goes to the first parts", "input": [10, 3], "expected": [4, 3, 3] },
+    { "description": "an odd amount in two", "input": [7, 2], "expected": [4, 3] },
+    { "description": "more parts than units", "input": [2, 4], "expected": [1, 1, 0, 0] },
+    { "description": "nothing to split", "input": [0, 3], "expected": [0, 0, 0] },
+    { "description": "one part", "input": [5, 1], "expected": [5] },
+    { "description": "a negative amount in two", "input": [-7, 2], "expected": [-3, -4] },
+    { "description": "a negative amount in three", "input": [-10, 3], "expected": [-3, -3, -4] },
+    { "description": "a small negative amount", "input": [-2, 3], "expected": [0, -1, -1] }
+  ]
+}
