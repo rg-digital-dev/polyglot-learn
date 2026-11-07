@@ -264,7 +264,7 @@ kind = "docs"
 title = "Programming in Lua (1st ed., Lua 5.0): 8.5 Error Messages and Tracebacks"
 url = "https://www.lua.org/pil/8.5.html"
 
-# error-context (error-context)
+# error-context (error-context, parse-config)
 [[links.error-context]]
 kind = "docs"
 title = "Programming in Lua (1st ed., Lua 5.0): 8.4 Error Handling and Exceptions"
@@ -319,3 +319,14 @@ url = "https://www.lua.org/manual/5.4/manual.html#3.4.1"
 kind = "docs"
 title = "Lua 5.4 manual: 6.7 Mathematical Functions"
 url = "https://www.lua.org/manual/5.4/manual.html#6.7"
+
+# error-strategies (int-setting, validate-signup)
+[[links.error-strategies]]
+kind = "docs"
+title = "Programming in Lua: Error Handling and Exceptions"
+url = "https://www.lua.org/pil/8.3.html"
+
+[[links.error-strategies]]
+kind = "docs"
+title = "Lua 5.4 manual: tonumber"
+url = "https://www.lua.org/manual/5.4/manual.html#pdf-tonumber"

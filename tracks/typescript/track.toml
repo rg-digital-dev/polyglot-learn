@@ -337,7 +337,7 @@ kind = "docs"
 title = "TypeScript Handbook: Template Literal Types"
 url = "https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html"
 
-# error-context (error-context)
+# error-context (error-context, parse-config)
 [[links.error-context]]
 kind = "docs"
 title = "MDN: Error: cause"
@@ -397,3 +397,14 @@ url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operato
 kind = "docs"
 title = "MDN: Number.MAX_SAFE_INTEGER"
 url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER"
+
+# error-strategies (int-setting, validate-signup)
+[[links.error-strategies]]
+kind = "docs"
+title = "MDN: Object.hasOwn()"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn"
+
+[[links.error-strategies]]
+kind = "docs"
+title = "MDN: AggregateError"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError"

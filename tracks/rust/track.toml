@@ -496,7 +496,7 @@ kind = "lings"
 title = "Rustlings: 20_threads"
 url = "https://github.com/rust-lang/rustlings/tree/main/exercises/20_threads"
 
-# error-context (error-context)
+# error-context (error-context, parse-config)
 [[links.error-context]]
 kind = "docs"
 title = "Rust by Example: map for Result"
@@ -561,3 +561,14 @@ url = "https://doc.rust-lang.org/book/ch03-02-data-types.html#integer-overflow"
 kind = "docs"
 title = "Rust std docs: i64::checked_mul"
 url = "https://doc.rust-lang.org/std/primitive.i64.html#method.checked_mul"
+
+# error-strategies (int-setting, validate-signup)
+[[links.error-strategies]]
+kind = "docs"
+title = "The Rust Book: Recoverable Errors with Result"
+url = "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+
+[[links.error-strategies]]
+kind = "docs"
+title = "Rust std docs: Option::ok_or"
+url = "https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or"

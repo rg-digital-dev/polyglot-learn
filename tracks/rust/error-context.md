@@ -41,5 +41,7 @@ raw.parse::<u8>().map_err(|_| "bad value".to_string())  // which field? why?
 raw.parse::<u8>().map_err(|e| format!("{field}: {e}"))   // both kept
 ```
 
-## In this exercise
+## In these exercises
 `numbers::parse_number` returns `Err` messages with the reason. `load_setting` finds the key and wraps any error from it with `map_err`, so the message mentions both the key and the reason.
+
+`parse_config` needs the line number in its errors: `text.split('\n').enumerate()` numbers every line, blank or not, and `split_once('=')` with `ok_or_else` turns a missing `=` into an `Err` that says `line N`.

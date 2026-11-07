@@ -41,5 +41,7 @@ Swallowing the error and returning a default:
 try { return parseSize(v) } catch (e) { return 0 }   // a typo in the settings becomes width 0
 ```
 
-## In this exercise
+## In these exercises
 `Numbers.parseNumber` in `numbers.mjs` throws errors that say why. `loadSetting` finds the key, calls it inside a small `try`, and throws a new error with the key in front and the original as `cause`.
+
+`parseConfig` needs the line number in its errors: loop with an index over `text.split("\n")` so blank lines count too, and split at `indexOf("=")`. QML in Qt 6.10 has no `Object.hasOwn`, so check for a duplicate key with `Object.prototype.hasOwnProperty.call(config, key)`.

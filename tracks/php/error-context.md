@@ -46,5 +46,7 @@ Forgetting `$previous`, or catching too much:
 }
 ```
 
-## In this exercise
+## In these exercises
 `Numbers\parseNumber` throws `InvalidArgumentException`s that say why. `loadSetting` finds the key, catches that exception, and throws a new one with the key in front and the original as `$previous`.
+
+`parseConfig` needs the line number in its errors: the keys of `explode("\n", $text)` number every line, blank or not. Pass a limit, `explode('=', $line, 2)`, and check the count: without the limit `url = a=b` loses `=b`, and destructuring a line with no `=` only gives a warning and `null`.

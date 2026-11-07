@@ -58,6 +58,9 @@ id = "real-world-basics"
 title = "Real-world Basics"
 exercises = [
   "error-context",
+  "parse-config",
+  "int-setting",
+  "validate-signup",
 ]
 
 # Shared, but not on every track: QML can't read files without C++, and has no

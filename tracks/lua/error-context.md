@@ -41,5 +41,7 @@ if port == nil then return nil, err end   -- which variable was it?
 if port == nil then error(err) end        -- the caller expected nil, err, not a raise
 ```
 
-## In this exercise
+## In these exercises
 `numbers.parse_number` returns `nil, reason` for bad input. `load_setting` finds the key, checks parse_number's result, and returns `nil, key .. ": " .. err` so the message mentions both.
+
+`parse_config` needs the line number in its errors. `text:gmatch("[^\n]+")` skips empty lines, which shifts every number after one; `(text .. "\n"):gmatch("(.-)\n")` yields them all. Anchor the split, `^(.-)=(.*)$`, so a second `=` stays in the value.
