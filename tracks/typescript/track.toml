@@ -359,3 +359,19 @@ url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Stateme
 kind = "docs"
 title = "MDN: DisposableStack"
 url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DisposableStack"
+
+# references (make-grid, add-bonus)
+[[links.references]]
+kind = "docs"
+title = "MDN: Shallow copy"
+url = "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy"
+
+[[links.references]]
+kind = "docs"
+title = "MDN: Deep copy"
+url = "https://developer.mozilla.org/en-US/docs/Glossary/Deep_copy"
+
+[[links.references]]
+kind = "docs"
+title = "MDN: structuredClone()"
+url = "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone"

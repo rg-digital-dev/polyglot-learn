@@ -30,5 +30,5 @@ Check right after the read, and fail with a message that names the file.
 
 ## Go deeper
 
-- `learn compare files` puts all five versions side by side.
+- `learn compare files` puts every track's version side by side.
 - Reading everything at once is fine for small files. For large ones, every language can also read line by line (`BufReader::lines`, `bufio.Scanner`, `readline`, `fgets`, `file:lines()`), which keeps memory use flat.

@@ -185,7 +185,7 @@ fn pure_specs_check_the_input_is_unchanged() {
 
     let ts = test("typescript");
     assert!(
-        ts.contains("  const scores: Parameters<typeof topScores>[0] = [10, 30, 20];\n  assert.deepStrictEqual(topScores(scores, 2), [30, 20]);\n"),
+        ts.contains("  const scores: Parameters<typeof topScores>[0] = [10, 30, 20];\n  const got = topScores(scores, 2);\n  assert.deepStrictEqual(got, [30, 20]);\n"),
         "{ts}"
     );
     assert!(ts.contains("assert.deepStrictEqual(scores, [10, 30, 20], \"the input list was modified\");"), "{ts}");
@@ -195,12 +195,13 @@ fn pure_specs_check_the_input_is_unchanged() {
     assert!(go.contains("if !reflect.DeepEqual(scores, []int{10, 30, 20}) {\n\t\t\tt.Fatalf(\"the input list was modified: it is now %#v\", scores)"), "{go}");
 
     let lua = test("lua");
-    assert!(lua.contains("  local scores = {10, 30, 20}\n  H.expect(M.top_scores(scores, 2), {30, 20}, \"result\")\n"), "{lua}");
+    assert!(lua.contains("  local scores = {10, 30, 20}\n  local got = M.top_scores(scores, 2)\n  H.expect(got, {30, 20}, \"result\")\n"), "{lua}");
     assert!(lua.contains("  H.expect(scores, {10, 30, 20}, \"the input list was modified\")\n"), "{lua}");
 
     let qml = test("qml");
     assert!(qml.contains("        const scores = [10, 30, 20]\n        const scoresBefore = JSON.stringify(scores)\n"), "{qml}");
-    assert!(qml.contains("compare(subject.topScores(scores, 2), [30, 20])"), "{qml}");
+    assert!(qml.contains("const got = subject.topScores(scores, 2)
+        compare(got, [30, 20])"), "{qml}");
     assert!(qml.contains("compare(JSON.stringify(scores), scoresBefore, \"the input list was modified\")"), "{qml}");
 
     // The callee can't change the caller's list: a borrowed slice, a copied array.
@@ -309,6 +310,60 @@ fn error_contains_needs_an_error_case() {
     )
     .unwrap_err();
     assert!(err.0.contains("non-empty"), "{}", err.0);
+}
+
+/// An `independent` spec writes into each non-empty inner list of the result
+/// and checks that nothing else changed, in the result or in the inputs.
+#[test]
+fn independent_specs_check_for_shared_lists() {
+    let s = Spec::parse(
+        r#"{"slug":"add-bonus","title":"T","concept":"references","summary":"S.","function":"add_bonus",
+            "params":[{"name":"scores","type":"map<string,list<int>>"},{"name":"name","type":"string"},{"name":"points","type":"int"}],
+            "returns":"map<string,list<int>>","independent":true,
+            "cases":[{"description":"d","input":[{"a":[3],"b":[],"c":[5]},"a",1],"expected":{"a":[3,1],"b":[],"c":[5]}}]}"#,
+    )
+    .unwrap();
+    let test = |id: &str| get(id).unwrap().tests(&s).remove(0).1;
+
+    // Below every value in the result; writes accumulate; empty lists are skipped.
+    let py = test("python");
+    assert!(py.contains("    got[\"a\"][0] = -1\n    H.expect(got, {\"a\": [-1, 1], \"b\": [], \"c\": [5]}, "), "{py}");
+    assert!(py.contains("    got[\"c\"][0] = -1\n    H.expect(got, {\"a\": [-1, 1], \"b\": [], \"c\": [-1]}, "), "{py}");
+    assert!(!py.contains("got[\"b\"]"), "{py}");
+    // Implies the input check, then checks the input again after the writes.
+    assert!(py.contains("the input map was modified"), "{py}");
+    assert!(py.contains("changing the result also changed the input map"), "{py}");
+
+    let ts = test("typescript");
+    assert!(ts.contains("  got[\"a\"]![0] = -1;\n  assert.deepStrictEqual({ ...got }, "), "{ts}");
+    assert!(ts.contains("\"`got[\\\"a\\\"][0] = -1` also changed another list"), "{ts}");
+    assert!(test("go").contains("\t\tgot[\"a\"][0] = -1\n\t\tif !specEqual(got, "));
+    assert!(test("lua").contains("  got[\"a\"][1] = -1\n"));
+    assert!(test("qml").contains("        got[\"a\"][0] = -1\n        compare(got, "));
+    // Nothing to check where results can't share lists.
+    assert!(!test("rust").contains("= -1"));
+    assert!(!test("php").contains("= -1"));
+
+    // Lists of lists: by position (1-based in Lua).
+    let grid = Spec::parse(
+        r#"{"slug":"make-grid","title":"T","concept":"references","summary":"S.","function":"make_grid",
+            "params":[{"name":"n","type":"int"}],"returns":"list<list<int>>","independent":true,
+            "cases":[{"description":"d","input":[2],"expected":[[-2],[0]]}]}"#,
+    )
+    .unwrap();
+    let lua = get("lua").unwrap().tests(&grid).remove(0).1;
+    assert!(lua.contains("  got[1][1] = -3\n  H.expect(got, {{-3}, {0}}, "), "{lua}");
+    assert!(lua.contains("  got[2][1] = -3\n  H.expect(got, {{-3}, {-3}}, "), "{lua}");
+}
+
+#[test]
+fn independent_needs_a_list_of_int_lists() {
+    let err = Spec::parse(
+        r#"{"slug":"x","title":"T","concept":"c","summary":"S.","function":"f","independent":true,
+            "params":[{"name":"n","type":"int"}],"returns":"list<int>","cases":[{"description":"d","input":[1],"expected":[1]}]}"#,
+    )
+    .unwrap_err();
+    assert!(err.0.contains("independent"), "{}", err.0);
 }
 
 #[test]

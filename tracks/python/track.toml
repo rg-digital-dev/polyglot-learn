@@ -225,3 +225,19 @@ url = "https://docs.python.org/3/reference/datamodel.html#special-method-names"
 kind = "docs"
 title = "Language Reference: Emulating numeric types"
 url = "https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types"
+
+# references (make-grid, add-bonus)
+[[links.references]]
+kind = "docs"
+title = "Python FAQ: Why did changing list 'y' also change list 'x'?"
+url = "https://docs.python.org/3/faq/programming.html#why-did-changing-list-y-also-change-list-x"
+
+[[links.references]]
+kind = "docs"
+title = "Python FAQ: How do I create a multidimensional list?"
+url = "https://docs.python.org/3/faq/programming.html#how-do-i-create-a-multidimensional-list"
+
+[[links.references]]
+kind = "docs"
+title = "Python docs: copy (shallow and deep copy operations)"
+url = "https://docs.python.org/3/library/copy.html"

@@ -1,0 +1,27 @@
+{
+  "slug": "add-bonus",
+  "title": "Add Bonus",
+  "concept": "references",
+  "summary": "Return a copy of scores in which name's list has points added at the end (a new one-item list if name isn't there). Don't modify scores, and share none of its lists: the caller may change the result later.",
+  "function": "add_bonus",
+  "params": [
+    { "name": "scores", "type": "map<string,list<int>>" },
+    { "name": "name", "type": "string" },
+    { "name": "points", "type": "int" }
+  ],
+  "returns": "map<string,list<int>>",
+  "pure": true,
+  "independent": true,
+  "hints": [
+    "Copying the map gives you a new map, but its values are still the same lists. That's a shallow copy.",
+    "Copy every list as well (a deep copy), then add points to name's copy.",
+    "If name isn't in the map yet, start it with an empty list."
+  ],
+  "cases": [
+    { "description": "adds to an existing list", "input": [{ "ann": [3, 4], "bob": [5] }, "ann", 10], "expected": { "ann": [3, 4, 10], "bob": [5] } },
+    { "description": "new name", "input": [{ "ann": [1] }, "cy", 2], "expected": { "ann": [1], "cy": [2] } },
+    { "description": "empty scores", "input": [{}, "ann", 1], "expected": { "ann": [1] } },
+    { "description": "empty list", "input": [{ "ann": [] }, "ann", 4], "expected": { "ann": [4] } },
+    { "description": "other lists are copied too", "input": [{ "a": [1, 2], "b": [3], "c": [4, 5, 6] }, "b", 0], "expected": { "a": [1, 2], "b": [3, 0], "c": [4, 5, 6] } }
+  ]
+}

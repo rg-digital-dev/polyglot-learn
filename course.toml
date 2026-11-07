@@ -28,6 +28,14 @@ exercises = [
 ]
 
 [[module]]
+id = "values-and-references"
+title = "Values and References"
+exercises = [
+  "make-grid",
+  "add-bonus",
+]
+
+[[module]]
 id = "real-world-basics"
 title = "Real-world Basics"
 exercises = [

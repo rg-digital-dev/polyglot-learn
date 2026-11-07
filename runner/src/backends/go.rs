@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, escape, field_values, header, hex_escape, kept_inputs, render_args, render_kept_args, step_label, stub_message, timing, Backend};
+use super::{case_name, independence, shared_inside, shared_with_input, At, def_of, doc, escape, field_values, header, hex_escape, kept_inputs, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Method, Outcome, Param, Spec, Type};
 use crate::toolchain::{Found, Invocation, Tool};
@@ -378,7 +378,7 @@ impl Backend for Go {
                                         "\t\tstart := time.Now()\n\t\tgot := {call}\n\t\telapsed := time.Since(start).Milliseconds()\n\t\tif !specEqual(got, want) {{\n\t\t\tt.Fatalf(\"got %#v, want %#v\", got, want)\n\t\t}}\n\t\tif elapsed < {} {{\n\t\t\tt.Fatalf(\"finished in %d ms, but the slowest task alone takes {} ms: call task for every delay\", elapsed)\n\t\t}}\n\t\tif elapsed >= {} {{\n\t\t\tt.Fatalf(\"took %d ms: run the tasks at the same time so the call takes about {} ms, not {} ms\", elapsed)\n\t\t}}\n",
                                         tm.min_ms, tm.max, tm.limit_ms, tm.max, tm.sum
                                     ));
-                                } else if kept_inputs(spec, f).iter().any(Option::is_some) {
+                                } else if kept_inputs(spec, f).iter().any(Option::is_some) || independence(spec, f, v).is_some() {
                                     // Slices and maps share memory with the caller: check
                                     // the function left them alone.
                                     let kept = kept_inputs(spec, f);
@@ -395,6 +395,25 @@ impl Backend for Go {
                                         s.push_str(&format!(
                                             "\t\tif !reflect.DeepEqual({var}, {lit}) {{\n\t\t\tt.Fatalf(\"the input {kind} was modified: it is now %#v\", {var})\n\t\t}}\n"
                                         ));
+                                    }
+                                    if let Some((value, writes)) = independence(spec, f, v) {
+                                        for (at, after) in &writes {
+                                            let write = match at {
+                                                At::Index(i) => format!("got[{i}][0] = {value}"),
+                                                At::Key(k) => format!("got[{}][0] = {value}", str_lit(k)),
+                                            };
+                                            s.push_str(&format!(
+                                                "\t\t{write}\n\t\tif !specEqual(got, {}) {{\n\t\t\tt.Fatalf(\"%s: got %#v\", {}, got)\n\t\t}}\n",
+                                                self.literal(spec, after, &f.returns),
+                                                str_lit(&shared_inside(&write))
+                                            ));
+                                        }
+                                        for (var, lit, kind) in &vars {
+                                            s.push_str(&format!(
+                                                "\t\tif !reflect.DeepEqual({var}, {lit}) {{\n\t\t\tt.Fatalf(\"%s: it is now %#v\", {}, {var})\n\t\t}}\n",
+                                                str_lit(&shared_with_input(kind))
+                                            ));
+                                        }
                                     }
                                 } else {
                                     s.push_str(&format!(

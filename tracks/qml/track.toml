@@ -227,3 +227,19 @@ url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_
 kind = "docs"
 title = "Qt 6: JavaScript Host Environment"
 url = "https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html"
+
+# references (make-grid, add-bonus)
+[[links.references]]
+kind = "docs"
+title = "Qt docs: QML Value Types (typed properties copy)"
+url = "https://doc.qt.io/qt-6/qtqml-typesystem-valuetypes.html"
+
+[[links.references]]
+kind = "docs"
+title = "Qt docs: Sequence types in QML"
+url = "https://doc.qt.io/qt-6/qtqml-typesystem-sequencetypes.html"
+
+[[links.references]]
+kind = "docs"
+title = "MDN: Shallow copy"
+url = "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy"

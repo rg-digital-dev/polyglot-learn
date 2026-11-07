@@ -291,3 +291,14 @@ url = "https://www.lua.org/pil/21.1.html"
 kind = "docs"
 title = "Lua 5.4 Reference Manual: 3.3.8 To-be-closed Variables"
 url = "https://www.lua.org/manual/5.4/manual.html#3.3.8"
+
+# references (make-grid, add-bonus)
+[[links.references]]
+kind = "docs"
+title = "Programming in Lua: Tables"
+url = "https://www.lua.org/pil/2.5.html"
+
+[[links.references]]
+kind = "docs"
+title = "Lua 5.4 manual: table.move"
+url = "https://www.lua.org/manual/5.4/manual.html#pdf-table.move"

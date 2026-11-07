@@ -192,6 +192,10 @@ pub fn actual_value(message: &str) -> Option<String> {
             return Some(v.trim().to_string());
         }
         if let Some(v) = l.strip_prefix("Actual") {
+            // After a check's own message, the values belong to that check, not the result.
+            if lines[..i].iter().any(|p| !p.is_empty() && *p != "Compared values are not the same") {
+                return None;
+            }
             return v.split_once("):").map(|(_, v)| v.trim().to_string());
         }
         if *l == "+ actual - expected" {
@@ -627,6 +631,9 @@ mod tests {
         );
         assert_eq!(actual_value("Expected values to be strictly deep-equal:\n+ actual - expected\n+ 'Hello, !'\n- 'Hello, world!'\n^").as_deref(), Some("'Hello, !'"));
         assert_eq!(actual_value("the input list was modified: it is now []int{3, 2, 1}"), None);
+        assert_eq!(actual_value("the input list was modified
+Actual   (): [1]
+Expected (): [2]"), None);
     }
 
     #[test]
@@ -783,8 +790,8 @@ mod tests {
         let ctx = ctx();
         let out = status_track(&ctx, go(), &Ui::plain(80));
         let head: Vec<&str> = out.lines().take(5).collect();
-        assert_eq!(head, ["  Go · 0 of 20 done", "", "  Foundations          ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
-        assert!(out.contains("  Deeper Go            ░░░░░░░░░░░░  0/5"), "{out}");
+        assert_eq!(head, ["  Go · 0 of 22 done", "", "  Foundations            ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
+        assert!(out.contains("  Deeper Go              ░░░░░░░░░░░░  0/5"), "{out}");
         assert!(!out.contains("Deeper Rust"), "other tracks' modules aren't listed: {out}");
         let all = status_all(&ctx, &Ui::plain(80));
         assert!(all.lines().next().unwrap().ends_with("ts    py    rust  go    php   lua   qml"), "{all}");
@@ -800,7 +807,7 @@ mod tests {
         let ctx = ctx();
         let ui = Ui { unicode: false, ..Ui::plain(80) };
         let out = status_track(&ctx, go(), &ui);
-        assert!(out.contains("    - Hello") && out.contains("Foundations          ............  0/6"), "{out}");
+        assert!(out.contains("    - Hello") && out.contains("Foundations            ............  0/6"), "{out}");
         assert!(out.is_ascii(), "{out}");
     }
 

@@ -523,3 +523,19 @@ url = "https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html"
 kind = "docs"
 title = "The Rust Book: 15.3 Running Code on Cleanup with the Drop Trait"
 url = "https://doc.rust-lang.org/book/ch15-03-drop.html"
+
+# references (make-grid, add-bonus)
+[[links.references]]
+kind = "docs"
+title = "The Rust Book: What Is Ownership?"
+url = "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+
+[[links.references]]
+kind = "docs"
+title = "The Rust Book: References and Borrowing"
+url = "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+
+[[links.references]]
+kind = "lings"
+title = "rustlings: move_semantics"
+url = "https://github.com/rust-lang/rustlings/tree/main/exercises/06_move_semantics"

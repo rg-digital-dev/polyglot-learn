@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, field_values, header, json, kept_inputs, render_args, render_kept_args, step_label, stub_message, timing, Backend};
+use super::{case_name, independence, shared_inside, shared_with_input, At, def_of, doc, field_values, header, json, kept_inputs, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Outcome, Param, Spec, Type};
 use crate::toolchain::{Found, Invocation, Tool};
@@ -267,7 +267,9 @@ impl Backend for Qml {
                                 t.max, t.max, t.max + 1, t.max, t.sum
                             ));
                         }
-                        Outcome::Value(v) if kept_inputs(spec, f).iter().any(Option::is_some) => {
+                        Outcome::Value(v)
+                            if kept_inputs(spec, f).iter().any(Option::is_some) || independence(spec, f, v).is_some() =>
+                        {
                             // Arrays and objects are shared with the caller. Compare
                             // JSON snapshots: class values carry their own methods,
                             // which compare() would see as different functions.
@@ -279,7 +281,7 @@ impl Backend for Qml {
                                 s.push_str(&format!("        const {var} = {lit}\n        const {var}Before = JSON.stringify({var})\n"));
                             }
                             s.push_str(&format!(
-                                "        compare(subject.{}({args}), {})\n",
+                                "        const got = subject.{}({args})\n        compare(got, {})\n",
                                 self.function_name(f),
                                 self.literal(spec, v, &f.returns)
                             ));
@@ -287,6 +289,25 @@ impl Backend for Qml {
                                 s.push_str(&format!(
                                     "        compare(JSON.stringify({var}), {var}Before, \"the input {kind} was modified\")\n"
                                 ));
+                            }
+                            if let Some((value, writes)) = independence(spec, f, v) {
+                                for (at, after) in &writes {
+                                    let write = match at {
+                                        At::Index(i) => format!("got[{i}][0] = {value}"),
+                                        At::Key(k) => format!("got[{}][0] = {value}", json(&Value::from(k.as_str()))),
+                                    };
+                                    s.push_str(&format!(
+                                        "        {write}\n        compare(got, {}, {})\n",
+                                        self.literal(spec, after, &f.returns),
+                                        json(&Value::from(shared_inside(&write)))
+                                    ));
+                                }
+                                for (var, _, kind) in &vars {
+                                    s.push_str(&format!(
+                                        "        compare(JSON.stringify({var}), {var}Before, {})\n",
+                                        json(&Value::from(shared_with_input(kind)))
+                                    ));
+                                }
                             }
                             s.push_str("    }\n");
                         }

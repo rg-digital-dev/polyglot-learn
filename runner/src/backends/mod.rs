@@ -358,12 +358,71 @@ pub fn kept_inputs(spec: &Spec, f: &Function) -> Vec<Option<&'static str>> {
     f.params
         .iter()
         .map(|p| match &p.ty {
-            _ if !spec.pure || f.module.is_some() => None,
+            _ if !(spec.pure || spec.independent) || f.module.is_some() => None,
             Type::List(_) => Some("list"),
             Type::Map(_) => Some("map"),
             _ => None,
         })
         .collect()
+}
+
+/// Where an `independent` check writes into the result: an inner list, by
+/// position or by key.
+pub enum At {
+    Index(usize),
+    Key(String),
+}
+
+/// For an `independent` spec, the checks after the call: the value written,
+/// and per non-empty inner list of the expected result (in order) where it
+/// is and what the whole result must be once that list's first item is set.
+/// Writes stay, so each expectation includes the earlier ones. `None` when
+/// the spec isn't `independent`. Rust and PHP don't use it: their results
+/// can't share lists with anything.
+pub fn independence(spec: &Spec, f: &Function, expected: &Value) -> Option<(i64, Vec<(At, Value)>)> {
+    if !spec.independent || f.module.is_some() {
+        return None;
+    }
+    fn ints(v: &Value, out: &mut Vec<i64>) {
+        match v {
+            Value::Array(a) => a.iter().for_each(|x| ints(x, out)),
+            Value::Object(o) => o.values().for_each(|x| ints(x, out)),
+            _ => out.extend(v.as_i64()),
+        }
+    }
+    let mut seen = Vec::new();
+    ints(expected, &mut seen);
+    // Below every value in the result, so a write is always a visible change.
+    let value = seen.iter().copied().min().unwrap_or(0).min(0) - 1;
+    let mut current = expected.clone();
+    let mut out = Vec::new();
+    let places: Vec<At> = match expected {
+        Value::Array(a) => (0..a.len()).map(At::Index).collect(),
+        Value::Object(o) => o.keys().cloned().map(At::Key).collect(),
+        _ => Vec::new(),
+    };
+    for at in places {
+        let inner = match (&at, &mut current) {
+            (At::Index(i), Value::Array(a)) => &mut a[*i],
+            (At::Key(k), Value::Object(o)) => o.get_mut(k).expect("own key"),
+            _ => unreachable!(),
+        };
+        let Some(first) = inner.as_array_mut().and_then(|a| a.first_mut()) else { continue };
+        *first = Value::from(value);
+        out.push((at, current.clone()));
+    }
+    Some((value, out))
+}
+
+/// Failure message for an `independent` write that changed more than one
+/// place. `write` is the statement as the test wrote it.
+pub fn shared_inside(write: &str) -> String {
+    format!("`{write}` also changed another list in the result: two of its lists are the same list")
+}
+
+/// Failure message for an input that changed after writes to the result.
+pub fn shared_with_input(kind: &str) -> String {
+    format!("changing the result also changed the input {kind}: the result shares a list with it")
 }
 
 /// Render arguments, using `var(param name)` instead of the literal for the

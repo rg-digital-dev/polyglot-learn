@@ -1,0 +1,27 @@
+{
+  "slug": "make-grid",
+  "title": "Make Grid",
+  "concept": "references",
+  "summary": "Return a grid of rows lists, each holding cols copies of fill. Every row must be its own list: changing one row must not change another.",
+  "function": "make_grid",
+  "params": [
+    { "name": "rows", "type": "int" },
+    { "name": "cols", "type": "int" },
+    { "name": "fill", "type": "int" }
+  ],
+  "returns": "list<list<int>>",
+  "independent": true,
+  "hints": [
+    "Build one row with cols items, then add it to the grid rows times. Check what that adds: the same list each time, or a new one?",
+    "Create a fresh row inside the loop, so each pass makes a new list.",
+    "Shortcuts that repeat a list (repeating it with *, filling an array with one value) repeat the reference, not the contents."
+  ],
+  "cases": [
+    { "description": "two rows of three", "input": [2, 3, 0], "expected": [[0, 0, 0], [0, 0, 0]] },
+    { "description": "three rows of two", "input": [3, 2, 7], "expected": [[7, 7], [7, 7], [7, 7]] },
+    { "description": "a single cell", "input": [1, 1, 5], "expected": [[5]] },
+    { "description": "no rows", "input": [0, 4, 1], "expected": [] },
+    { "description": "rows without columns", "input": [2, 0, 1], "expected": [[], []] },
+    { "description": "negative fill", "input": [2, 2, -3], "expected": [[-3, -3], [-3, -3]] }
+  ]
+}

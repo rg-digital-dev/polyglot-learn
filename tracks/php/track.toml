@@ -244,3 +244,19 @@ url = "https://www.php.net/manual/en/function.file.php"
 kind = "docs"
 title = "PHP manual: Constructors and Destructors"
 url = "https://www.php.net/manual/en/language.oop5.decon.php"
+
+# references (make-grid, add-bonus)
+[[links.references]]
+kind = "docs"
+title = "PHP manual: References Explained"
+url = "https://www.php.net/manual/en/language.references.php"
+
+[[links.references]]
+kind = "docs"
+title = "PHP manual: Objects and references"
+url = "https://www.php.net/manual/en/language.oop5.references.php"
+
+[[links.references]]
+kind = "docs"
+title = "PHP manual: Object Cloning"
+url = "https://www.php.net/manual/en/language.oop5.cloning.php"

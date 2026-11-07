@@ -7,6 +7,11 @@ All notable changes to this project are listed here. The format follows
 ## [Unreleased]
 
 ### Added
+- *Values and References*, a shared module for every track: `make-grid` (rows
+  that don't share one list) and `add-bonus` (a deep copy of a map of lists),
+  with a concept page and a note per track. A new `independent` spec flag
+  makes the tests write into each inner list of the result and check that
+  nothing else changed, in the result or the input.
 - A Python track (3.12 or newer, standard library only): a runner backend with
   its own small harness, all 20 shared exercises, a note per concept, and a
   *Deeper Python* module: `lazy-pipeline` (generators), `retry-decorator`

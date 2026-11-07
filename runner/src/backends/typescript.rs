@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, field_values, header, json, kept_inputs, parse_tap, render_args, render_kept_args, step_label, stub_message, timing, Backend};
+use super::{case_name, independence, shared_inside, shared_with_input, At, def_of, doc, field_values, header, json, kept_inputs, parse_tap, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Method, Outcome, Param, Spec, Type};
 use crate::toolchain::{parse_version, Found, Invocation, Tool};
@@ -364,12 +364,13 @@ impl Backend for TypeScript {
                                 t.min_ms, t.max, t.limit_ms, t.max, t.sum
                             ));
                         }
-                        Outcome::Value(v) if kept_inputs(spec, f).iter().any(Option::is_some) => {
+                        Outcome::Value(v)
+                            if kept_inputs(spec, f).iter().any(Option::is_some) || independence(spec, f, v).is_some() =>
+                        {
                             let kept = kept_inputs(spec, f);
                             let (args, vars) =
                                 render_kept_args(f, input, &kept, |v, t| self.literal(spec, v, t), naming::camel);
-                            let call = format!("{}({args})", self.function_name(f));
-                            let call = if matches!(f.returns, Type::Map(_)) { format!("{{ ...{call} }}") } else { call };
+                            let spread = |e: &str| if matches!(f.returns, Type::Map(_)) { format!("{{ ...{e} }}") } else { e.to_string() };
                             s.push_str(&format!("\ntest(\"{name}\", () => {{\n"));
                             for (var, lit, _) in &vars {
                                 // Typed from the function itself, so an empty `[]` isn't an
@@ -380,9 +381,34 @@ impl Backend for TypeScript {
                                     self.function_name(f)
                                 ));
                             }
-                            s.push_str(&format!("  assert.deepStrictEqual({call}, {});\n", self.literal(spec, v, &f.returns)));
+                            s.push_str(&format!(
+                                "  const got = {}({args});\n  assert.deepStrictEqual({}, {});\n",
+                                self.function_name(f),
+                                spread("got"),
+                                self.literal(spec, v, &f.returns)
+                            ));
                             for (var, lit, kind) in &vars {
                                 s.push_str(&format!("  assert.deepStrictEqual({var}, {lit}, \"the input {kind} was modified\");\n"));
+                            }
+                            if let Some((value, writes)) = independence(spec, f, v) {
+                                for (at, after) in &writes {
+                                    let write = match at {
+                                        At::Index(i) => format!("got[{i}]![0] = {value}"),
+                                        At::Key(k) => format!("got[{}]![0] = {value}", json(&Value::from(k.as_str()))),
+                                    };
+                                    s.push_str(&format!(
+                                        "  {write};\n  assert.deepStrictEqual({}, {}, {});\n",
+                                        spread("got"),
+                                        self.literal(spec, after, &f.returns),
+                                        json(&Value::from(shared_inside(&write.replace("]!", "]"))))
+                                    ));
+                                }
+                                for (var, lit, kind) in &vars {
+                                    s.push_str(&format!(
+                                        "  assert.deepStrictEqual({var}, {lit}, {});\n",
+                                        json(&Value::from(shared_with_input(kind)))
+                                    ));
+                                }
                             }
                             s.push_str("});\n");
                         }

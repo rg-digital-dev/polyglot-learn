@@ -26,5 +26,5 @@ close(a); close(b)
 
 ## Go deeper
 
-- `learn compare cleanup` puts all five versions side by side.
+- `learn compare cleanup` puts every track's version side by side.
 - Rust in Practice (`scoped-guard`) and TypeScript in Practice (`disposable-resource`) go further with `Drop` and `using`.

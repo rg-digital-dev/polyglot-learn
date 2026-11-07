@@ -309,6 +309,10 @@ pub struct Spec {
     /// The main function must not change its list and map arguments; tests
     /// check that they're unchanged after the call.
     pub pure: bool,
+    /// The main function's result must share no list with its arguments or
+    /// with itself: tests change each inner list of the result and check
+    /// nothing else changed. Implies `pure`'s input check.
+    pub independent: bool,
     /// Files written next to the tests (name -> contents), for `path` parameters.
     pub files: BTreeMap<String, String>,
     /// The main function uses the provided `resource` module (`open(name)`),
@@ -384,6 +388,8 @@ struct RawSpec {
     concurrency: bool,
     #[serde(default)]
     pure: bool,
+    #[serde(default)]
+    independent: bool,
     #[serde(default)]
     files: BTreeMap<String, String>,
     #[serde(default)]
@@ -795,6 +801,16 @@ impl Spec {
         if raw.pure && !main.params.iter().any(|p| matches!(p.ty, Type::List(_) | Type::Map(_))) {
             bail!("`pure` only applies to list and map parameters, and the function has none");
         }
+        if raw.independent {
+            let ints = Type::List(Box::new(Type::Int));
+            let ok = matches!(&main.returns, Type::List(t) | Type::Map(t) if **t == ints)
+                && !main.fallible
+                && !raw.concurrency
+                && !raw.resources;
+            if !ok {
+                bail!("an `independent` spec's function must return list<list<int>> or map<string,list<int>>, and not be fallible");
+            }
+        }
 
         let spec = Spec {
             slug: raw.slug,
@@ -806,6 +822,7 @@ impl Spec {
             main,
             concurrency: raw.concurrency,
             pure: raw.pure,
+            independent: raw.independent,
             files: raw.files,
             resources: raw.resources,
             tracks: None,
@@ -923,6 +940,7 @@ impl Spec {
             main,
             concurrency: false,
             pure: false,
+            independent: false,
             files: BTreeMap::new(),
             resources: false,
             tracks: None,

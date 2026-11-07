@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{case_name, def_of, doc, field_values, header, json, kept_inputs, parse_tap, render_args, render_kept_args, step_label, stub_message, timing, Backend};
+use super::{case_name, independence, shared_inside, shared_with_input, At, def_of, doc, field_values, header, json, kept_inputs, parse_tap, render_args, render_kept_args, step_label, stub_message, timing, Backend};
 use crate::naming;
 use crate::spec::{CaseKind, DefKind, Function, Outcome, Spec, Type};
 use crate::toolchain::{parse_version, Found, Invocation, Tool};
@@ -482,7 +482,9 @@ impl Backend for Python {
                                 t.min_ms, t.max, t.limit_ms, t.max, t.sum
                             ));
                         }
-                        Outcome::Value(v) if kept_inputs(spec, f).iter().any(Option::is_some) => {
+                        Outcome::Value(v)
+                            if kept_inputs(spec, f).iter().any(Option::is_some) || independence(spec, f, v).is_some() =>
+                        {
                             // Lists and dicts are shared with the caller: check the function left them alone.
                             let kept = kept_inputs(spec, f);
                             let (args, vars) = render_kept_args(f, input, &kept, |v, t| self.literal(spec, v, t), naming::snake);
@@ -491,12 +493,28 @@ impl Backend for Python {
                                 s.push_str(&format!("    {var} = {lit}\n"));
                             }
                             s.push_str(&format!(
-                                "    H.expect(M.{}({args}), {}, \"result\")\n",
+                                "    got = M.{}({args})\n    H.expect(got, {}, \"result\")\n",
                                 self.function_name(f),
                                 self.literal(spec, v, &f.returns)
                             ));
                             for (var, lit, kind) in &vars {
                                 s.push_str(&format!("    H.expect({var}, {lit}, \"the input {kind} was modified\")\n"));
+                            }
+                            if let Some((value, writes)) = independence(spec, f, v) {
+                                for (at, after) in &writes {
+                                    let write = match at {
+                                        At::Index(i) => format!("got[{i}][0] = {value}"),
+                                        At::Key(k) => format!("got[{}][0] = {value}", str_lit(k)),
+                                    };
+                                    s.push_str(&format!(
+                                        "    {write}\n    H.expect(got, {}, {})\n",
+                                        self.literal(spec, after, &f.returns),
+                                        str_lit(&shared_inside(&write))
+                                    ));
+                                }
+                                for (var, lit, kind) in &vars {
+                                    s.push_str(&format!("    H.expect({var}, {lit}, {})\n", str_lit(&shared_with_input(kind))));
+                                }
                             }
                             s.push_str(&format!("\n\nt.scenario(\"{name}\", {fn_name})\n"));
                         }
