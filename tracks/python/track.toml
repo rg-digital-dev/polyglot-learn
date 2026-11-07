@@ -252,3 +252,14 @@ url = "https://docs.python.org/3/howto/unicode.html"
 kind = "docs"
 title = "Python docs: unicodedata (normalize)"
 url = "https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize"
+
+# numbers (wrap-index, split-evenly, round-percent, checked-multiply)
+[[links.numbers]]
+kind = "docs"
+title = "Python reference: Binary arithmetic operations"
+url = "https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations"
+
+[[links.numbers]]
+kind = "docs"
+title = "Python docs: round()"
+url = "https://docs.python.org/3/library/functions.html#round"

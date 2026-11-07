@@ -1,0 +1,30 @@
+{
+  "slug": "checked-multiply",
+  "title": "Checked Multiply",
+  "concept": "numbers",
+  "summary": "Return a * b, or fail with an error that mentions \"overflow\" when the exact product doesn't fit in a signed 64-bit integer (from -2^63 to 2^63 - 1).",
+  "function": "checked_multiply",
+  "params": [
+    { "name": "a", "type": "int" },
+    { "name": "b", "type": "int" }
+  ],
+  "returns": "int",
+  "fallible": true,
+  "hints": [
+    "Try 4294967296 * 4294967296 in your language first. Depending on the track it wraps to 0, panics, turns into a float, or just works.",
+    "Use what your language offers: a checked multiply, a check on the result's type, or a comparison in a wider type.",
+    "TypeScript and QML: 9223372036854775807 can't be written as a number; it becomes 2^63. Compare with >= 2 ** 63, not > 9223372036854775807."
+  ],
+  "cases": [
+    { "description": "small numbers", "input": [6, 7], "expected": 42 },
+    { "description": "a negative factor", "input": [-6, 7], "expected": -42 },
+    { "description": "zero times a large number", "input": [0, 9007199254740991], "expected": 0 },
+    { "description": "minus one flips the sign", "input": [-1, 9007199254740991], "expected": -9007199254740991 },
+    { "description": "a large product that fits", "input": [94906265, 94906265], "expected": 9007199136250225 },
+    { "description": "close to the largest safe integer", "input": [3, 3002399751580330], "expected": 9007199254740990 },
+    { "description": "two to the 64th overflows", "input": [4294967296, 4294967296], "error": true, "error_contains": ["overflow"] },
+    { "description": "a negative product overflows", "input": [-4294967296, 4294967296], "error": true, "error_contains": ["overflow"] },
+    { "description": "one past the largest value", "input": [4294967296, 2147483648], "error": true, "error_contains": ["overflow"] },
+    { "description": "just over the limit", "input": [3037000500, 3037000500], "error": true, "error_contains": ["overflow"] }
+  ]
+}

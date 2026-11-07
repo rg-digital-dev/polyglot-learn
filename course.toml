@@ -44,6 +44,16 @@ exercises = [
 ]
 
 [[module]]
+id = "numbers-and-division"
+title = "Numbers and Division"
+exercises = [
+  "wrap-index",
+  "split-evenly",
+  "round-percent",
+  "checked-multiply",
+]
+
+[[module]]
 id = "real-world-basics"
 title = "Real-world Basics"
 exercises = [

@@ -254,3 +254,14 @@ url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_
 kind = "docs"
 title = "Qt docs: JavaScript Host Environment"
 url = "https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html"
+
+# numbers (wrap-index, split-evenly, round-percent, checked-multiply)
+[[links.numbers]]
+kind = "docs"
+title = "Qt docs: QML int type"
+url = "https://doc.qt.io/qt-6/qml-int.html"
+
+[[links.numbers]]
+kind = "docs"
+title = "MDN: Math.round()"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round"
