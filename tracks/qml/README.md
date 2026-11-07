@@ -29,7 +29,7 @@ You can run the same command yourself. Your code goes in `<slug>/<PascalSlug>.qm
 - ECMAScript 7 per the Qt docs, running in Qt's V4 engine; `let`, `const`, arrow functions and template literals work.
 - No DOM, no `window`, no Node APIs. `console.log` and `Qt.*` helpers exist.
 - Writing to an undeclared variable throws; QML's global object is read-only.
-- Type annotations (`int`, `bool`, `string`, `var`) coerce values at call time. `int` is 32-bit.
+- Type annotations (`int`, `bool`, `string`, `var`) coerce values at call time. `int` is 32-bit, so the generated stubs use `real` for whole numbers; keep it unless you know the values are small.
 - Gaps that matter in Module 2 (checked on Qt 6.10): `sort` is not stable, and `async`/`await`, object spread and helpers such as `flatMap` are missing.
 
 ## Editor setup

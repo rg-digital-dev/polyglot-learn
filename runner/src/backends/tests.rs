@@ -94,6 +94,13 @@ fn js_family_literals() {
     assert_eq!(get("typescript").unwrap().type_name(&spec(), &ty("fn() -> int"), false), "() => number");
 }
 
+/// QML's `int` annotation cuts values to 32 bits, so spec ints are `real`.
+#[test]
+fn qml_stubs_annotate_ints_as_real() {
+    let (_, stub) = get("qml").unwrap().stubs(&spec()).remove(0);
+    assert!(stub.contains("function sumOfMultiples(factors: var, limit: real): real {"), "{stub}");
+}
+
 #[test]
 fn function_names_follow_conventions() {
     let spec = spec();
