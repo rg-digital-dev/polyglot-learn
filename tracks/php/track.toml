@@ -260,3 +260,19 @@ url = "https://www.php.net/manual/en/language.oop5.references.php"
 kind = "docs"
 title = "PHP manual: Object Cloning"
 url = "https://www.php.net/manual/en/language.oop5.cloning.php"
+
+# text (char-count, truncate)
+[[links.text]]
+kind = "docs"
+title = "PHP manual: PCRE pattern modifiers (u)"
+url = "https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php"
+
+[[links.text]]
+kind = "docs"
+title = "PHP manual: iconv_substr"
+url = "https://www.php.net/manual/en/function.iconv-substr.php"
+
+[[links.text]]
+kind = "docs"
+title = "PHP manual: Multibyte String"
+url = "https://www.php.net/manual/en/book.mbstring.php"

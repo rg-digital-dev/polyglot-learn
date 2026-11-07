@@ -1,0 +1,31 @@
+{
+  "slug": "truncate",
+  "title": "Truncate",
+  "concept": "text",
+  "summary": "Shorten text to at most limit characters (Unicode code points; limit is never negative). Text that fits comes back unchanged. Longer text keeps its first limit - 1 characters followed by \"…\" (U+2026), which counts as one character.",
+  "function": "truncate",
+  "params": [
+    { "name": "text", "type": "string" },
+    { "name": "limit", "type": "int" }
+  ],
+  "returns": "string",
+  "fallible": false,
+  "hints": [
+    "Count the text in code points first. Your language's length may count bytes or UTF-16 code units instead.",
+    "Cut by code point too: slicing by bytes can split a character in half (or panic), and slicing UTF-16 units can split an emoji.",
+    "Handle the small cases on their own: a limit of 0 leaves no room at all, and a limit of 1 leaves room only for the \"…\"."
+  ],
+  "cases": [
+    { "description": "short text is unchanged", "input": ["hello", 10], "expected": "hello" },
+    { "description": "text of exactly limit characters", "input": ["hello", 5], "expected": "hello" },
+    { "description": "one character too long", "input": ["hello!", 5], "expected": "hell…" },
+    { "description": "a limit of one leaves only the ellipsis", "input": ["hello", 1], "expected": "…" },
+    { "description": "a limit of zero", "input": ["hello", 0], "expected": "" },
+    { "description": "empty text", "input": ["", 3], "expected": "" },
+    { "description": "cut right after an accented letter", "input": ["résumé", 3], "expected": "ré…" },
+    { "description": "emoji that fit are unchanged", "input": ["😀😀", 2], "expected": "😀😀" },
+    { "description": "an emoji counts as one character", "input": ["😀😀😀", 2], "expected": "😀…" },
+    { "description": "letters beyond Latin", "input": ["日本語のテキスト", 4], "expected": "日本語…" },
+    { "description": "a combining accent counts on its own", "input": ["cafe\u0301", 4], "expected": "caf…" }
+  ]
+}

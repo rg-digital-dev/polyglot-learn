@@ -32,6 +32,7 @@ By contributing you agree that code is licensed under MIT and lesson text under 
    - **The first case must expect a value.** Stubs that throw would otherwise "pass" error cases.
    - Descriptions must be unique; they become test names. Aim for 6–10 cases including edge cases.
    - Keep values in the 64-bit integer range, and use ASCII whitespace only (trim functions disagree about Unicode).
+   - Non-ASCII text is fine where the exercise is about it (see `char-count.json`). Write invisible characters such as combining marks as `\u` escapes in the JSON, and expect code points, not graphemes: grapheme support isn't built into every track.
 2. Add the slug to a module in `course.toml`. A shared module is on every track unless it lists some: `tracks = ["typescript", "rust", "go", "php", "lua"]`.
 
 ### Richer specs

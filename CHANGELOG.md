@@ -7,6 +7,11 @@ All notable changes to this project are listed here. The format follows
 ## [Unreleased]
 
 ### Added
+- *Text and Unicode*, a shared module for every track: `char-count`
+  (counting code points, not bytes or UTF-16 units) and `truncate` (cutting
+  text to a limit without splitting a character), with a concept page and a
+  note per track. The tests use accented letters, CJK, emoji and a combining
+  accent.
 - *Values and References*, a shared module for every track: `make-grid` (rows
   that don't share one list) and `add-bonus` (a deep copy of a map of lists),
   with a concept page and a note per track. A new `independent` spec flag

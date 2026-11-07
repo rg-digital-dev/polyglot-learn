@@ -302,3 +302,9 @@ url = "https://www.lua.org/pil/2.5.html"
 kind = "docs"
 title = "Lua 5.4 manual: table.move"
 url = "https://www.lua.org/manual/5.4/manual.html#pdf-table.move"
+
+# text (char-count, truncate)
+[[links.text]]
+kind = "docs"
+title = "Lua 5.4 manual: 6.5 UTF-8 Support"
+url = "https://www.lua.org/manual/5.4/manual.html#6.5"

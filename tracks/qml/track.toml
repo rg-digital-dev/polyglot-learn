@@ -243,3 +243,14 @@ url = "https://doc.qt.io/qt-6/qtqml-typesystem-sequencetypes.html"
 kind = "docs"
 title = "MDN: Shallow copy"
 url = "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy"
+
+# text (char-count, truncate)
+[[links.text]]
+kind = "docs"
+title = "MDN: UTF-16 characters, Unicode code points, and grapheme clusters"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String#utf-16_characters_unicode_code_points_and_grapheme_clusters"
+
+[[links.text]]
+kind = "docs"
+title = "Qt docs: JavaScript Host Environment"
+url = "https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html"

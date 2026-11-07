@@ -539,3 +539,14 @@ url = "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
 kind = "lings"
 title = "rustlings: move_semantics"
 url = "https://github.com/rust-lang/rustlings/tree/main/exercises/06_move_semantics"
+
+# text (char-count, truncate)
+[[links.text]]
+kind = "docs"
+title = "The Rust Book: 8.2 Storing UTF-8 Encoded Text with Strings"
+url = "https://doc.rust-lang.org/book/ch08-02-strings.html"
+
+[[links.text]]
+kind = "docs"
+title = "Rust std: str::char_indices"
+url = "https://doc.rust-lang.org/std/primitive.str.html#method.char_indices"
