@@ -375,3 +375,14 @@ url = "https://developer.mozilla.org/en-US/docs/Glossary/Deep_copy"
 kind = "docs"
 title = "MDN: structuredClone()"
 url = "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone"
+
+# text (char-count, truncate)
+[[links.text]]
+kind = "docs"
+title = "MDN: UTF-16 characters, Unicode code points, and grapheme clusters"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String#utf-16_characters_unicode_code_points_and_grapheme_clusters"
+
+[[links.text]]
+kind = "docs"
+title = "MDN: Intl.Segmenter"
+url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter"

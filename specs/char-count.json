@@ -1,0 +1,26 @@
+{
+  "slug": "char-count",
+  "title": "Char Count",
+  "concept": "text",
+  "summary": "Count how often each character occurs in text. A character here is one Unicode code point: \"ë\" is one character and so is an emoji, however many bytes they take.",
+  "function": "char_count",
+  "params": [{ "name": "text", "type": "string" }],
+  "returns": "map<string,int>",
+  "fallible": false,
+  "hints": [
+    "Find out what your language's string loop gives you: bytes, UTF-16 code units or code points. Only code points are right here.",
+    "Every track has a way to walk a string by code point: a for-of loop, iterating the string, .chars(), range over a string, utf8.codes, or splitting with a Unicode-aware pattern.",
+    "Use each code point (as a string) as the map key and add one to its count."
+  ],
+  "cases": [
+    { "description": "one of each", "input": ["abc"], "expected": { "a": 1, "b": 1, "c": 1 } },
+    { "description": "repeated characters", "input": ["banana"], "expected": { "b": 1, "a": 3, "n": 2 } },
+    { "description": "case matters", "input": ["Aa"], "expected": { "A": 1, "a": 1 } },
+    { "description": "spaces are characters too", "input": ["a b a"], "expected": { "a": 2, " ": 2, "b": 1 } },
+    { "description": "an accented letter is one character", "input": ["Zoë"], "expected": { "Z": 1, "o": 1, "ë": 1 } },
+    { "description": "letters beyond Latin", "input": ["日本日"], "expected": { "日": 2, "本": 1 } },
+    { "description": "an emoji is one character", "input": ["😀😀!"], "expected": { "😀": 2, "!": 1 } },
+    { "description": "a combining accent counts on its own", "input": ["e\u0301"], "expected": { "e": 1, "\u0301": 1 } },
+    { "description": "empty text", "input": [""], "expected": {} }
+  ]
+}

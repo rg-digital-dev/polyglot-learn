@@ -387,3 +387,14 @@ url = "https://go.dev/tour/moretypes/8"
 kind = "docs"
 title = "Go docs: slices.Clone"
 url = "https://pkg.go.dev/slices#Clone"
+
+# text (char-count, truncate)
+[[links.text]]
+kind = "docs"
+title = "The Go Blog: Strings, bytes, runes and characters in Go"
+url = "https://go.dev/blog/strings"
+
+[[links.text]]
+kind = "docs"
+title = "Go package docs: unicode/utf8"
+url = "https://pkg.go.dev/unicode/utf8"

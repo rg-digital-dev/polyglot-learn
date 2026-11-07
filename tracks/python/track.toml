@@ -241,3 +241,14 @@ url = "https://docs.python.org/3/faq/programming.html#how-do-i-create-a-multidim
 kind = "docs"
 title = "Python docs: copy (shallow and deep copy operations)"
 url = "https://docs.python.org/3/library/copy.html"
+
+# text (char-count, truncate)
+[[links.text]]
+kind = "docs"
+title = "Python docs: Unicode HOWTO"
+url = "https://docs.python.org/3/howto/unicode.html"
+
+[[links.text]]
+kind = "docs"
+title = "Python docs: unicodedata (normalize)"
+url = "https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize"

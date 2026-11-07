@@ -36,6 +36,14 @@ exercises = [
 ]
 
 [[module]]
+id = "text-and-unicode"
+title = "Text and Unicode"
+exercises = [
+  "char-count",
+  "truncate",
+]
+
+[[module]]
 id = "real-world-basics"
 title = "Real-world Basics"
 exercises = [

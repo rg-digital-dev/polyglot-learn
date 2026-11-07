@@ -790,7 +790,7 @@ Expected (): [2]"), None);
         let ctx = ctx();
         let out = status_track(&ctx, go(), &Ui::plain(80));
         let head: Vec<&str> = out.lines().take(5).collect();
-        assert_eq!(head, ["  Go · 0 of 22 done", "", "  Foundations            ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
+        assert_eq!(head, ["  Go · 0 of 24 done", "", "  Foundations            ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
         assert!(out.contains("  Deeper Go              ░░░░░░░░░░░░  0/5"), "{out}");
         assert!(!out.contains("Deeper Rust"), "other tracks' modules aren't listed: {out}");
         let all = status_all(&ctx, &Ui::plain(80));
