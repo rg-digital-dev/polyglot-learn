@@ -58,6 +58,11 @@ All notable changes to this project are listed here. The format follows
 ### Changed
 - The TypeScript track needs Node 24 or newer (was 22.6), for `using`. The
   generated `tsconfig.json` adds `ESNext.Disposable`.
+- Generated QML stubs annotate spec ints as `real` instead of `int`. Qt 6.7
+  and newer cut `int` values to 32 bits on every call, so 4294967296 arrived
+  as 0. Existing stub files are left alone.
+- Spec validation rejects int values outside ±(2^53 − 1), the range that
+  TypeScript and QML numbers hold exactly.
 
 ## [0.2.0] - 2026-11-02
 

@@ -124,7 +124,10 @@ impl Type {
     /// first mismatch.
     pub fn check(&self, value: &Value, defs: &[TypeDef]) -> std::result::Result<(), String> {
         match (self, value) {
-            (Type::Int, Value::Number(n)) if n.is_i64() => Ok(()),
+            (Type::Int, Value::Number(n)) if n.as_i64().is_some_and(|i| i.unsigned_abs() <= MAX_EXACT_INT as u64) => Ok(()),
+            (Type::Int, Value::Number(n)) if n.is_i64() => {
+                Err(format!("{n} is outside ±(2^53 - 1): TypeScript and QML numbers can't hold it exactly"))
+            }
             (Type::Bool, Value::Bool(_)) => Ok(()),
             (Type::Str, Value::String(_)) => Ok(()),
             (Type::Path, Value::String(s)) if is_file_name(s) => Ok(()),
@@ -160,6 +163,10 @@ impl Type {
         }
     }
 }
+
+/// The largest int test data may use: TypeScript and QML numbers are doubles,
+/// exact only up to 2^53 - 1. Intermediate results may go beyond it.
+pub const MAX_EXACT_INT: i64 = (1 << 53) - 1;
 
 /// The record or class a value of type `name` actually is. Interface-typed
 /// values name their class with a `"type"` key.
@@ -1034,6 +1041,10 @@ mod tests {
         assert!(t.check(&serde_json::json!({}), &[]).is_ok());
         assert!(t.check(&serde_json::json!({"a": "1"}), &[]).is_err());
         assert!(Type::Int.check(&serde_json::json!(1.5), &[]).is_err());
+        assert!(Type::Int.check(&serde_json::json!(-9007199254740991i64), &[]).is_ok());
+        let err = Type::Int.check(&serde_json::json!(9007199254740992i64), &[]).unwrap_err();
+        assert!(err.contains("2^53"), "{err}");
+        assert!(Type::Int.check(&serde_json::json!(i64::MIN), &[]).is_err());
         assert!(Type::parse("list<int>").unwrap().check(&serde_json::json!([1, true]), &[]).is_err());
     }
 

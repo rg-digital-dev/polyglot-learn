@@ -144,7 +144,8 @@ impl Backend for Qml {
 
     fn type_name(&self, _spec: &Spec, ty: &Type, _param: bool) -> String {
         match ty {
-            Type::Int => "int".into(),
+            // `int` would cut values to 32 bits (Qt 6.7+ coerces on every call).
+            Type::Int => "real".into(),
             Type::Bool => "bool".into(),
             Type::Str | Type::Path => "string".into(),
             Type::List(_) | Type::Map(_) | Type::Named(_) | Type::Fn(..) => "var".into(),
