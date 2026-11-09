@@ -6,6 +6,13 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-09
+
+### Fixed
+- Web UI: unsaved text in the editor is no longer lost when you switch to the
+  Lesson tab, another file, another exercise or another track. A dot marks
+  unsaved text, and closing or reloading the browser tab asks first.
+
 ## [0.3.0] - 2026-11-07
 
 A Python track, five new shared modules, and Rust and TypeScript in Practice.
