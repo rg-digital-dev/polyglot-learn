@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // Edits the same workspace file your own editor uses. The server refuses a
 // save if the file changed on disk since it was loaded, so nothing is ever
-// silently overwritten; the page then offers to reload or overwrite.
+// silently overwritten; the page then offers to reload or overwrite. Unsaved
+// text is kept in useDrafts, so it survives the editor being recreated.
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
@@ -26,12 +27,24 @@ const changedOnDisk = ref<{ content: string; mtime: number } | null>(null)
 
 const url = () => `/api/file/${props.slug}?track=${props.track}&path=${encodeURIComponent(props.path)}`
 const ext = () => props.path.split('.').pop() ?? ''
+const { drafts } = useDrafts()
+const key = () => draftKey(props.track, props.slug, props.path)
 
-function setDoc(text: string) {
+/** Recompute `dirty` and keep this file's draft in step with it. */
+function sync() {
   if (!view) return
-  view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } })
-  savedText.value = text
-  dirty.value = false
+  const text = view.state.doc.toString()
+  dirty.value = text !== savedText.value
+  if (dirty.value) drafts.set(key(), { text, saved: savedText.value, mtime: baseMtime.value })
+  else drafts.delete(key())
+}
+
+/** Show `text` in the editor; `saved` is the file's content it is compared with. */
+function show(text: string, saved: string) {
+  savedText.value = saved
+  if (view) view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } })
+  else create(text)
+  sync()
 }
 
 function create(text: string) {
@@ -47,22 +60,30 @@ function create(text: string) {
         syntaxHighlighting(classHighlighter),
         ...(lang ? [lang] : []),
         EditorView.updateListener.of((u) => {
-          if (u.docChanged) dirty.value = u.state.doc.toString() !== savedText.value
+          if (u.docChanged) sync()
         }),
       ],
     }),
   })
-  savedText.value = text
-  dirty.value = false
 }
 
-async function load() {
+/** Show the file, or your unsaved draft of it. `drop` discards the draft first. */
+async function load(drop = false) {
   conflict.value = null
   changedOnDisk.value = null
+  if (drop) drafts.delete(key())
+  const draft = drafts.get(key())
+  if (draft) {
+    baseMtime.value = draft.mtime
+    show(draft.text, draft.saved)
+    status.value = 'Restored your unsaved changes.'
+    // If the file changed on disk meanwhile, this offers the usual choices.
+    await checkDisk()
+    return
+  }
   const f = await api<{ content: string; mtime: number }>(url())
   baseMtime.value = f.mtime
-  if (view) setDoc(f.content)
-  else create(f.content)
+  show(f.content, f.content)
   status.value = ''
 }
 
@@ -74,7 +95,7 @@ async function save(force = false) {
     const r = await api<{ mtime: number }>(url(), { method: 'PUT', body: JSON.stringify({ content, base_mtime: base }) })
     baseMtime.value = r.mtime
     savedText.value = content
-    dirty.value = false
+    sync()
     conflict.value = null
     changedOnDisk.value = null
     status.value = 'Saved. The tests run automatically.'
@@ -95,13 +116,13 @@ async function checkDisk() {
     if (f.content === view.state.doc.toString()) {
       baseMtime.value = f.mtime
       savedText.value = f.content
-      dirty.value = false
+      sync()
       return
     }
     if (!dirty.value) {
       // Nothing unsaved here: follow the file.
       baseMtime.value = f.mtime
-      setDoc(f.content)
+      show(f.content, f.content)
       status.value = 'Reloaded: the file changed on disk.'
     } else {
       changedOnDisk.value = f
@@ -142,7 +163,7 @@ watch(() => [props.path, props.track, props.slug], load)
         {{ conflict ? 'Your save was not written.' : 'You have unsaved changes here.' }}
       </p>
       <div class="editor__choices">
-        <button class="btn btn--secondary btn--sm" type="button" @click="load()">
+        <button class="btn btn--secondary btn--sm" type="button" @click="load(true)">
           <IconRefresh /> Reload from disk (drop my changes here)
         </button>
         <button
