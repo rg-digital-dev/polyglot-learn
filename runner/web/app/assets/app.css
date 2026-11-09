@@ -151,6 +151,8 @@ a.chip:hover, button.chip:hover { border-color: var(--accent-border); }
 }
 .tabs button[aria-selected='true'] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
 .filetabs { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+/* Unsaved text in the editor: on the Editor tab and the file chips. */
+.unsaved-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); margin-left: var(--space-1); }
 
 .file + .file { border-top: 1px solid var(--border); padding-top: var(--space-4); }
 .file__path { display: flex; gap: var(--space-2); align-items: start; }

@@ -45,6 +45,8 @@ const ex = ref<Exercise | null>(null)
 const error = ref<string | null>(null)
 const view = ref<'lesson' | 'editor'>('lesson')
 const editorFile = ref<string | null>(null)
+const { drafts, hasDraft } = useDrafts()
+const unsaved = computed(() => !!ex.value && hasDraft(ex.value.track, ex.value.slug))
 
 async function load() {
   error.value = null
@@ -130,7 +132,9 @@ function onSaved() {
       <div class="exercise__main">
         <div class="tabs" role="tablist">
           <button role="tab" type="button" :aria-selected="view === 'lesson'" @click="view = 'lesson'"><IconBook /> Lesson</button>
-          <button role="tab" type="button" :aria-selected="view === 'editor'" @click="view = 'editor'"><IconCode /> Editor</button>
+          <button role="tab" type="button" :aria-selected="view === 'editor'" @click="view = 'editor'">
+            <IconCode /> Editor<span v-if="unsaved" class="unsaved-dot" title="Unsaved changes" aria-label="(unsaved changes)" />
+          </button>
         </div>
 
         <div v-show="view === 'lesson'" class="stack-lg">
@@ -168,7 +172,7 @@ function onSaved() {
               :class="{ 'chip--on': editorFile === f.path }"
               @click="editorFile = f.path"
             >
-              {{ f.path }}
+              {{ f.path }}<span v-if="drafts.has(draftKey(ex.track, ex.slug, f.path))" class="unsaved-dot" title="Unsaved changes" aria-label="(unsaved changes)" />
             </button>
           </div>
           <ClientOnly>
