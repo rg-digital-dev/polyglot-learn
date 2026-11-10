@@ -64,6 +64,7 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 |---|---|
 | `learn` / `learn show [slug]` | The current exercise: what to do, the file to edit, what to run next (`--full` adds the lesson) |
 | `learn lesson [slug]` | The concept lesson, your track's note and further reading, in a pager when it's long |
+| `learn read [page] [--lang <id>]` | The next page of the Syntax Primer (or the one you name), with your track's note |
 | `learn check [slug] [-v]` | Run the tests; mark the exercise done when they pass (`-v` for every detail) |
 | `learn watch` | Re-run on save, advance automatically |
 | `learn hint [slug]` | Reveal the next hint |
