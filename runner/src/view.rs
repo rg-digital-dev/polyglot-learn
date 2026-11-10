@@ -411,7 +411,7 @@ pub fn first_error(output: &str) -> (Vec<String>, usize) {
     (picked, total.saturating_sub(shown))
 }
 
-fn case_line(c: &CaseResult, ui: &Ui) -> Option<String> {
+pub(crate) fn case_line(c: &CaseResult, ui: &Ui) -> Option<String> {
     match c.passed {
         Some(true) => Some(format!("{MARGIN}{} {}", ui.pass_mark(), c.description)),
         Some(false) => Some(format!("{MARGIN}{} {}", ui.fail_mark(), ui.failure(&c.description))),
@@ -420,7 +420,7 @@ fn case_line(c: &CaseResult, ui: &Ui) -> Option<String> {
 }
 
 /// Details for one failing case: the call, what was expected, what came back.
-fn failure_detail(spec: &Spec, c: &CaseResult, verbose: bool, ui: &Ui) -> Vec<String> {
+pub(crate) fn failure_detail(spec: &Spec, c: &CaseResult, verbose: bool, ui: &Ui) -> Vec<String> {
     let mut out = vec![format!("{MARGIN}{} {}", ui.fail_mark(), ui.failure(&ui.heading(&c.description)))];
     let label = |l: &str| ui.muted(&format!("{l:<9}"));
     let ind = format!("{MARGIN}  ");
@@ -471,7 +471,7 @@ fn failure_detail(spec: &Spec, c: &CaseResult, verbose: bool, ui: &Ui) -> Vec<St
 
 /// Paths inside the track folder, as compilers print them (absolute, with
 /// either slash, or as a file:// URL), shortened to the part after it.
-fn shorten_paths(line: &str, track_dir: &std::path::Path) -> String {
+pub(crate) fn shorten_paths(line: &str, track_dir: &std::path::Path) -> String {
     let abs = std::path::absolute(track_dir).unwrap_or_else(|_| track_dir.to_path_buf()).display().to_string();
     let abs = abs.trim_end_matches(['/', '\\']).to_string();
     let forward = abs.replace('\\', "/");

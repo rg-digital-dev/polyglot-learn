@@ -197,6 +197,15 @@ pnpm build                       # writes runner/web/dist; commit it with your c
 - **Icons are Lucide**, via `unplugin-icons` (`import IconX from '~icons/lucide/x'`). They're bundled, so there are no network requests.
 - **Every state-changing request sends `x-learn: 1`.** The server rejects requests without it, as well as requests for any host other than localhost.
 
+## Working on the terminal view
+
+Plain `learn` on a terminal runs `runner/src/tui/` (ratatui with crossterm):
+
+- **`app.rs`** holds the state and what each key does. It never draws or reads the terminal, so key handling is unit-tested with a real course and a scratch workspace.
+- **`draw.rs`** draws the panes from the same `views` as the web UI. Lessons, notes and failure details come from the CLI's renderers (`markdown.rs`, `view.rs`), and **`ansi.rs`** turns their colour codes into ratatui text, so there's one renderer. Its tests render screens with ratatui's `TestBackend`.
+- **`mod.rs`** owns the terminal, runs checks on a thread (cases stream in as `Msg`s), polls the open exercise's folder for saves, and suspends the screen while `$EDITOR` runs.
+- Layout: three columns from 110 columns wide; below that the path is hidden (`p`), and below 76 the tests go under the open item.
+
 ## Verification suite
 
 ```bash

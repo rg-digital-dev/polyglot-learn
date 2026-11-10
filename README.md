@@ -32,14 +32,14 @@ Then:
 cd polyglot-learn
 learn init          # which language do you already know?
 learn start rust    # or typescript, python, go, php, lua, qml
-learn watch         # edit the file it shows you, then save
+learn               # the full-screen view: edit the file, save, watch the tests
 ```
 
 **By hand:** download `learn` from the latest release, put it on your `PATH`, and `git clone` this repository. The binaries aren't signed: on macOS, allow it once under System Settings > Privacy & Security; on Windows, choose "More info" > "Run anyway" if SmartScreen asks.
 
 **From source**, with Rust 1.88 or newer: clone the repository and run `cargo install --locked --path runner` inside it.
 
-`learn watch` re-runs the tests each time you save and moves on to the next exercise when they pass. The first Rust check compiles for a few seconds; after that it's quick.
+Plain `learn` opens a full-screen view: your path on the left, the lesson and task in the middle, and the tests on the right. Press `e` to open the file in your editor (`$EDITOR`, or Zed); saving it runs the tests, and they tick off one by one. `?` lists the keys. Prefer plain output? `learn watch` re-runs the tests on every save in the terminal, and `--no-tui` (or `NO_TUI=1`) makes `learn` print the task instead. The first Rust check compiles for a few seconds; after that it's quick.
 
 ## Web UI
 
@@ -62,7 +62,8 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 
 | Command | What it does |
 |---|---|
-| `learn` / `learn show [slug]` | The current exercise: what to do, the file to edit, what to run next (`--full` adds the lesson) |
+| `learn` | On a terminal, the full-screen view (path, lesson and task, live tests); otherwise `learn show` |
+| `learn show [slug]` | The current exercise: what to do, the file to edit, what to run next (`--full` adds the lesson) |
 | `learn lesson [slug]` | The concept lesson, your track's note and further reading, in a pager when it's long |
 | `learn read [page] [--lang <id>]` | The next page of the Syntax Primer (or the one you name), with your track's note |
 | `learn check [slug] [-v]` | Run the tests; mark the exercise done when they pass (`-v` for every detail) |
