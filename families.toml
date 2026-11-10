@@ -1,0 +1,28 @@
+# Track families. `learn compare` and the web UI's compare page start with
+# the tracks of your track's family; adding a track from another family shows
+# the `why` note for that pair first, so a difference reads as a design choice
+# rather than a shortcoming. Each track names its family in track.toml.
+
+[family.compiled]
+title = "Compiled"
+about = "Rust and Go compile ahead of time and check every type before anything runs. They're built for programs that run fast and for a long time."
+
+[family.javascript]
+title = "JavaScript"
+about = "TypeScript and QML both run JavaScript underneath: one number type, `===`, objects and arrays. TypeScript adds types checked by tsc; QML adds declarative user interfaces."
+
+[family.scripting]
+title = "Scripting"
+about = "Python, Lua and PHP run straight away, with types known only while the code runs. Each is built around one job: Python general scripting, Lua being embedded in another program, PHP the web."
+
+[[why]]
+between = ["compiled", "javascript"]
+text = "Rust and Go refuse to build when a type doesn't fit. TypeScript's types are checked by tsc and removed before the code runs, and QML converts values while it runs. Expect more ceremony up front on the compiled side and more checks at run time on the other."
+
+[[why]]
+between = ["compiled", "scripting"]
+text = "Python, Lua and PHP run your code at once and find a type mistake only when that line runs. Rust and Go check everything first. The scripting side is quicker to write; the compiled side catches more before it ships and runs faster."
+
+[[why]]
+between = ["javascript", "scripting"]
+text = "Both find type mistakes while the code runs. The JavaScript tracks share one number type and `===`; Python, Lua and PHP split whole numbers from decimals, and each has its own idea of equality. Lua and PHP are made to live inside a host (a game, a web server), not to stand alone."

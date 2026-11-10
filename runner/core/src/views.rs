@@ -6,7 +6,7 @@
 use serde::Serialize;
 
 use crate::backends::{self, Backend};
-use crate::course::TrackMeta;
+use crate::course::{Families, TrackMeta};
 use crate::ctx::{Ctx, Reading};
 use crate::error::Result;
 use crate::notes;
@@ -19,9 +19,14 @@ pub struct CourseView {
     pub title: String,
     pub track: Option<String>,
     pub from: Option<String>,
+    /// learn, switch or compare.
+    pub goal: String,
+    /// For the `compare` goal: the tracks compare views start with.
+    pub compare: Vec<String>,
     pub backgrounds: Vec<Background>,
     pub tracks: Vec<TrackView>,
     pub modules: Vec<ModuleView>,
+    pub families: Vec<FamilyView>,
     /// Concepts that have a shared exercise, in course order (the compare chips).
     pub concepts: Vec<String>,
     /// Nothing done on the active track and nothing read: point at the primer.
@@ -36,9 +41,21 @@ pub struct Background {
 }
 
 #[derive(Debug, Serialize)]
+pub struct FamilyView {
+    pub id: String,
+    pub title: String,
+    pub about: String,
+    pub tracks: Vec<&'static str>,
+}
+
+#[derive(Debug, Serialize)]
 pub struct TrackView {
     pub id: &'static str,
     pub name: &'static str,
+    pub family: Option<String>,
+    /// What the language is for, in one line.
+    #[serde(rename = "for")]
+    pub purpose: Option<String>,
     pub tool: ToolView,
     pub done: usize,
     pub current: Option<String>,
@@ -82,9 +99,12 @@ pub struct ReadingSummary {
 
 pub fn track(ctx: &Ctx, b: &dyn Backend) -> TrackView {
     let tool = b.tool().find();
+    let meta = TrackMeta::load(&ctx.root, b.id()).unwrap_or_default();
     TrackView {
         id: b.id(),
         name: b.name(),
+        family: meta.family,
+        purpose: meta.purpose,
         tool: ToolView {
             label: b.tool().label,
             found: tool.is_some(),
@@ -102,11 +122,12 @@ pub fn course(ctx: &Ctx) -> CourseView {
         .course
         .modules
         .iter()
-        .map(|m| ModuleView {
+        .enumerate()
+        .map(|(i, m)| ModuleView {
             id: m.id.clone(),
             title: m.title.clone(),
             track: m.track.clone(),
-            tracks: backends::ids().into_iter().filter(|t| m.on_track(t)).collect(),
+            tracks: backends::ids().into_iter().filter(|t| ctx.module_on_track(i, t)).collect(),
             exercises: m
                 .exercises
                 .iter()
@@ -130,13 +151,31 @@ pub fn course(ctx: &Ctx) -> CourseView {
         title: ctx.course.title.clone(),
         track: ctx.config.track.clone(),
         from: ctx.config.from.clone(),
+        goal: ctx.goal().to_string(),
+        compare: ctx.config.compare.clone(),
         backgrounds: notes::BACKGROUNDS.iter().map(|(id, label)| Background { id, label }).collect(),
         tracks: backends::all().iter().map(|b| track(ctx, *b)).collect(),
         modules,
+        families: Families::load(&ctx.root)
+            .unwrap_or_default()
+            .family
+            .into_iter()
+            .map(|(id, f)| FamilyView { tracks: family_members(ctx, &id), id, title: f.title, about: f.about })
+            .collect(),
         concepts: shared_concepts(ctx),
         new: ctx.config.track.as_deref().is_some_and(|t| ctx.is_new(t)),
         workspace: ctx.workspace.display().to_string(),
     }
+}
+
+/// A track's family, from its track.toml.
+pub fn family_of(ctx: &Ctx, track: &str) -> Option<String> {
+    TrackMeta::load(&ctx.root, track).ok().and_then(|m| m.family)
+}
+
+/// The tracks in a family, in track order.
+pub fn family_members(ctx: &Ctx, family: &str) -> Vec<&'static str> {
+    backends::ids().into_iter().filter(|t| family_of(ctx, t).as_deref() == Some(family)).collect()
 }
 
 /// Concepts with a shared (not track-only) exercise, in course order.
@@ -251,9 +290,9 @@ pub fn exercise(ctx: &Ctx, b: &dyn Backend, spec: &Spec) -> Result<ExerciseView>
     let dir = ctx.workspace.join(b.id());
     let meta = TrackMeta::load(&ctx.root, b.id())?;
     let shown = ctx.progress.hints.get(&spec.slug).copied().unwrap_or(0).min(spec.hints.len());
-    let order: Vec<&str> = ctx.specs.iter().filter(|s| s.on_track(b.id())).map(|s| s.slug.as_str()).collect();
+    let order: Vec<&str> = ctx.path_specs(b.id()).iter().map(|s| s.slug.as_str()).collect();
     let pos = order.iter().position(|s| *s == spec.slug).unwrap_or(0);
-    let from = ctx.background();
+    let from = ctx.note_style();
     Ok(ExerciseView {
         slug: spec.slug.clone(),
         title: spec.title.clone(),
@@ -300,6 +339,14 @@ pub struct CompareView {
     pub columns: Vec<CompareColumn>,
     /// The page's title when the concept is a reading.
     pub reading: Option<String>,
+    /// Why the families of the shown tracks differ: one note per pair of families.
+    pub why: Vec<WhyView>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct WhyView {
+    pub between: [String; 2],
+    pub text: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -323,16 +370,51 @@ pub fn tracks_for(ctx: &Ctx, concept: &str) -> Vec<&'static dyn Backend> {
         .iter()
         .copied()
         .filter(|b| match reading {
-            Some(r) => ctx.course.modules[r.module].on_track(b.id()),
+            Some(r) => ctx.module_on_track(r.module, b.id()),
             None => ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept && s.on_track(b.id())),
         })
         .collect()
 }
 
+/// Where comparing a concept starts for a learner on `track`: the concept's
+/// tracks in that track's family. Every track the concept is on when there's no
+/// track, no family, or fewer than two family members have it.
+pub fn default_compare_tracks(ctx: &Ctx, concept: &str, track: Option<&str>) -> Vec<&'static dyn Backend> {
+    let all = tracks_for(ctx, concept);
+    // The `compare` goal: the tracks the learner chose, where the concept has them.
+    if ctx.goal() == "compare" && !ctx.config.compare.is_empty() {
+        let chosen: Vec<&'static dyn Backend> = all.iter().copied().filter(|b| ctx.config.compare.iter().any(|c| c == b.id())).collect();
+        if chosen.len() >= 2 {
+            return chosen;
+        }
+    }
+    let Some(family) = track.and_then(|t| family_of(ctx, t)) else { return all };
+    let members = family_members(ctx, &family);
+    let mine: Vec<&'static dyn Backend> = all.iter().copied().filter(|b| members.contains(&b.id())).collect();
+    if mine.len() < 2 { all } else { mine }
+}
+
+/// Why-notes for every pair of families among `tracks`.
+pub fn why_notes(ctx: &Ctx, tracks: &[&str]) -> Vec<WhyView> {
+    let families = Families::load(&ctx.root).unwrap_or_default();
+    let mut present: Vec<String> = tracks.iter().filter_map(|t| family_of(ctx, t)).collect();
+    present.sort();
+    present.dedup();
+    let mut out = Vec::new();
+    for (i, a) in present.iter().enumerate() {
+        for b in &present[i + 1..] {
+            if let Some(w) = families.why(a, b) {
+                out.push(WhyView { between: w.between.clone(), text: w.text.clone() });
+            }
+        }
+    }
+    out
+}
+
 /// `concept` in each of `wanted` (all of its tracks when empty). The caller checks
 /// `is_comparable` first.
 pub fn compare(ctx: &Ctx, concept: &str, wanted: &[String]) -> Result<CompareView> {
-    let from = ctx.background();
+    let from = ctx.note_style();
     let mut columns = Vec::new();
     for b in tracks_for(ctx, concept) {
         if !wanted.is_empty() && !wanted.iter().any(|w| w == b.id()) {
@@ -346,12 +428,14 @@ pub fn compare(ctx: &Ctx, concept: &str, wanted: &[String]) -> Result<CompareVie
             links: links(&meta, concept),
         });
     }
+    let columns_tracks: Vec<&str> = columns.iter().map(|c| c.track).collect();
     Ok(CompareView {
         concept: concept.to_string(),
         lesson: notes::read_concept(&ctx.root, concept, from),
         exercise: ctx.specs.iter().find(|s| s.native.is_none() && s.concept == concept).map(|s| s.slug.clone()),
-        columns,
         reading: ctx.readings.iter().find(|r| r.id == concept).map(|r| r.title.clone()),
+        why: why_notes(ctx, &columns_tracks),
+        columns,
     })
 }
 
@@ -384,7 +468,7 @@ pub fn reading(ctx: &Ctx, r: &Reading, backend: Option<&dyn Backend>) -> Reading
     let list = ctx.readings_for(track);
     let i = list.iter().position(|x| x.id == r.id);
     let brief = |x: &&Reading| ReadingBrief { id: x.id.clone(), title: x.title.clone() };
-    let from = ctx.background();
+    let from = ctx.note_style();
     ReadingView {
         id: r.id.clone(),
         title: r.title.clone(),
@@ -472,6 +556,53 @@ mod tests {
             "the web API's JSON shape changed; if that's intended, regenerate {} (see this test's comment) and update runner/web",
             path.display()
         );
+    }
+
+    fn repo_ctx(name: &str) -> Ctx {
+        Ctx::discover(Some(std::env::temp_dir().join(format!("learn-views-{name}-{}", std::process::id())))).unwrap()
+    }
+
+    fn ids(tracks: Vec<&'static dyn Backend>) -> Vec<&'static str> {
+        tracks.iter().map(|b| b.id()).collect()
+    }
+
+    #[test]
+    fn comparing_starts_with_the_family_or_the_chosen_tracks() {
+        let mut ctx = repo_ctx("compare");
+        assert_eq!(ids(default_compare_tracks(&ctx, "conditionals", Some("lua"))), ["python", "php", "lua"]);
+        assert_eq!(ids(default_compare_tracks(&ctx, "conditionals", Some("rust"))), ["rust", "go"]);
+        // No track: every track the concept is on.
+        assert_eq!(default_compare_tracks(&ctx, "conditionals", None).len(), 7);
+        // QML has no `files` exercise, so TypeScript alone isn't a comparison: all of them.
+        assert_eq!(default_compare_tracks(&ctx, "files", Some("typescript")).len(), 6);
+
+        ctx.config.goal = Some("compare".into());
+        ctx.config.compare = vec!["rust".into(), "lua".into()];
+        assert_eq!(ids(default_compare_tracks(&ctx, "conditionals", Some("go"))), ["rust", "lua"]);
+        ctx.config.compare = vec!["qml".into(), "lua".into()];
+        // QML has no `files`: one chosen track left, so back to the family.
+        assert_eq!(ids(default_compare_tracks(&ctx, "files", Some("rust"))), ["rust", "go"]);
+    }
+
+    #[test]
+    fn why_notes_cover_each_pair_of_families_shown() {
+        let ctx = repo_ctx("why");
+        assert!(why_notes(&ctx, &["rust", "go"]).is_empty());
+        let one = why_notes(&ctx, &["rust", "lua"]);
+        assert_eq!(one.len(), 1);
+        assert_eq!(one[0].between, ["compiled".to_string(), "scripting".to_string()]);
+        assert_eq!(why_notes(&ctx, &["rust", "typescript", "lua"]).len(), 3);
+    }
+
+    #[test]
+    fn the_switch_goal_leads_with_the_background() {
+        let mut ctx = repo_ctx("switch");
+        ctx.config.goal = Some("switch".into());
+        assert!(!ctx.note_style().lead, "no background, nothing to lead with");
+        ctx.config.from = Some("python".into());
+        assert!(ctx.note_style().lead);
+        ctx.config.goal = Some("learn".into());
+        assert!(!ctx.note_style().lead);
     }
 
     #[test]

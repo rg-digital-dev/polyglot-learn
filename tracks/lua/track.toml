@@ -1,5 +1,8 @@
 id = "lua"
 name = "Lua 5.4"
+# Comparing starts with the tracks of the same family (see families.toml).
+family = "scripting"
+for = "A small language built to be embedded in games, editors and other programs"
 
 # No [lings] table: the "lualings" repos on GitHub (checked 2026-10-30) are
 # single-author projects with 0-1 stars, a handful of commits, or an

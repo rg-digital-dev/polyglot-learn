@@ -53,7 +53,7 @@ impl Course {
         Ok(course)
     }
 
-    fn validate(&self) -> Result<()> {
+    pub fn validate(&self) -> Result<()> {
         let mut seen = std::collections::HashSet::new();
         for id in self.slugs().chain(self.reading_ids()) {
             if !seen.insert(id) {
@@ -84,6 +84,53 @@ pub struct TrackMeta {
     pub install: BTreeMap<String, Vec<String>>,
     #[serde(default)]
     pub links: BTreeMap<String, Vec<Link>>,
+    /// The track's family in families.toml: compiled, javascript or scripting.
+    #[serde(default)]
+    pub family: Option<String>,
+    /// What the language is for, in one line.
+    #[serde(default, rename = "for")]
+    pub purpose: Option<String>,
+}
+
+/// `families.toml`: track families, and why two families differ.
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Families {
+    #[serde(default)]
+    pub family: BTreeMap<String, Family>,
+    #[serde(default)]
+    pub why: Vec<Why>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Family {
+    pub title: String,
+    pub about: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Why {
+    pub between: [String; 2],
+    pub text: String,
+}
+
+impl Families {
+    /// Missing families.toml is not an error: comparing then starts with every track.
+    pub fn load(root: &Path) -> Result<Families> {
+        let path = root.join("families.toml");
+        if !path.exists() {
+            return Ok(Families::default());
+        }
+        let text = std::fs::read_to_string(&path).context(|| format!("can't read {}", path.display()))?;
+        toml::from_str(&text).context(|| format!("invalid {}", path.display()))
+    }
+
+    /// Why families `a` and `b` differ, if the file says.
+    pub fn why(&self, a: &str, b: &str) -> Option<&Why> {
+        self.why.iter().find(|w| (w.between[0] == a && w.between[1] == b) || (w.between[0] == b && w.between[1] == a))
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -164,11 +211,36 @@ exercises = [\"hello\"]
         assert!(parse(clash).is_err());
     }
 
+    /// Paths and the shared library can't drift apart: every shared exercise is
+    /// on some track's path, and every native exercise folder is on its track's.
+    #[test]
+    fn repo_paths_cover_every_exercise() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let ctx = crate::ctx::Ctx::discover(Some(std::env::temp_dir().join("learn-path-test"))).unwrap();
+        for spec in &ctx.specs {
+            let on: Vec<&str> = crate::backends::ids().into_iter().filter(|t| spec.on_track(t)).collect();
+            assert!(!on.is_empty(), "`{}` isn't on any track's path.toml", spec.slug);
+        }
+        for track in crate::backends::ids() {
+            let extras = root.join("tracks").join(track).join("extras");
+            let Ok(dir) = std::fs::read_dir(&extras) else { continue };
+            for e in dir.flatten() {
+                let slug = e.file_name().to_string_lossy().to_string();
+                assert!(
+                    ctx.path_specs(track).iter().any(|s| s.slug == slug),
+                    "tracks/{track}/extras/{slug} isn't on tracks/{track}/path.toml"
+                );
+            }
+        }
+    }
+
     /// Every reading has a titled concept page and a note on every track its module is on.
     #[test]
     fn repo_course_readings_exist() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let course = Course::load(&root).unwrap();
+        // With every track's own stages from its path.toml.
+        let mut course = Course::load(&root).unwrap();
+        crate::path::load_all(&root, &mut course, &crate::backends::ids()).unwrap();
         for m in &course.modules {
             for id in &m.readings {
                 let page = std::fs::read_to_string(root.join("concepts").join(format!("{id}.md")))
@@ -185,7 +257,9 @@ exercises = [\"hello\"]
     #[test]
     fn repo_course_references_existing_specs() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let course = Course::load(&root).unwrap();
+        // With every track's own stages from its path.toml.
+        let mut course = Course::load(&root).unwrap();
+        crate::path::load_all(&root, &mut course, &crate::backends::ids()).unwrap();
         for m in &course.modules {
             for slug in &m.exercises {
                 let path = match &m.track {
@@ -212,7 +286,9 @@ exercises = [\"hello\"]
             }
         }
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let course = Course::load(&root).unwrap();
+        // With every track's own stages from its path.toml.
+        let mut course = Course::load(&root).unwrap();
+        crate::path::load_all(&root, &mut course, &crate::backends::ids()).unwrap();
         for m in &course.modules {
             let Some(track) = &m.track else { continue };
             for slug in &m.exercises {
@@ -282,6 +358,26 @@ exercises = [\"hello\"]
             }
         }
         assert!(problems.is_empty(), "\n{}", problems.join("\n"));
+    }
+
+    /// Every track has a family that families.toml describes and a `for` line,
+    /// and every pair of families has a `why`.
+    #[test]
+    fn repo_families_are_complete() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let families = Families::load(&root).unwrap();
+        for track in crate::backends::ids() {
+            let meta = TrackMeta::load(&root, track).unwrap();
+            let family = meta.family.unwrap_or_else(|| panic!("{track}: track.toml has no `family`"));
+            assert!(families.family.contains_key(&family), "{track}: family `{family}` isn't in families.toml");
+            assert!(meta.purpose.is_some_and(|p| !p.is_empty()), "{track}: track.toml has no `for` line");
+        }
+        let ids: Vec<&String> = families.family.keys().collect();
+        for (i, a) in ids.iter().enumerate() {
+            for b in &ids[i + 1..] {
+                assert!(families.why(a, b).is_some(), "families.toml has no `why` between {a} and {b}");
+            }
+        }
     }
 
     #[test]

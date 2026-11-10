@@ -1,5 +1,8 @@
 id = "typescript"
 name = "TypeScript"
+# Comparing starts with the tracks of the same family (see families.toml).
+family = "javascript"
+for = "JavaScript with types: web apps, servers and libraries"
 
 # No [lings] table: no maintained rustlings-style TypeScript repo was found.
 

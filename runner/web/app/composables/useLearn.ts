@@ -12,6 +12,10 @@ export interface ToolInfo {
 export interface TrackInfo {
   id: string
   name: string
+  /** compiled, javascript or scripting (families.toml). */
+  family: string | null
+  /** What the language is for, in one line. */
+  for: string | null
   tool: ToolInfo
   done: number
   current: string | null
@@ -28,6 +32,10 @@ export interface CourseState {
   title: string
   track: string | null
   from: string | null
+  /** learn, switch or compare. */
+  goal: string
+  /** For the compare goal: the tracks compare views start with. */
+  compare: string[]
   backgrounds: { id: string; label: string }[]
   tracks: TrackInfo[]
   /** `track` is set for a track-only module. */
@@ -40,6 +48,7 @@ export interface CourseState {
     exercises: ExerciseSummary[]
     readings: ReadingSummary[]
   }[]
+  families: { id: string; title: string; about: string; tracks: string[] }[]
   concepts: string[]
   /** Nothing done on the active track and nothing read yet: point at the primer. */
   new: boolean

@@ -87,6 +87,7 @@ const firstUnread = computed(() => primer.value?.readings.find((r) => !r.read) ?
             <span class="h-card">{{ t.name }}</span>
             <span v-if="t.id === state.track" class="pill pill--good">active</span>
           </span>
+          <span v-if="t.for" class="track__for muted small">{{ t.for }}</span>
           <span class="track__progress">
             <span class="bar"><span :style="{ width: `${(t.done / totalFor(t.id)) * 100}%` }" /></span>
             <span class="tag">{{ t.done }}/{{ totalFor(t.id) }}</span>

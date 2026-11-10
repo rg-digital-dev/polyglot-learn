@@ -46,6 +46,12 @@ enum Command {
         /// typescript, javascript, python, php, go, rust, java, csharp, lua or none
         #[arg(long)]
         from: Option<String>,
+        /// learn (one language), switch (from one you know) or compare (side by side)
+        #[arg(long)]
+        goal: Option<String>,
+        /// For `--goal compare`: the tracks to compare, e.g. rust,go
+        #[arg(long, value_delimiter = ',')]
+        compare: Vec<String>,
     },
     /// Show which toolchains are installed for each track.
     Doctor,
@@ -79,12 +85,15 @@ enum Command {
     Watch,
     /// Reveal the next hint.
     Hint { slug: Option<String> },
-    /// Show one concept's note from every track, one after another.
+    /// Show one concept's note from each track, one after another (your track's family first).
     Compare {
         concept: String,
         /// Comma-separated tracks, e.g. rust,go,lua
         #[arg(long, value_delimiter = ',')]
         lang: Vec<String>,
+        /// Every track the concept is on, not only your track's family.
+        #[arg(long, conflicts_with = "lang")]
+        all: bool,
     },
     /// Regenerate tests (and missing stubs) after a spec changes.
     Generate {

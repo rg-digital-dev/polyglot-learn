@@ -69,10 +69,10 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 | `learn watch` | Re-run on save, advance automatically |
 | `learn hint [slug]` | Reveal the next hint |
 | `learn status [--all]` | Your progress on the active track (`--all`: every track side by side) |
-| `learn compare <concept>` | One concept's note from every track, one after another |
+| `learn compare <concept> [--all \| --lang a,b]` | One concept's note from each track, one after another; starts with your track's family |
 | `learn docs [concept] [--open]` | Official docs, *lings and Exercism links for a concept |
 | `learn start <lang>` | Switch track (your work on other tracks is kept) |
-| `learn init` | Change the language your notes compare against |
+| `learn init [--from <lang>] [--goal learn\|switch\|compare]` | The language you know and what you're here for: learning one language, switching from one you know (notes lead with what's different), or comparing (`--compare rust,go`) |
 | `learn doctor` | Which toolchains are installed, with install hints for your OS |
 | `learn generate [--lang <id\|all>]` | Regenerate tests after a spec changes; never overwrites your stubs |
 | `learn serve [--port N] [--open]` | The web UI at `http://learn.localhost:4321`, until you stop it |
@@ -94,7 +94,9 @@ Your solutions and progress are **never** part of this repo: `workspace/` and `.
 ## How it works
 
 ```
-course.toml            modules -> ordered exercise slugs
+course.toml            shared modules -> ordered exercise slugs
+tracks/<lang>/path.toml  the track's stages: shared modules it uses, its own stages
+families.toml          track families and why they differ
 specs/<slug>.json      language-neutral exercise: signature + test cases
 concepts/<concept>.md  the lesson, written once
 tracks/<lang>/         README, track.toml (links, install hints), one note per concept
@@ -111,7 +113,7 @@ The design borrows from [Exercism's problem-specifications](https://github.com/e
 
 ## Adding an exercise
 
-Add `specs/<slug>.json` and list the slug in `course.toml`. Every track now has the exercise; run `learn generate --lang all`. Track notes for a new concept are optional. For a feature only one language has, write a track-only exercise in `tracks/<lang>/extras/<slug>/` instead. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Add `specs/<slug>.json` and list the slug in a `course.toml` module. Every track whose path uses that module now has the exercise; run `learn generate --lang all`. Track notes for a new concept are optional. For a feature only one language has, write a track-only exercise in `tracks/<lang>/extras/<slug>/` instead. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Adding a language
 

@@ -54,7 +54,12 @@ pub fn task_card(ctx: &Ctx, backend: &dyn Backend, spec: &Spec, ui: &Ui) -> Stri
     out.push(String::new());
 
     let shown = ctx.progress.hints.get(&spec.slug).copied().unwrap_or(0).min(spec.hints.len());
-    let lesson_about = if spec.native.is_some() { "read the lesson".to_string() } else { format!("read about {}", spec.concept) };
+    let mut lesson_about = if spec.native.is_some() { "read the lesson".to_string() } else { format!("read about {}", spec.concept) };
+    // The `switch` goal: the lesson leads with what differs from the language you know.
+    if ctx.note_style().lead {
+        let label = notes::BACKGROUNDS.iter().find(|(id, _)| Some(*id) == ctx.background()).map_or("", |(_, l)| *l);
+        lesson_about.push_str(&format!(", starting with what's different from {label}"));
+    }
     let hints = match (spec.hints.len(), shown) {
         (0, _) => None,
         (n, 0) => Some(format!("a nudge if you're stuck ({n} hint{})", if n == 1 { "" } else { "s" })),
@@ -83,7 +88,7 @@ pub fn task_card(ctx: &Ctx, backend: &dyn Backend, spec: &Spec, ui: &Ui) -> Stri
 
 /// The finished-the-track message.
 pub fn all_done(ctx: &Ctx, backend: &dyn Backend, ui: &Ui) -> String {
-    let total = ctx.specs.iter().filter(|s| s.on_track(backend.id())).count();
+    let total = ctx.path_specs(backend.id()).len();
     [
         format!("{MARGIN}{} {}", ui.pass_mark(), ui.success(&format!("You've finished every {} exercise ({total} of {total}).", backend.name()))),
         String::new(),
@@ -100,10 +105,10 @@ pub fn all_done(ctx: &Ctx, backend: &dyn Backend, ui: &Ui) -> String {
 pub fn lesson(ctx: &Ctx, backend: &dyn Backend, spec: &Spec, ui: &Ui) -> String {
     let mut parts = Vec::new();
     if spec.native.is_some() {
-        parts.extend(notes::read_native_lesson(spec, ctx.background()));
+        parts.extend(notes::read_native_lesson(spec, ctx.note_style()));
     } else {
-        parts.extend(notes::read_concept(&ctx.root, &spec.concept, ctx.background()));
-        parts.extend(notes::read_track_note(&ctx.root, backend.id(), &spec.concept, ctx.background()));
+        parts.extend(notes::read_concept(&ctx.root, &spec.concept, ctx.note_style()));
+        parts.extend(notes::read_track_note(&ctx.root, backend.id(), &spec.concept, ctx.note_style()));
     }
     let rule = ui.muted(&(if ui.unicode { "─" } else { "-" }).repeat(ui.width.saturating_sub(MARGIN.len())));
     let mut out: Vec<String> = parts.iter().map(|md| markdown::render(md, ui)).collect::<Vec<_>>();
@@ -139,9 +144,9 @@ pub fn reading(ctx: &Ctx, r: &Reading, backend: Option<&dyn Backend>, ui: &Ui) -
     let module = &ctx.course.modules[r.module].title;
     let rule = ui.muted(&(if ui.unicode { "─" } else { "-" }).repeat(ui.width.saturating_sub(MARGIN.len())));
     let mut out = vec![format!("{MARGIN}{}", ui.muted(&format!("{module} {} {i} of {}", ui.dot(), list.len())))];
-    out.extend(notes::read_concept(&ctx.root, &r.id, ctx.background()).map(|md| markdown::render(&md, ui)));
+    out.extend(notes::read_concept(&ctx.root, &r.id, ctx.note_style()).map(|md| markdown::render(&md, ui)));
     match backend {
-        Some(b) => match notes::read_track_note(&ctx.root, b.id(), &r.id, ctx.background()) {
+        Some(b) => match notes::read_track_note(&ctx.root, b.id(), &r.id, ctx.note_style()) {
             Some(md) => out.push(format!("{MARGIN}{rule}\n\n{}", markdown::render(&md, ui))),
             None => out.push(format!("{MARGIN}{}", ui.muted(&format!("No {} note for this page yet.", b.name())))),
         },
@@ -591,13 +596,20 @@ fn title_of<'a>(ctx: &'a Ctx, slug: &'a str) -> &'a str {
 /// One track's progress: each module with a bar, each exercise by title.
 pub fn status_track(ctx: &Ctx, backend: &dyn Backend, ui: &Ui) -> String {
     let id = backend.id();
-    let modules: Vec<_> = ctx.course.modules.iter().filter(|m| m.on_track(id)).collect();
-    let total: usize = modules.iter().map(|m| m.exercises.len()).sum();
-    let done: usize = modules.iter().flat_map(|m| &m.exercises).filter(|s| ctx.is_done(id, s)).count();
-    let name_w = modules.iter().map(|m| m.title.chars().count()).max().unwrap_or(0) + 2;
-    let mut out = vec![format!("{MARGIN}{} {} {}", ui.heading(backend.name()), ui.muted(ui.dot()), ui.muted(&format!("{done} of {total} done"))), String::new()];
+    // The track's path: each module with the exercises it keeps (its skips left out).
+    let modules: Vec<(&crate::course::Module, Vec<&String>)> =
+        ctx.path(id).iter().map(|st| (&ctx.course.modules[st.module], ctx.module_exercises(st).collect())).collect();
+    let total: usize = modules.iter().map(|(_, exs)| exs.len()).sum();
+    let done: usize = modules.iter().flat_map(|(_, exs)| exs).filter(|s| ctx.is_done(id, s)).count();
+    let name_w = modules.iter().map(|(m, _)| m.title.chars().count()).max().unwrap_or(0) + 2;
+    let mut out = vec![format!("{MARGIN}{} {} {}", ui.heading(backend.name()), ui.muted(ui.dot()), ui.muted(&format!("{done} of {total} done")))];
+    // What the language is for, so the path reads as that language's, not one of seven columns.
+    if let Some(purpose) = TrackMeta::load(&ctx.root, id).ok().and_then(|m| m.purpose) {
+        out.push(format!("{MARGIN}{}", ui.muted(&purpose)));
+    }
+    out.push(String::new());
     let first_unread = ctx.readings_on(id).into_iter().find(|r| !ctx.is_read(&r.id)).map(|r| r.id.as_str());
-    for m in modules {
+    for (m, exs) in modules {
         if !m.readings.is_empty() {
             if m.exercises.is_empty() {
                 let r = m.readings.iter().filter(|r| ctx.is_read(r)).count();
@@ -624,15 +636,15 @@ pub fn status_track(ctx: &Ctx, backend: &dyn Backend, ui: &Ui) -> String {
                 continue;
             }
         }
-        let d = m.exercises.iter().filter(|s| ctx.is_done(id, s)).count();
+        let d = exs.iter().filter(|s| ctx.is_done(id, s)).count();
         out.push(format!(
             "{MARGIN}{}{}{}  {}",
             ui.heading(&m.title),
             " ".repeat(name_w - m.title.chars().count()),
-            ui.bar(d, m.exercises.len(), 12),
-            ui.muted(&format!("{d}/{}", m.exercises.len()))
+            ui.bar(d, exs.len(), 12),
+            ui.muted(&format!("{d}/{}", exs.len()))
         ));
-        for slug in &m.exercises {
+        for slug in exs {
             let title = title_of(ctx, slug);
             let is_current = ctx.current(id).is_some_and(|s| s.slug == *slug);
             let title = if is_current { ui.accent(title) } else if ctx.is_done(id, slug) { title.to_string() } else { ui.muted(title) };
@@ -694,7 +706,8 @@ pub fn status_all(ctx: &Ctx, ui: &Ui) -> String {
             let cells: String = tracks
                 .iter()
                 .map(|b| {
-                    let cell = if m.on_track(b.id()) { mark(ctx, b.id(), slug, ui) } else { String::new() };
+                    let on = ctx.spec(slug).is_ok_and(|s| s.on_track(b.id()));
+                    let cell = if on { mark(ctx, b.id(), slug, ui) } else { String::new() };
                     format!("{cell}{}", " ".repeat(col.saturating_sub(ui::visible_width(&cell))))
                 })
                 .collect();
@@ -717,7 +730,7 @@ mod tests {
     /// specs, with nothing done and nothing read.
     fn primer_ctx() -> Ctx {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-        let course: crate::course::Course = toml::from_str(
+        let mut course: crate::course::Course = toml::from_str(
             "[[module]]\nid = \"p\"\ntitle = \"Syntax Primer\"\nreadings = [\"syntax-one\", \"syntax-two\"]\n\
              [[module]]\nid = \"f\"\ntitle = \"Foundations\"\nexercises = [\"hello\"]\n",
         )
@@ -727,7 +740,11 @@ mod tests {
             .iter()
             .map(|id| crate::ctx::Reading { id: id.to_string(), title: format!("Page {id}"), module: 0 })
             .collect();
+        // No path.toml files there: every track gets the default path.
+        let no_paths = std::env::temp_dir().join("learn-view-tests-no-paths");
+        let paths = learn_core::path::load_all(&no_paths, &mut course, &backends::ids()).unwrap();
         Ctx {
+            paths,
             workspace: root.join("workspace"),
             state_dir: std::env::temp_dir().join("learn-view-tests-unused"),
             root,
@@ -961,7 +978,13 @@ Expected (): [2]"), None);
         let head: Vec<&str> = out.lines().take(5).collect();
         assert_eq!(
             head,
-            ["  Go · 0 of 31 done", "", "  Syntax Primer          ░░░░░░░░░░░░  0/7 read", "    ○ A File at a Glance", "    ○ Variables and Constants"]
+            [
+                "  Go · 0 of 31 done",
+                "  Simple, concurrent services and command-line tools",
+                "",
+                "  Syntax Primer          ░░░░░░░░░░░░  0/7 read",
+                "    ○ A File at a Glance"
+            ]
         );
         assert!(out.contains("  Foundations            ░░░░░░░░░░░░  0/6\n    ○ Hello\n    ○ Leap Year"), "{out}");
         assert!(out.contains("  Deeper Go              ░░░░░░░░░░░░  0/5"), "{out}");

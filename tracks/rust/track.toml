@@ -1,5 +1,8 @@
 id = "rust"
 name = "Rust"
+# Comparing starts with the tracks of the same family (see families.toml).
+family = "compiled"
+for = "Fast, memory-safe programs: command-line tools, services and systems code"
 
 [lings]
 name = "Rustlings"

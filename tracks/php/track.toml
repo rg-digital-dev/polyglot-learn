@@ -1,5 +1,8 @@
 id = "php"
 name = "PHP"
+# Comparing starts with the tracks of the same family (see families.toml).
+family = "scripting"
+for = "Server-side web pages and APIs, one request at a time"
 
 # No [lings] table: no maintained rustlings-style PHP repo was found.
 

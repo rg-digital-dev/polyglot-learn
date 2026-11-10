@@ -26,7 +26,7 @@ use crate::Command;
 pub fn dispatch(workspace: Option<PathBuf>, command: Option<Command>) -> Result<ExitCode> {
     let mut ctx = Ctx::discover(workspace.clone())?;
     match command.unwrap_or(Command::Show { slug: None, full: false }) {
-        Command::Init { from } => init(&mut ctx, from),
+        Command::Init { from, goal, compare } => init(&mut ctx, from, goal, compare),
         Command::Doctor => doctor(&ctx),
         Command::Start { lang } => start(&mut ctx, &lang),
         Command::Show { slug, full } => show(&ctx, slug.as_deref(), full),
@@ -35,7 +35,7 @@ pub fn dispatch(workspace: Option<PathBuf>, command: Option<Command>) -> Result<
         Command::Check { slug, verbose } => check_cmd(&mut ctx, slug.as_deref(), verbose),
         Command::Watch => watch(&mut ctx),
         Command::Hint { slug } => hint(&mut ctx, slug.as_deref()),
-        Command::Compare { concept, lang } => compare(&ctx, &concept, &lang),
+        Command::Compare { concept, lang, all } => compare(&ctx, &concept, &lang, all),
         Command::Generate { lang } => generate(&ctx, lang.as_deref()),
         Command::Status { all } => status(&ctx, all),
         Command::Docs { concept, lang, open } => docs(&ctx, concept.as_deref(), lang.as_deref(), open),
@@ -79,7 +79,89 @@ fn ensure_generated(ctx: &Ctx, backend: &dyn Backend, spec: &Spec) -> Result<()>
 
 // ---- init / doctor / start -------------------------------------------------
 
-fn init(ctx: &mut Ctx, from_flag: Option<String>) -> Result<ExitCode> {
+/// Read one line from the terminal, trimmed and lower-cased.
+fn ask(prompt: &str) -> Result<String> {
+    print!("\n{MARGIN}{prompt}");
+    std::io::stdout().flush().ok();
+    let mut line = String::new();
+    std::io::stdin().lock().read_line(&mut line).context(|| "couldn't read your answer".into())?;
+    Ok(line.trim().to_ascii_lowercase())
+}
+
+fn init(ctx: &mut Ctx, from_flag: Option<String>, goal_flag: Option<String>, compare_flag: Vec<String>) -> Result<ExitCode> {
+    // Flags answer without asking; with none, both questions are asked.
+    let interactive = from_flag.is_none() && goal_flag.is_none() && compare_flag.is_empty();
+    if from_flag.is_some() || interactive {
+        init_from(ctx, from_flag)?;
+    }
+    if goal_flag.is_some() || !compare_flag.is_empty() || interactive {
+        init_goal(ctx, goal_flag, compare_flag, interactive)?;
+    }
+    let ui = ui::get();
+    println!("{MARGIN}{}", ui.muted("Change it any time with learn init."));
+    if ctx.config.track.is_none() {
+        println!("\n{MARGIN}{} {}", ui.accent("learn start <lang>"), ui.muted(&format!("to pick a track: {}", backends::ids().join(", "))));
+    }
+    Ok(ExitCode::SUCCESS)
+}
+
+fn init_goal(ctx: &mut Ctx, goal_flag: Option<String>, compare_flag: Vec<String>, interactive: bool) -> Result<()> {
+    use learn_core::ctx::GOALS;
+    let ui = ui::get();
+    let goal = match goal_flag {
+        Some(g) => g.to_ascii_lowercase(),
+        None if !compare_flag.is_empty() => "compare".to_string(),
+        None => {
+            println!("\n{MARGIN}{}", ui.heading("What are you here for?"));
+            for (i, (_, label)) in GOALS.iter().enumerate() {
+                println!("{MARGIN}{} {label}", ui.accent(&format!("{:>2})", i + 1)));
+            }
+            let answer = ask("Number or name [1]: ")?;
+            match answer.parse::<usize>() {
+                _ if answer.is_empty() => GOALS[0].0.to_string(),
+                Ok(n) => match GOALS.get(n.wrapping_sub(1)) {
+                    Some((id, _)) => id.to_string(),
+                    None => bail!("pick a number from 1 to {}", GOALS.len()),
+                },
+                Err(_) => answer,
+            }
+        }
+    };
+    if !GOALS.iter().any(|(id, _)| *id == goal) {
+        let ids: Vec<&str> = GOALS.iter().map(|(id, _)| *id).collect();
+        bail!("unknown goal `{goal}`.\nChoose one of: {}", ids.join(", "));
+    }
+    let mut compare = compare_flag;
+    if goal == "compare" && compare.is_empty() && interactive {
+        let answer = ask(&format!("Which tracks? Comma-separated, e.g. rust,go ({}): ", backends::ids().join(", ")))?;
+        compare = answer.split(',').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect();
+    }
+    let compare: Vec<String> = compare.iter().map(|t| backends::get(t).map(|b| b.id().to_string())).collect::<Result<_>>()?;
+    if goal == "compare" && compare.len() == 1 {
+        bail!("name at least two tracks to compare, e.g. --compare rust,go");
+    }
+    ctx.config.goal = Some(goal.clone());
+    ctx.config.compare = if goal == "compare" { compare.clone() } else { Vec::new() };
+    ctx.save_config()?;
+    let saved = match goal.as_str() {
+        "switch" if ctx.background().is_none() => {
+            "Saved. Pick the language you know with learn init --from <lang>, so notes can lead with what's different.".to_string()
+        }
+        "switch" => "Saved. Notes start with what's different from the language you know.".to_string(),
+        "compare" if compare.is_empty() => {
+            "Saved. learn status shows every track side by side; learn compare starts with your track's family.".to_string()
+        }
+        "compare" => {
+            let chosen: Vec<&dyn Backend> = compare.iter().filter_map(|t| backends::get(t).ok()).collect();
+            format!("Saved. learn compare starts with {}, and learn status shows every track side by side.", names(&chosen))
+        }
+        _ => "Saved. You'll follow one track's path.".to_string(),
+    };
+    println!("\n{MARGIN}{} {saved}", ui.pass_mark());
+    Ok(())
+}
+
+fn init_from(ctx: &mut Ctx, from_flag: Option<String>) -> Result<()> {
     let ui = ui::get();
     let choice = match from_flag {
         Some(f) => f.to_ascii_lowercase(),
@@ -89,11 +171,7 @@ fn init(ctx: &mut Ctx, from_flag: Option<String>) -> Result<ExitCode> {
             for (i, (_, label)) in notes::BACKGROUNDS.iter().enumerate() {
                 println!("{MARGIN}{} {label}", ui.accent(&format!("{:>2})", i + 1)));
             }
-            print!("\n{MARGIN}Number or name [1]: ");
-            std::io::stdout().flush().ok();
-            let mut line = String::new();
-            std::io::stdin().lock().read_line(&mut line).context(|| "couldn't read your answer".into())?;
-            let answer = line.trim().to_ascii_lowercase();
+            let answer = ask("Number or name [1]: ")?;
             if answer.is_empty() {
                 notes::BACKGROUNDS[0].0.to_string()
             } else if let Ok(n) = answer.parse::<usize>() {
@@ -126,11 +204,7 @@ fn init(ctx: &mut Ctx, from_flag: Option<String>) -> Result<ExitCode> {
         format!("Saved. Notes will add \"coming from {label}\" sections where they exist.")
     };
     println!("\n{MARGIN}{} {}", ui.pass_mark(), saved);
-    println!("{MARGIN}{}", ui.muted("Change it any time with learn init."));
-    if ctx.config.track.is_none() {
-        println!("\n{MARGIN}{} {}", ui.accent("learn start <lang>"), ui.muted(&format!("to pick a track: {}", backends::ids().join(", "))));
-    }
-    Ok(ExitCode::SUCCESS)
+    Ok(())
 }
 
 /// Which `[install]` keys apply to this machine.
@@ -544,16 +618,29 @@ fn resolve_concept(ctx: &Ctx, concept: &str) -> Result<String> {
     bail!("unknown concept `{concept}`.\nConcepts: {}", concepts.join(", "))
 }
 
-fn compare(ctx: &Ctx, concept: &str, langs: &[String]) -> Result<ExitCode> {
+fn compare(ctx: &Ctx, concept: &str, langs: &[String], all: bool) -> Result<ExitCode> {
     let ui = ui::get();
     let concept = resolve_concept(ctx, concept)?;
-    let selected: Vec<&dyn Backend> = if langs.is_empty() {
-        let on = crate::views::tracks_for(ctx, &concept);
-        if on.is_empty() { backends::all().to_vec() } else { on }
-    } else {
+    let every = crate::views::tracks_for(ctx, &concept);
+    let selected: Vec<&dyn Backend> = if !langs.is_empty() {
         langs.iter().map(|l| backends::get(l)).collect::<Result<_>>()?
+    } else if every.is_empty() {
+        backends::all().to_vec()
+    } else if all {
+        every.clone()
+    } else {
+        // Your track's family first; the others are a flag away.
+        crate::views::default_compare_tracks(ctx, &concept, ctx.config.track.as_deref())
     };
-    let mut out = vec![format!("{MARGIN}{}", ui.muted(&format!("Comparing {concept} across {} tracks", selected.len())))];
+    let ids: Vec<&str> = selected.iter().map(|b| b.id()).collect();
+    let mut out = vec![format!("{MARGIN}{}", ui.muted(&format!("Comparing {concept} across {}", names(&selected))))];
+    // Mixing families: say why they differ before the notes do.
+    for why in crate::views::why_notes(ctx, &ids) {
+        out.push(String::new());
+        let text = format!("Why {} and {} differ: {}", title_case(&why.between[0]), title_case(&why.between[1]), why.text);
+        out.extend(ui.wrap(&text, MARGIN, MARGIN).into_iter().map(|l| ui.muted(&l)));
+    }
+    let others: Vec<&dyn Backend> = every.iter().copied().filter(|b| !ids.contains(&b.id())).collect();
     for b in selected {
         // A full-width coloured bar per track, so sections are easy to find while scrolling.
         let title = format!(" {} ", b.name());
@@ -561,13 +648,32 @@ fn compare(ctx: &Ctx, concept: &str, langs: &[String]) -> Result<ExitCode> {
         out.push(String::new());
         out.push(format!("{MARGIN}{}{}{}", ui.accent(if ui.unicode { "━━" } else { "==" }), ui.paint(ui::heading_style().fg_color(ui::accent_style().get_fg_color()), &title), ui.accent(&fill)));
         out.push(String::new());
-        match notes::read_track_note(&ctx.root, b.id(), &concept, ctx.background()) {
+        match notes::read_track_note(&ctx.root, b.id(), &concept, ctx.note_style()) {
             Some(note) => out.push(markdown::render(&note, ui)),
             None => out.push(format!("{MARGIN}{}", ui.muted(&format!("No {} note for {concept} yet. Contributions welcome: see CONTRIBUTING.md.", b.name())))),
         }
     }
+    if !others.is_empty() && langs.is_empty() {
+        out.push(String::new());
+        out.push(format!("{MARGIN}{}  {}", ui.accent(&format!("learn compare {concept} --all")), ui.muted(&format!("adds {}", names(&others)))));
+    }
     ui.page(&out.join("\n"));
     Ok(ExitCode::SUCCESS)
+}
+
+/// "Rust, Go and Lua".
+fn names(tracks: &[&dyn Backend]) -> String {
+    let n: Vec<&str> = tracks.iter().map(|b| b.name()).collect();
+    match n.as_slice() {
+        [] => String::new(),
+        [one] => one.to_string(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+    }
+}
+
+fn title_case(id: &str) -> String {
+    let mut c = id.chars();
+    c.next().map(|f| f.to_uppercase().chain(c).collect()).unwrap_or_default()
 }
 
 pub fn open_url(url: &str) -> Result<()> {
@@ -656,6 +762,11 @@ fn status(ctx: &Ctx, all: bool) -> Result<ExitCode> {
         return Ok(ExitCode::SUCCESS);
     }
     match &ctx.config.track {
+        // The `compare` goal: every track side by side is the main overview.
+        Some(_) if ctx.goal() == "compare" => {
+            println!("{}", view::status_all(ctx, ui));
+            println!("\n{MARGIN}{}", ui.muted("Your goal is to compare tracks; learn init changes it."));
+        }
         Some(t) => {
             println!("{}", view::status_track(ctx, backends::get(t)?, ui));
             if let Some(hint) = view::primer_hint(ctx, t, ui) {

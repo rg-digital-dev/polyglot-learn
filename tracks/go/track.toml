@@ -1,5 +1,8 @@
 id = "go"
 name = "Go"
+# Comparing starts with the tracks of the same family (see families.toml).
+family = "compiled"
+for = "Simple, concurrent services and command-line tools"
 
 [lings]
 name = "golings"
