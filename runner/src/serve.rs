@@ -25,6 +25,7 @@ use tokio::sync::{broadcast, watch};
 
 use crate::backends::{self, Backend};
 use crate::check;
+use crate::lessons;
 use crate::views;
 use crate::ctx::Ctx;
 use crate::error::{Error, Result};
@@ -250,7 +251,7 @@ struct TrackBody {
 async fn set_track(State(app): State<Shared>, Json(body): Json<TrackBody>) -> ApiResult<Json<Value>> {
     let mut ctx = app.ctx()?;
     let backend = backends::get(&body.track)?;
-    backends::generate(backend, &ctx.track_specs(backend.id()), &ctx.workspace.join(backend.id()))?;
+    lessons::generate_track(&ctx, backend)?;
     ctx.config.track = Some(backend.id().to_string());
     ctx.save_config()?;
     app.emit(json!({ "type": "progress" }));
@@ -269,6 +270,7 @@ async fn set_from(State(app): State<Shared>, Json(body): Json<FromBody>) -> ApiR
     }
     ctx.config.from = Some(body.from.clone());
     ctx.save_config()?;
+    lessons::refresh(&ctx)?;
     Ok(Json(json!({ "from": body.from })))
 }
 
@@ -282,6 +284,7 @@ struct GoalBody {
 async fn set_goal(State(app): State<Shared>, Json(body): Json<GoalBody>) -> ApiResult<Json<Value>> {
     let mut ctx = app.ctx()?;
     ctx.set_goal(&body.goal, &body.compare)?;
+    lessons::refresh(&ctx)?;
     Ok(Json(json!({ "goal": ctx.goal(), "compare": ctx.config.compare })))
 }
 
@@ -318,7 +321,7 @@ async fn exercise(
     let spec = spec_or_404(&ctx, b.id(), &slug)?;
     let dir = ctx.workspace.join(b.id());
     if !dir.join(backends::main_file(b, spec)).exists() {
-        backends::generate(b, &ctx.track_specs(b.id()), &dir)?;
+        lessons::generate_track(&ctx, b)?;
     }
     Ok(Json(views::exercise(&ctx, b, spec)?))
 }

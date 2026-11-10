@@ -41,7 +41,7 @@ learn               # the full-screen view: edit the file, save, watch the tests
 
 **From source**, with Rust 1.88 or newer: clone the repository and run `cargo install --locked --path runner` inside it.
 
-Plain `learn` opens a full-screen view: your path on the left, the lesson and task in the middle, and the tests on the right. Press `e` to open the file in your editor (`$EDITOR`, or Zed); saving it runs the tests, and they tick off one by one. `?` lists the keys. Prefer plain output? `learn watch` re-runs the tests on every save in the terminal, and `--no-tui` (or `NO_TUI=1`) makes `learn` print the task instead. The first Rust check compiles for a few seconds; after that it's quick.
+Plain `learn` opens a full-screen view: your path on the left, the lesson and task in the middle, and the tests on the right. Press `e` to open the file in your editor (`$EDITOR`, or Zed); saving it runs the tests, and they tick off one by one. `?` lists the keys. Prefer plain output? `learn watch` re-runs the tests on every save in the terminal, and `--no-tui` (or `NO_TUI=1`) makes `learn` print the task instead. Every exercise folder also has a `LESSON.md` with the task and the lesson, to read in your editor's Markdown preview. The first Rust check compiles for a few seconds; after that it's quick.
 
 ## Web UI
 
@@ -105,7 +105,7 @@ concepts/<concept>.md  the lesson, written once
 tracks/<lang>/         README, track.toml (links, install hints), one note per concept
 tracks/<lang>/extras/  track-only exercises, written natively (lesson, stub, tests)
 runner/                the `learn` CLI (Rust): one backend per language
-workspace/<lang>/      generated: your stubs + generated tests (gitignored)
+workspace/<lang>/      generated: your stubs, the tests and a LESSON.md per exercise (gitignored)
 ```
 
 A backend maps the small spec type vocabulary (`int`, `bool`, `string`, `list<T>`, `map<string,T>`, plus records, classes, interfaces and function types) to native types, renders typed literals, writes the stub and the tests, and reads per-case results back from the test output. Errors follow each language's own convention: `Result` in Rust, `(T, error)` in Go, exceptions in TypeScript, PHP and QML, and `nil, err` in Lua.
