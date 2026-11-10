@@ -4,7 +4,7 @@
 use crate::backends::{self, Backend};
 use crate::check::{CaseResult, CheckResult};
 use crate::course::TrackMeta;
-use crate::ctx::Ctx;
+use crate::ctx::{Ctx, Reading};
 use crate::markdown;
 use crate::notes;
 use crate::spec::{CaseKind, Outcome, Spec};
@@ -122,6 +122,78 @@ pub fn lesson(ctx: &Ctx, backend: &dyn Backend, spec: &Spec, ui: &Ui) -> String 
         }
     }
     text
+}
+
+// ---- readings ------------------------------------------------------------------------
+
+/// The readings a learner on `track` (or on no track yet) works through.
+pub fn readings_for<'a>(ctx: &'a Ctx, track: Option<&str>) -> Vec<&'a Reading> {
+    match track {
+        Some(t) => ctx.readings_on(t),
+        None => ctx.readings.iter().collect(),
+    }
+}
+
+/// The reading after `id`, in course order.
+pub fn next_reading<'a>(ctx: &'a Ctx, track: Option<&str>, id: &str) -> Option<&'a Reading> {
+    let list = readings_for(ctx, track);
+    let i = list.iter().position(|r| r.id == id)?;
+    list.get(i + 1).copied()
+}
+
+/// A reading page: where it sits, the concept page, the track's note, what next.
+pub fn reading(ctx: &Ctx, r: &Reading, backend: Option<&dyn Backend>, ui: &Ui) -> String {
+    let track = backend.map(|b| b.id());
+    let list = readings_for(ctx, track);
+    let i = list.iter().position(|x| x.id == r.id).map_or(0, |i| i + 1);
+    let module = &ctx.course.modules[r.module].title;
+    let rule = ui.muted(&(if ui.unicode { "─" } else { "-" }).repeat(ui.width.saturating_sub(MARGIN.len())));
+    let mut out = vec![format!("{MARGIN}{}", ui.muted(&format!("{module} {} {i} of {}", ui.dot(), list.len())))];
+    out.extend(notes::read_concept(&ctx.root, &r.id, from(ctx)).map(|md| markdown::render(&md, ui)));
+    match backend {
+        Some(b) => match notes::read_track_note(&ctx.root, b.id(), &r.id, from(ctx)) {
+            Some(md) => out.push(format!("{MARGIN}{rule}\n\n{}", markdown::render(&md, ui))),
+            None => out.push(format!("{MARGIN}{}", ui.muted(&format!("No {} note for this page yet.", b.name())))),
+        },
+        None => out.push(format!("{MARGIN}{} {}", ui.accent("learn start <lang>"), ui.muted("adds your language's note to each page"))),
+    }
+    let mut footer = vec![format!("{MARGIN}{rule}")];
+    match next_reading(ctx, track, &r.id) {
+        Some(n) => footer.push(format!("{MARGIN}{}  {}", ui.accent(&format!("learn read {}", n.id)), ui.muted(&format!("next: {}", n.title)))),
+        None if track.is_some() => footer.push(format!("{MARGIN}{}  {}", ui.accent("learn"), ui.muted("that was the last page: on to the first exercise"))),
+        None => footer.push(format!("{MARGIN}{}  {}", ui.accent("learn start <lang>"), ui.muted("that was the last page: pick a track for the exercises"))),
+    }
+    footer.push(format!("{MARGIN}{}  {}", ui.accent(&format!("learn compare {}", r.id)), ui.muted("every track side by side")));
+    out.push(footer.join("\n"));
+    out.join("\n\n")
+}
+
+/// Every reading with its mark, for `learn read` once they're all read.
+pub fn reading_list(ctx: &Ctx, track: Option<&str>, ui: &Ui) -> String {
+    let mut out = Vec::new();
+    for r in readings_for(ctx, track) {
+        let mark = if ctx.is_read(&r.id) { ui.pass_mark() } else { ui.todo_mark() };
+        out.push(format!("{MARGIN}{mark} {}  {}", r.title, ui.muted(&r.id)));
+    }
+    out.push(String::new());
+    out.push(format!("{MARGIN}{}  {}", ui.accent("learn read <page>"), ui.muted("to read one again")));
+    out.join("\n")
+}
+
+/// The nudge towards the primer, while nothing is done on the track and nothing is read.
+pub fn primer_hint(ctx: &Ctx, track: &str, ui: &Ui) -> Option<String> {
+    if !ctx.is_new(track) {
+        return None;
+    }
+    let list = ctx.readings_on(track);
+    let module = &ctx.course.modules[list.first()?.module].title;
+    let text = format!(
+        "New to this? The {module} is {} short pages on how each language writes the basics: variables, types, loops and functions. Skip it if you know them.",
+        list.len()
+    );
+    let mut out: Vec<String> = ui.wrap(&text, MARGIN, MARGIN).into_iter().map(|l| ui.muted(&l)).collect();
+    out.push(format!("{MARGIN}{}  {}", ui.accent("learn read"), ui.muted("to start reading")));
+    Some(out.join("\n"))
 }
 
 /// "Go deeper": one clickable line per link.
@@ -534,7 +606,34 @@ pub fn status_track(ctx: &Ctx, backend: &dyn Backend, ui: &Ui) -> String {
     let done: usize = modules.iter().flat_map(|m| &m.exercises).filter(|s| ctx.is_done(id, s)).count();
     let name_w = modules.iter().map(|m| m.title.chars().count()).max().unwrap_or(0) + 2;
     let mut out = vec![format!("{MARGIN}{} {} {}", ui.heading(backend.name()), ui.muted(ui.dot()), ui.muted(&format!("{done} of {total} done"))), String::new()];
+    let first_unread = ctx.readings_on(id).into_iter().find(|r| !ctx.is_read(&r.id)).map(|r| r.id.as_str());
     for m in modules {
+        if !m.readings.is_empty() {
+            if m.exercises.is_empty() {
+                let r = m.readings.iter().filter(|r| ctx.is_read(r)).count();
+                out.push(format!(
+                    "{MARGIN}{}{}{}  {}",
+                    ui.heading(&m.title),
+                    " ".repeat(name_w - m.title.chars().count()),
+                    ui.bar(r, m.readings.len(), 12),
+                    ui.muted(&format!("{r}/{} read", m.readings.len()))
+                ));
+            }
+            for rid in &m.readings {
+                let title = ctx.readings.iter().find(|x| x.id == *rid).map_or(rid.as_str(), |x| x.title.as_str());
+                let (mark, title) = if ctx.is_read(rid) {
+                    (ui.pass_mark(), title.to_string())
+                } else if first_unread == Some(rid.as_str()) {
+                    (ui.todo_mark(), ui.accent(title))
+                } else {
+                    (ui.todo_mark(), ui.muted(title))
+                };
+                out.push(format!("{MARGIN}  {mark} {title}"));
+            }
+            if m.exercises.is_empty() {
+                continue;
+            }
+        }
         let d = m.exercises.iter().filter(|s| ctx.is_done(id, s)).count();
         out.push(format!(
             "{MARGIN}{}{}{}  {}",
@@ -586,6 +685,12 @@ pub fn status_all(ctx: &Ctx, ui: &Ui) -> String {
         .collect();
     out.push(format!("{MARGIN}  {}{head}", " ".repeat(title_w)).trim_end().to_string());
     for m in &ctx.course.modules {
+        if m.exercises.is_empty() {
+            // Readings only: read marks aren't per track, so one line.
+            let r = m.readings.iter().filter(|r| ctx.is_read(r)).count();
+            out.push(format!("{MARGIN}{}  {}", ui.heading(&m.title), ui.muted(&format!("{r} of {} read", m.readings.len()))));
+            continue;
+        }
         let only = m.track.as_deref();
         if let Some(t) = only {
             if !started(ctx, t) {
@@ -617,6 +722,80 @@ pub fn status_all(ctx: &Ctx, ui: &Ui) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A course with a two-page primer and one exercise module, on the repo's
+    /// specs, with nothing done and nothing read.
+    fn primer_ctx() -> Ctx {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let course: crate::course::Course = toml::from_str(
+            "[[module]]\nid = \"p\"\ntitle = \"Syntax Primer\"\nreadings = [\"syntax-one\", \"syntax-two\"]\n\
+             [[module]]\nid = \"f\"\ntitle = \"Foundations\"\nexercises = [\"hello\"]\n",
+        )
+        .unwrap();
+        let spec = crate::spec::Spec::load(&root.join("specs").join("hello.json")).unwrap();
+        let readings = ["syntax-one", "syntax-two"]
+            .iter()
+            .map(|id| crate::ctx::Reading { id: id.to_string(), title: format!("Page {id}"), module: 0 })
+            .collect();
+        Ctx {
+            workspace: root.join("workspace"),
+            state_dir: std::env::temp_dir().join("learn-view-tests-unused"),
+            root,
+            external_workspace: false,
+            course,
+            specs: vec![spec],
+            readings,
+            config: Default::default(),
+            progress: Default::default(),
+        }
+    }
+
+    #[test]
+    fn status_lists_the_primer_without_counting_it_as_done() {
+        let mut ctx = primer_ctx();
+        ctx.progress.read.insert("syntax-one".into());
+        let rust = backends::get("rust").unwrap();
+        let out = status_track(&ctx, rust, &Ui::plain(80));
+        assert!(out.contains("0 of 1 done"), "{out}");
+        assert!(out.contains("1/2 read"), "{out}");
+        assert!(out.contains("Page syntax-two"), "{out}");
+        assert!(status_all(&ctx, &Ui::plain(100)).contains("1 of 2 read"));
+    }
+
+    #[test]
+    fn primer_hint_goes_after_one_page_or_one_exercise() {
+        let mut ctx = primer_ctx();
+        assert!(primer_hint(&ctx, "rust", &Ui::plain(80)).is_some_and(|h| h.contains("learn read")));
+        ctx.progress.read.insert("syntax-two".into());
+        assert!(primer_hint(&ctx, "rust", &Ui::plain(80)).is_none());
+        ctx.progress.read.clear();
+        ctx.progress.done.entry("rust".into()).or_default().insert("hello".into());
+        assert!(primer_hint(&ctx, "rust", &Ui::plain(80)).is_none());
+        // Another track is still new.
+        assert!(primer_hint(&ctx, "go", &Ui::plain(80)).is_some());
+    }
+
+    #[test]
+    fn reading_footer_points_at_the_next_page_then_the_exercises() {
+        let ctx = primer_ctx();
+        let rust = backends::get("rust").unwrap();
+        let ui = Ui::plain(80);
+        let first = reading(&ctx, &ctx.readings[0], Some(rust), &ui);
+        assert!(first.contains("Syntax Primer · 1 of 2") || first.contains("Syntax Primer | 1 of 2"), "{first}");
+        assert!(first.contains("learn read syntax-two"), "{first}");
+        let last = reading(&ctx, &ctx.readings[1], Some(rust), &ui);
+        assert!(last.contains("on to the first exercise"), "{last}");
+        let no_track = reading(&ctx, &ctx.readings[1], None, &ui);
+        assert!(no_track.contains("learn start <lang>"), "{no_track}");
+    }
+
+    #[test]
+    fn readings_resolve_with_or_without_their_prefix() {
+        let ctx = primer_ctx();
+        assert_eq!(ctx.reading("syntax-two").map(|r| r.id.as_str()), Some("syntax-two"));
+        assert_eq!(ctx.reading("two").map(|r| r.id.as_str()), Some("syntax-two"));
+        assert!(ctx.reading("three").is_none());
+    }
 
     #[test]
     fn reads_the_actual_value_in_every_framework() {

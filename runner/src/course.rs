@@ -30,7 +30,12 @@ pub struct Module {
     /// Not together with `track`; leave both out for every track.
     #[serde(default)]
     pub tracks: Option<Vec<String>>,
+    #[serde(default)]
     pub exercises: Vec<String>,
+    /// Reading-only pages (`concepts/<id>.md` plus a note per track), shown
+    /// before the module's exercises. No specs, tests or progress towards "done".
+    #[serde(default)]
+    pub readings: Vec<String>,
 }
 
 impl Module {
@@ -44,13 +49,23 @@ impl Course {
         let path = root.join("course.toml");
         let text = std::fs::read_to_string(&path).context(|| format!("can't read {}", path.display()))?;
         let course: Course = toml::from_str(&text).context(|| format!("invalid {}", path.display()))?;
+        course.validate()?;
+        Ok(course)
+    }
+
+    fn validate(&self) -> Result<()> {
         let mut seen = std::collections::HashSet::new();
-        for slug in course.slugs() {
-            if !seen.insert(slug) {
-                bail!("course.toml lists `{slug}` twice");
+        for id in self.slugs().chain(self.reading_ids()) {
+            if !seen.insert(id) {
+                bail!("course.toml lists `{id}` twice");
             }
         }
-        Ok(course)
+        Ok(())
+    }
+
+    /// Reading ids in course order.
+    pub fn reading_ids(&self) -> impl Iterator<Item = &str> {
+        self.modules.iter().flat_map(|m| m.readings.iter().map(String::as_str))
     }
 
     pub fn slugs(&self) -> impl Iterator<Item = &str> {
@@ -113,6 +128,59 @@ impl TrackMeta {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn parse(text: &str) -> Result<Course> {
+        let course: Course = toml::from_str(text).map_err(|e| crate::error::Error(e.to_string()))?;
+        course.validate()?;
+        Ok(course)
+    }
+
+    #[test]
+    fn a_module_may_have_only_readings() {
+        let c = parse("[[module]]
+id = \"p\"
+title = \"P\"
+readings = [\"syntax-a\", \"syntax-b\"]
+").unwrap();
+        assert!(c.modules[0].exercises.is_empty());
+        assert_eq!(c.reading_ids().collect::<Vec<_>>(), ["syntax-a", "syntax-b"]);
+        assert_eq!(c.slugs().count(), 0);
+    }
+
+    #[test]
+    fn a_reading_may_not_repeat_or_reuse_a_slug() {
+        let twice = "[[module]]
+id = \"p\"
+title = \"P\"
+readings = [\"a\", \"a\"]
+";
+        assert!(parse(twice).is_err());
+        let clash = "[[module]]
+id = \"p\"
+title = \"P\"
+readings = [\"hello\"]
+exercises = [\"hello\"]
+";
+        assert!(parse(clash).is_err());
+    }
+
+    /// Every reading has a titled concept page and a note on every track its module is on.
+    #[test]
+    fn repo_course_readings_exist() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let course = Course::load(&root).unwrap();
+        for m in &course.modules {
+            for id in &m.readings {
+                let page = std::fs::read_to_string(root.join("concepts").join(format!("{id}.md")))
+                    .unwrap_or_else(|_| panic!("missing concepts/{id}.md"));
+                assert!(crate::notes::title_of(&page).is_some(), "concepts/{id}.md has no `# ` title");
+                for t in crate::backends::ids().into_iter().filter(|t| m.on_track(t)) {
+                    let note = root.join("tracks").join(t).join(format!("{id}.md"));
+                    assert!(note.exists(), "missing {}", note.display());
+                }
+            }
+        }
+    }
 
     #[test]
     fn repo_course_references_existing_specs() {

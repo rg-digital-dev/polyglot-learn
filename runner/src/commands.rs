@@ -31,6 +31,7 @@ pub fn dispatch(workspace: Option<PathBuf>, command: Option<Command>) -> Result<
         Command::Start { lang } => start(&mut ctx, &lang),
         Command::Show { slug, full } => show(&ctx, slug.as_deref(), full),
         Command::Lesson { slug } => lesson(&ctx, slug.as_deref()),
+        Command::Read { topic, lang } => read(&mut ctx, topic.as_deref(), lang.as_deref()),
         Command::Check { slug, verbose } => check_cmd(&mut ctx, slug.as_deref(), verbose),
         Command::Watch => watch(&mut ctx),
         Command::Hint { slug } => hint(&mut ctx, slug.as_deref()),
@@ -295,6 +296,9 @@ fn start(ctx: &mut Ctx, lang: &str) -> Result<ExitCode> {
     if ctx.config.from.is_none() {
         println!("{MARGIN}{}", ui.muted("Tip: learn init gives you notes that compare against a language you know."));
     }
+    if let Some(hint) = view::primer_hint(ctx, backend.id(), ui) {
+        println!("\n{hint}");
+    }
     println!();
     show(ctx, None, false)
 }
@@ -322,6 +326,9 @@ fn show(ctx: &Ctx, slug: Option<&str>, full: bool) -> Result<ExitCode> {
 
 fn lesson(ctx: &Ctx, slug: Option<&str>) -> Result<ExitCode> {
     let ui = ui::get();
+    if let Some(r) = slug.filter(|s| ctx.spec(s).is_err()).and_then(|s| ctx.reading(s)) {
+        bail!("`{}` is a reading, not an exercise: learn read {}", r.id, r.id);
+    }
     let track = ctx.active_track()?;
     let backend = backends::get(&track)?;
     let Some(spec) = pick(ctx, &track, slug)? else {
@@ -329,6 +336,42 @@ fn lesson(ctx: &Ctx, slug: Option<&str>) -> Result<ExitCode> {
         return Ok(ExitCode::SUCCESS);
     };
     ui.page(&view::lesson(ctx, backend, spec, ui));
+    Ok(ExitCode::SUCCESS)
+}
+
+/// A reading: the named one, or the first unread one. Showing it marks it read.
+fn read(ctx: &mut Ctx, topic: Option<&str>, lang: Option<&str>) -> Result<ExitCode> {
+    let ui = ui::get();
+    let backend = match lang.or(ctx.config.track.as_deref()) {
+        Some(l) => Some(backends::get(l)?),
+        None => None,
+    };
+    let track = backend.map(|b| b.id());
+    let reading = match topic {
+        Some(t) => match ctx.reading(t) {
+            Some(r) => r.clone(),
+            None => {
+                let ids: Vec<&str> = ctx.readings.iter().map(|r| r.id.as_str()).collect();
+                bail!("no reading called `{t}`.\nReadings: {}", ids.join(", "));
+            }
+        },
+        None => {
+            let list = view::readings_for(ctx, track);
+            if list.is_empty() {
+                bail!("this course has no readings.");
+            }
+            match list.into_iter().find(|r| !ctx.is_read(&r.id)) {
+                Some(r) => r.clone(),
+                None => {
+                    println!("{MARGIN}{}\n", ui.success("You've read every page."));
+                    println!("{}", view::reading_list(ctx, track, ui));
+                    return Ok(ExitCode::SUCCESS);
+                }
+            }
+        }
+    };
+    ui.page(&view::reading(ctx, &reading, backend, ui));
+    ctx.mark_read(&reading.id)?;
     Ok(ExitCode::SUCCESS)
 }
 
@@ -481,7 +524,8 @@ fn watch(ctx: &mut Ctx) -> Result<ExitCode> {
 
 fn known_concepts(ctx: &Ctx) -> Vec<String> {
     // Track-only exercises have nothing to compare across tracks.
-    let mut v: Vec<String> = ctx.specs.iter().filter(|s| s.native.is_none()).map(|s| s.concept.clone()).collect();
+    let mut v: Vec<String> = ctx.readings.iter().map(|r| r.id.clone()).collect();
+    v.extend(ctx.specs.iter().filter(|s| s.native.is_none()).map(|s| s.concept.clone()));
     v.dedup();
     v
 }
@@ -490,6 +534,10 @@ fn resolve_concept(ctx: &Ctx, concept: &str) -> Result<String> {
     let concepts = known_concepts(ctx);
     if concepts.iter().any(|c| c == concept) {
         return Ok(concept.to_string());
+    }
+    // A reading by its short name: `learn compare variables`.
+    if let Some(r) = ctx.reading(concept) {
+        return Ok(r.id.clone());
     }
     // Accept an exercise slug too: `learn compare parse-port`.
     if let Ok(spec) = ctx.spec(concept) {
@@ -504,8 +552,13 @@ fn compare(ctx: &Ctx, concept: &str, langs: &[String]) -> Result<ExitCode> {
     let ui = ui::get();
     let concept = resolve_concept(ctx, concept)?;
     let selected: Vec<&dyn Backend> = if langs.is_empty() {
-        // Only the tracks that have an exercise for the concept (`files` isn't on QML).
-        let has = |b: &&dyn Backend| ctx.specs.iter().any(|s| s.concept == concept && s.on_track(b.id()));
+        // Only the tracks that have an exercise for the concept (`files` isn't on QML),
+        // or, for a reading, the tracks its module is on.
+        let reading = ctx.readings.iter().find(|r| r.id == concept);
+        let has = |b: &&dyn Backend| match reading {
+            Some(r) => ctx.course.modules[r.module].on_track(b.id()),
+            None => ctx.specs.iter().any(|s| s.concept == concept && s.on_track(b.id())),
+        };
         let on: Vec<&dyn Backend> = backends::all().iter().copied().filter(has).collect();
         if on.is_empty() { backends::all().to_vec() } else { on }
     } else {
@@ -614,7 +667,12 @@ fn status(ctx: &Ctx, all: bool) -> Result<ExitCode> {
         return Ok(ExitCode::SUCCESS);
     }
     match &ctx.config.track {
-        Some(t) => println!("{}", view::status_track(ctx, backends::get(t)?, ui)),
+        Some(t) => {
+            println!("{}", view::status_track(ctx, backends::get(t)?, ui));
+            if let Some(hint) = view::primer_hint(ctx, t, ui) {
+                println!("\n{hint}");
+            }
+        }
         None => {
             println!("{}", view::status_all(ctx, ui));
             println!("\n{MARGIN}{} {}", ui.accent("learn start <lang>"), ui.muted("to pick a track"));
