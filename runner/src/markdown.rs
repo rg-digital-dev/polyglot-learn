@@ -526,6 +526,30 @@ mod tests {
         assert!(out.lines().all(|l| ui::visible_width(l) <= 60 || l.contains('│')), "{out}");
     }
 
+    /// The Syntax Primer is mostly tables: each page and note fits a narrow
+    /// terminal (tables line up or become lists; only code may run past).
+    #[test]
+    fn primer_pages_fit_the_terminal() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let mut pages = Vec::new();
+        for dir in std::iter::once(root.join("concepts")).chain(["typescript", "python", "rust", "go", "php", "lua", "qml"].map(|t| root.join("tracks").join(t))) {
+            for e in std::fs::read_dir(&dir).unwrap().flatten() {
+                let name = e.file_name().to_string_lossy().to_string();
+                if name.starts_with("syntax-") && name.ends_with(".md") {
+                    pages.push(e.path());
+                }
+            }
+        }
+        for path in pages {
+            let md = crate::notes::render(&std::fs::read_to_string(&path).unwrap(), None);
+            for width in [60, 100] {
+                let out = plain(&md, width);
+                let long: Vec<&str> = out.lines().filter(|l| ui::visible_width(l) > width && !l.contains('│')).collect();
+                assert!(long.is_empty(), "{} at width {width}:\n{}", path.display(), long.join("\n"));
+            }
+        }
+    }
+
     #[test]
     fn colour_marks_headings_code_and_comments() {
         let ui = Ui { color: true, ..Ui::plain(80) };

@@ -65,6 +65,14 @@ enum Command {
     },
     /// Read the lesson for an exercise: the concept, your track's note and further reading.
     Lesson { slug: Option<String> },
+    /// Read a page of the Syntax Primer (default: the next unread one).
+    Read {
+        /// A page, e.g. syntax-variables (or just variables)
+        topic: Option<String>,
+        /// Show this track's note instead of the active track's
+        #[arg(long)]
+        lang: Option<String>,
+    },
     /// Run the tests; mark the exercise done when they pass.
     Check {
         slug: Option<String>,

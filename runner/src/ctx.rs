@@ -34,6 +34,19 @@ pub struct Progress {
     /// slug -> number of hints revealed
     #[serde(default)]
     pub hints: BTreeMap<String, usize>,
+    /// Readings that have been shown (for the whole workspace, not per track:
+    /// the page and its table are the same on every track).
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub read: BTreeSet<String>,
+}
+
+/// A reading-only page: `concepts/<id>.md` plus `tracks/<lang>/<id>.md`.
+#[derive(Debug, Clone)]
+pub struct Reading {
+    pub id: String,
+    pub title: String,
+    /// Index of its module in `course.modules`.
+    pub module: usize,
 }
 
 pub struct Ctx {
@@ -44,6 +57,8 @@ pub struct Ctx {
     pub course: Course,
     /// Specs in course order.
     pub specs: Vec<Spec>,
+    /// Readings in course order.
+    pub readings: Vec<Reading>,
     pub config: Config,
     pub progress: Progress,
 }
@@ -175,6 +190,19 @@ impl Ctx {
             }
         }
 
+        let mut readings = Vec::new();
+        for (i, m) in course.modules.iter().enumerate() {
+            for id in &m.readings {
+                if specs.iter().any(|s| s.concept == *id) {
+                    bail!("course.toml: reading `{id}` has the same name as an exercise concept; give it another id");
+                }
+                let path = root.join("concepts").join(format!("{id}.md"));
+                let text = std::fs::read_to_string(&path).context(|| format!("can't read {} (reading `{id}`)", path.display()))?;
+                let title = crate::notes::title_of(&text).unwrap_or_else(|| id.clone());
+                readings.push(Reading { id: id.clone(), title, module: i });
+            }
+        }
+
         let config = read_config(&state_dir)?;
         let progress_path = state_dir.join("progress.json");
         let progress = if progress_path.exists() {
@@ -186,7 +214,7 @@ impl Ctx {
             Progress::default()
         };
 
-        Ok(Ctx { root, workspace, state_dir, external_workspace, course, specs, config, progress })
+        Ok(Ctx { root, workspace, state_dir, external_workspace, course, specs, readings, config, progress })
     }
 
     pub fn spec(&self, slug: &str) -> Result<&Spec> {
@@ -229,6 +257,39 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
         self.specs.iter().filter(|s| s.on_track(track)).find(|s| !self.is_done(track, &s.slug))
     }
 
+    /// Readings on a track, in course order.
+    pub fn readings_on(&self, track: &str) -> Vec<&Reading> {
+        self.readings.iter().filter(|r| self.course.modules[r.module].on_track(track)).collect()
+    }
+
+    /// A reading by id, or by its id without the `syntax-` style prefix
+    /// (`variables` for `syntax-variables`).
+    pub fn reading(&self, name: &str) -> Option<&Reading> {
+        self.readings
+            .iter()
+            .find(|r| r.id == name)
+            .or_else(|| self.readings.iter().find(|r| r.id.split_once('-').is_some_and(|(_, rest)| rest == name)))
+    }
+
+    pub fn is_read(&self, id: &str) -> bool {
+        self.progress.read.contains(id)
+    }
+
+    /// Mark a reading as read and save, if it wasn't already.
+    pub fn mark_read(&mut self, id: &str) -> Result<()> {
+        if self.progress.read.insert(id.to_string()) {
+            self.save_progress()?;
+        }
+        Ok(())
+    }
+
+    /// Nothing done on the track and nothing read: show the primer hint.
+    pub fn is_new(&self, track: &str) -> bool {
+        self.progress.read.is_empty()
+            && self.progress.done.get(track).is_none_or(|d| d.is_empty())
+            && !self.readings_on(track).is_empty()
+    }
+
     pub fn save_config(&mut self) -> Result<()> {
         if self.external_workspace {
             self.config.course_root = Some(self.root.clone());
@@ -258,5 +319,20 @@ Run `learn start <lang>` with one of: {}",
                 crate::backends::ids().join(", ")
             ),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn old_progress_files_load_without_read_marks() {
+        let p: Progress = serde_json::from_str(r#"{"done":{"rust":["hello"]},"hints":{}}"#).unwrap();
+        assert!(p.read.is_empty());
+        let mut p = p;
+        p.read.insert("syntax-types".into());
+        let back: Progress = serde_json::from_str(&serde_json::to_string(&p).unwrap()).unwrap();
+        assert!(back.read.contains("syntax-types"));
     }
 }

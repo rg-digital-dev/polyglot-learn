@@ -117,6 +117,8 @@ async fn run(workspace: Option<PathBuf>, port: u16, open: bool) -> Result<()> {
         .route("/api/hint/{slug}", post(hint))
         .route("/api/check/{slug}", post(start_check))
         .route("/api/compare/{concept}", get(compare))
+        .route("/api/reading/{id}", get(reading))
+        .route("/api/read/{id}", post(mark_read))
         .route("/api/file/{slug}", get(read_file).put(write_file))
         .route("/api/events", get(event_stream))
         .route("/api/quit", post(quit));
@@ -243,9 +245,15 @@ async fn state(State(app): State<Shared>) -> ApiResult<Json<Value>> {
                     json!({ "slug": s.slug, "title": s.title, "concept": s.concept, "done": done })
                 })
                 .collect();
+            let readings: Vec<Value> = ctx
+                .readings
+                .iter()
+                .filter(|r| m.readings.contains(&r.id))
+                .map(|r| json!({ "id": r.id, "title": r.title, "read": ctx.is_read(&r.id) }))
+                .collect();
             // Every track the module is on: all of them, its own (`track`), or its `tracks` list.
             let tracks: Vec<&str> = backends::ids().into_iter().filter(|t| m.on_track(t)).collect();
-            json!({ "id": m.id, "title": m.title, "track": m.track, "tracks": tracks, "exercises": exercises })
+            json!({ "id": m.id, "title": m.title, "track": m.track, "tracks": tracks, "exercises": exercises, "readings": readings })
         })
         .collect();
     let backgrounds: Vec<Value> =
@@ -261,6 +269,8 @@ async fn state(State(app): State<Shared>) -> ApiResult<Json<Value>> {
         "tracks": tracks,
         "modules": modules,
         "concepts": concepts,
+        // Nothing done on the active track and nothing read: point at the primer.
+        "new": ctx.config.track.as_deref().is_some_and(|t| ctx.is_new(t)),
         "workspace": ctx.workspace.display().to_string(),
     })))
 }
@@ -421,7 +431,8 @@ async fn compare(
     Query(q): Query<HashMap<String, String>>,
 ) -> ApiResult<Json<Value>> {
     let ctx = app.ctx()?;
-    if !ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept) {
+    let reading = ctx.readings.iter().find(|r| r.id == concept);
+    if reading.is_none() && !ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept) {
         return Err(ApiError(StatusCode::NOT_FOUND, format!("unknown concept `{concept}`")));
     }
     let wanted: Vec<String> = q
@@ -433,8 +444,13 @@ async fn compare(
         if !wanted.is_empty() && !wanted.iter().any(|w| w == b.id()) {
             continue;
         }
-        // Only tracks that have an exercise for the concept (`files` isn't on QML).
-        if !ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept && s.on_track(b.id())) {
+        // Only tracks that have an exercise for the concept (`files` isn't on QML),
+        // or, for a reading, the tracks its module is on.
+        let on = match reading {
+            Some(r) => ctx.course.modules[r.module].on_track(b.id()),
+            None => ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept && s.on_track(b.id())),
+        };
+        if !on {
             continue;
         }
         let meta = TrackMeta::load(&ctx.root, b.id())?;
@@ -451,7 +467,50 @@ async fn compare(
         "lesson": notes::read_concept(&ctx.root, &concept, from_of(&ctx)),
         "exercise": exercise,
         "columns": columns,
+        "reading": reading.map(|r| r.title.clone()),
     })))
+}
+
+/// A reading page: the concept page and one track's note, with its neighbours.
+async fn reading(
+    State(app): State<Shared>,
+    UrlPath(id): UrlPath<String>,
+    Query(q): Query<TrackQuery>,
+) -> ApiResult<Json<Value>> {
+    let ctx = app.ctx()?;
+    let Some(r) = ctx.reading(&id) else {
+        return Err(ApiError(StatusCode::NOT_FOUND, format!("unknown reading `{id}`")));
+    };
+    let backend = match &q.track {
+        Some(t) => Some(backends::get(t)?),
+        None => ctx.config.track.as_deref().map(backends::get).transpose()?,
+    };
+    let track = backend.map(|b| b.id());
+    let list = crate::view::readings_for(&ctx, track);
+    let i = list.iter().position(|x| x.id == r.id);
+    let brief = |x: &&crate::ctx::Reading| json!({ "id": x.id, "title": x.title });
+    Ok(Json(json!({
+        "id": r.id,
+        "title": r.title,
+        "module": ctx.course.modules[r.module].title,
+        "index": i.map_or(0, |i| i + 1),
+        "count": list.len(),
+        "prev": i.and_then(|i| i.checked_sub(1)).and_then(|i| list.get(i)).map(brief),
+        "next": i.and_then(|i| list.get(i + 1)).map(brief),
+        "track": track,
+        "lesson": notes::read_concept(&ctx.root, &r.id, from_of(&ctx)),
+        "note": track.and_then(|t| notes::read_track_note(&ctx.root, t, &r.id, from_of(&ctx))),
+        "read": ctx.is_read(&r.id),
+    })))
+}
+
+async fn mark_read(State(app): State<Shared>, UrlPath(id): UrlPath<String>) -> ApiResult<Json<Value>> {
+    let mut ctx = app.ctx()?;
+    let Some(id) = ctx.reading(&id).map(|r| r.id.clone()) else {
+        return Err(ApiError(StatusCode::NOT_FOUND, format!("unknown reading `{id}`")));
+    };
+    ctx.mark_read(&id)?;
+    Ok(Json(json!({ "id": id, "read": true })))
 }
 
 // ---- editor files --------------------------------------------------------------------

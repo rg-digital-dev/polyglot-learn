@@ -115,6 +115,11 @@ pub fn read_track_note(root: &Path, track: &str, concept: &str, from: Option<&st
     Some(render(&text, from))
 }
 
+/// A page's title: its first `# ` heading.
+pub fn title_of(md: &str) -> Option<String> {
+    md.lines().find_map(|l| l.strip_prefix("# ")).map(|t| t.trim().to_string()).filter(|t| !t.is_empty())
+}
+
 /// The lesson of a track-only exercise (`tracks/<track>/extras/<slug>/lesson.md`).
 pub fn read_native_lesson(spec: &crate::spec::Spec, from: Option<&str>) -> Option<String> {
     let path = spec.native.as_ref()?.lesson.as_ref()?;
@@ -154,6 +159,17 @@ mod tests {
         let js = NOTE.replace("from:python", "from:javascript");
         let out = render(&js, Some("javascript"));
         assert!(out.contains("Py bit.") && !out.contains("TS bit."));
+    }
+
+    #[test]
+    fn title_is_the_first_h1() {
+        assert_eq!(title_of(NOTE).as_deref(), Some("Title"));
+        assert_eq!(title_of("<!-- from:default -->
+## Key
+# Late
+").as_deref(), Some("Late"));
+        assert_eq!(title_of("## Only h2
+"), None);
     }
 
     #[test]
