@@ -1,7 +1,7 @@
 // Copy the static build to runner/web/dist, which rust-embed compiles into the
 // learn binary. dist/ is committed so `cargo install --locked --path runner` works
 // without Node or pnpm.
-import { cpSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, rmSync, existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const web = fileURLToPath(new URL('..', import.meta.url))
@@ -16,8 +16,11 @@ rmSync(to, { recursive: true, force: true })
 cpSync(from, to, { recursive: true })
 // The SPA shell is index.html; Nuxt's 200.html/404.html fallbacks aren't needed.
 for (const extra of ['200.html', '404.html']) rmSync(`${to}/${extra}`, { force: true })
-// Nuxt stamps the build time into the page; zero it so identical sources give
-// an identical dist/ (CI compares them).
-const index = `${to}/index.html`
-writeFileSync(index, readFileSync(index, 'utf8').replace(/("prerenderedAt":1,"serverRendered":2\},)\d+/, '$10'))
+// Nuxt stamps the build time into every prerendered page (index.html and one
+// per static route); zero it so identical sources give an identical dist/ (CI
+// compares them).
+for (const page of readdirSync(to, { recursive: true }).filter((p) => p.endsWith('.html'))) {
+  const file = `${to}/${page}`
+  writeFileSync(file, readFileSync(file, 'utf8').replace(/("prerenderedAt":1,"serverRendered":2\},)\d+/, '$10'))
+}
 console.log(`Copied the web UI to ${to}`)
