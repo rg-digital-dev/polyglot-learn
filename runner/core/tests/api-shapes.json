@@ -1,0 +1,207 @@
+{
+  "state": {
+    "title": "value",
+    "track": "value",
+    "from": "value",
+    "backgrounds": [
+      {
+        "id": "value",
+        "label": "value"
+      }
+    ],
+    "tracks": [
+      {
+        "id": "value",
+        "name": "value",
+        "tool": {
+          "label": "value",
+          "found": "value",
+          "path": "value",
+          "version": "value",
+          "warning": "value"
+        },
+        "done": "value",
+        "current": "value"
+      }
+    ],
+    "modules": [
+      {
+        "id": "value",
+        "title": "value",
+        "track": "value",
+        "tracks": [
+          "value"
+        ],
+        "exercises": [
+          {
+            "slug": "value",
+            "title": "value",
+            "concept": "value",
+            "done": []
+          }
+        ],
+        "readings": [
+          {
+            "id": "value",
+            "title": "value",
+            "read": "value"
+          }
+        ]
+      }
+    ],
+    "concepts": [
+      "value"
+    ],
+    "new": "value",
+    "workspace": "value"
+  },
+  "exercise": {
+    "slug": "value",
+    "title": "value",
+    "concept": "value",
+    "summary": "value",
+    "module": "value",
+    "track": "value",
+    "trackName": "value",
+    "fence": "value",
+    "toolFound": "value",
+    "toolLabel": "value",
+    "done": "value",
+    "files": [
+      {
+        "path": "value",
+        "absolute": "value",
+        "signatures": [
+          "value"
+        ]
+      }
+    ],
+    "native": "value",
+    "tracks": [
+      "value"
+    ],
+    "lesson": "value",
+    "note": "value",
+    "links": [
+      {
+        "kind": "value",
+        "label": "value",
+        "title": "value",
+        "url": "value"
+      }
+    ],
+    "hints": [],
+    "hintsTotal": "value",
+    "cases": [
+      {
+        "index": "value",
+        "description": "value",
+        "function": "value",
+        "lines": [
+          "value"
+        ]
+      }
+    ],
+    "prev": "value",
+    "next": "value"
+  },
+  "exercise-native": {
+    "slug": "value",
+    "title": "value",
+    "concept": "value",
+    "summary": "value",
+    "module": "value",
+    "track": "value",
+    "trackName": "value",
+    "fence": "value",
+    "toolFound": "value",
+    "toolLabel": "value",
+    "done": "value",
+    "files": [
+      {
+        "path": "value",
+        "absolute": "value",
+        "signatures": []
+      }
+    ],
+    "native": "value",
+    "tracks": [
+      "value"
+    ],
+    "lesson": "value",
+    "note": "value",
+    "links": [
+      {
+        "kind": "value",
+        "label": "value",
+        "title": "value",
+        "url": "value"
+      }
+    ],
+    "hints": [],
+    "hintsTotal": "value",
+    "cases": [
+      {
+        "index": "value",
+        "description": "value",
+        "lines": []
+      }
+    ],
+    "prev": "value",
+    "next": "value"
+  },
+  "compare": {
+    "concept": "value",
+    "lesson": "value",
+    "exercise": "value",
+    "columns": [
+      {
+        "track": "value",
+        "name": "value",
+        "note": "value",
+        "links": [
+          {
+            "kind": "value",
+            "label": "value",
+            "title": "value",
+            "url": "value"
+          }
+        ]
+      }
+    ],
+    "reading": "value"
+  },
+  "compare-reading": {
+    "concept": "value",
+    "lesson": "value",
+    "exercise": "value",
+    "columns": [
+      {
+        "track": "value",
+        "name": "value",
+        "note": "value",
+        "links": []
+      }
+    ],
+    "reading": "value"
+  },
+  "reading": {
+    "id": "value",
+    "title": "value",
+    "module": "value",
+    "index": "value",
+    "count": "value",
+    "prev": {
+      "id": "value",
+      "title": "value"
+    },
+    "next": {
+      "id": "value",
+      "title": "value"
+    },
+    "track": "value",
+    "lesson": "value",
+    "note": "value",
+    "read": "value"
+  }
+}

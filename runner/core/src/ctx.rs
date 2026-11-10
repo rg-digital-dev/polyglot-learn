@@ -257,6 +257,19 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
         self.specs.iter().filter(|s| s.on_track(track)).find(|s| !self.is_done(track, &s.slug))
     }
 
+    /// The learner's background for "coming from X" notes; `none` means neutral notes.
+    pub fn background(&self) -> Option<&str> {
+        self.config.from.as_deref().filter(|f| *f != "none")
+    }
+
+    /// The readings a learner on `track` (or on no track yet) works through.
+    pub fn readings_for(&self, track: Option<&str>) -> Vec<&Reading> {
+        match track {
+            Some(t) => self.readings_on(t),
+            None => self.readings.iter().collect(),
+        }
+    }
+
     /// Readings on a track, in course order.
     pub fn readings_on(&self, track: &str) -> Vec<&Reading> {
         self.readings.iter().filter(|r| self.course.modules[r.module].on_track(track)).collect()

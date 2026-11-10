@@ -1193,7 +1193,7 @@ mod tests {
 
     #[test]
     fn repo_specs_are_valid() {
-        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../specs");
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../specs");
         let mut n = 0;
         for entry in std::fs::read_dir(dir).unwrap() {
             let path = entry.unwrap().path();
@@ -1208,7 +1208,7 @@ mod tests {
 
     /// An exercise.toml for branded-ids' real files, with `typecheck` and `cases` swapped in.
     fn typecheck_native(track: &str, typecheck: &str, cases: &str) -> Result<Spec> {
-        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../tracks/typescript/extras/branded-ids");
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tracks/typescript/extras/branded-ids");
         let text = format!(
             "title = \"T\"\nconcept = \"c\"\nsummary = \"s\"\nstubs = [\"branded-ids.ts\"]\ntypecheck = {typecheck}\ncases = {cases}\n"
         );

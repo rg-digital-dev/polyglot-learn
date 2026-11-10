@@ -139,13 +139,13 @@ Notes mark background-specific blocks with HTML comments. `learn` shows the bloc
 <!-- /from -->
 ```
 
-To support a new background, add blocks like this to as many notes as you like. Notes without a block fall back to `default`. If the background isn't offered by `learn init` yet, add it to `BACKGROUNDS` in `runner/src/notes.rs`.
+To support a new background, add blocks like this to as many notes as you like. Notes without a block fall back to `default`. If the background isn't offered by `learn init` yet, add it to `BACKGROUNDS` in `runner/core/src/notes.rs`.
 
 ## Adding a language
 
 A track is one Rust module plus one folder. Checklist:
 
-- [ ] `runner/src/backends/<lang>.rs` implements the `Backend` trait:
+- [ ] `runner/core/src/backends/<lang>.rs` implements the `Backend` trait:
   - [ ] **Naming**: convert names with `crate::naming` (`camel`, `pascal`, `snake`, `flat`).
   - [ ] **Types and literals**: `type_name` and `literal` for every spec type, including empty lists and maps. Add cases to `backends/tests.rs`.
   - [ ] **Stub**: the summary as a doc comment, and a body that fails with `stub_message(name)` (`TODO: implement <name>`).
@@ -154,7 +154,7 @@ A track is one Rust module plus one folder. Checklist:
   - [ ] **Shared files**: manifests and harness files, with no third-party dependencies if at all possible.
   - [ ] **Command and parsing**: `command` to run one exercise, and `parse_results` to read per-case pass/fail from its output.
   - [ ] **Toolchain**: a `Tool` with PATH names *and* common absolute install paths, plus `check_tool` for minimum versions.
-- [ ] Register it in `BACKENDS` in `runner/src/backends/mod.rs`.
+- [ ] Register it in `BACKENDS` in `runner/core/src/backends/mod.rs`.
 - [ ] `tracks/<lang>/README.md`: install per OS, how tests run, editor setup, references.
 - [ ] `tracks/<lang>/track.toml`: `[install]` lines for `windows`, `macos`, `arch`, `debian` and `fedora`, plus links for each concept.
 - [ ] One note per concept in `tracks/<lang>/`.
@@ -172,7 +172,7 @@ pnpm dev                         # the UI with hot reload; /api goes to port 432
 pnpm build                       # writes runner/web/dist; commit it with your change
 ```
 
-- **The server owns all logic.** It's in `runner/src/serve.rs` and calls the same `check`, `backends` and progress code as the CLI. The UI only displays it.
+- **The server owns all logic.** It's in `runner/src/serve.rs`, and its JSON is the view data from `runner/core/src/views.rs`, which the CLI draws too. The UI only displays it; `runner/core/tests/api-shapes.json` pins the shape it relies on.
 - **Style comes from RG Digital's design tokens** (copied unchanged into `app/assets/brand/`). Use its variables and utility classes (`.btn`, `.chip`, `.panel`, `.tag`…), and keep both light and dark readable.
 - **Icons are Lucide**, via `unplugin-icons` (`import IconX from '~icons/lucide/x'`). They're bundled, so there are no network requests.
 - **Every state-changing request sends `x-learn: 1`.** The server rejects requests without it, as well as requests for any host other than localhost.

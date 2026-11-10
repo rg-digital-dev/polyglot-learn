@@ -5,20 +5,15 @@ use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
 
-mod backends;
-mod check;
 mod commands;
-mod course;
-mod ctx;
-mod error;
 mod markdown;
-mod naming;
-mod notes;
 mod serve;
-mod spec;
-mod toolchain;
 mod ui;
 mod view;
+
+// The engine lives in `learn-core`; these keep `crate::ctx` and friends working
+// in the interface modules.
+use learn_core::{backends, bail, check, course, ctx, error, notes, spec, toolchain, views};
 
 #[derive(Parser)]
 #[command(name = "learn", version, about = "Learn languages locally with small, test-driven exercises.")]

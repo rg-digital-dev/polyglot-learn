@@ -56,9 +56,6 @@ fn track_dir(ctx: &Ctx, backend: &dyn Backend) -> PathBuf {
     ctx.workspace.join(backend.id())
 }
 
-fn from(ctx: &Ctx) -> Option<&str> {
-    ctx.config.from.as_deref().filter(|f| *f != "none")
-}
 
 /// The exercise a command applies to: the named one, or the current one.
 fn pick<'a>(ctx: &'a Ctx, track: &str, slug: Option<&str>) -> Result<Option<&'a Spec>> {
@@ -356,7 +353,7 @@ fn read(ctx: &mut Ctx, topic: Option<&str>, lang: Option<&str>) -> Result<ExitCo
             }
         },
         None => {
-            let list = view::readings_for(ctx, track);
+            let list = ctx.readings_for(track);
             if list.is_empty() {
                 bail!("this course has no readings.");
             }
@@ -525,8 +522,7 @@ fn watch(ctx: &mut Ctx) -> Result<ExitCode> {
 fn known_concepts(ctx: &Ctx) -> Vec<String> {
     // Track-only exercises have nothing to compare across tracks.
     let mut v: Vec<String> = ctx.readings.iter().map(|r| r.id.clone()).collect();
-    v.extend(ctx.specs.iter().filter(|s| s.native.is_none()).map(|s| s.concept.clone()));
-    v.dedup();
+    v.extend(crate::views::shared_concepts(ctx));
     v
 }
 
@@ -552,14 +548,7 @@ fn compare(ctx: &Ctx, concept: &str, langs: &[String]) -> Result<ExitCode> {
     let ui = ui::get();
     let concept = resolve_concept(ctx, concept)?;
     let selected: Vec<&dyn Backend> = if langs.is_empty() {
-        // Only the tracks that have an exercise for the concept (`files` isn't on QML),
-        // or, for a reading, the tracks its module is on.
-        let reading = ctx.readings.iter().find(|r| r.id == concept);
-        let has = |b: &&dyn Backend| match reading {
-            Some(r) => ctx.course.modules[r.module].on_track(b.id()),
-            None => ctx.specs.iter().any(|s| s.concept == concept && s.on_track(b.id())),
-        };
-        let on: Vec<&dyn Backend> = backends::all().iter().copied().filter(has).collect();
+        let on = crate::views::tracks_for(ctx, &concept);
         if on.is_empty() { backends::all().to_vec() } else { on }
     } else {
         langs.iter().map(|l| backends::get(l)).collect::<Result<_>>()?
@@ -572,7 +561,7 @@ fn compare(ctx: &Ctx, concept: &str, langs: &[String]) -> Result<ExitCode> {
         out.push(String::new());
         out.push(format!("{MARGIN}{}{}{}", ui.accent(if ui.unicode { "━━" } else { "==" }), ui.paint(ui::heading_style().fg_color(ui::accent_style().get_fg_color()), &title), ui.accent(&fill)));
         out.push(String::new());
-        match notes::read_track_note(&ctx.root, b.id(), &concept, from(ctx)) {
+        match notes::read_track_note(&ctx.root, b.id(), &concept, ctx.background()) {
             Some(note) => out.push(markdown::render(&note, ui)),
             None => out.push(format!("{MARGIN}{}", ui.muted(&format!("No {} note for {concept} yet. Contributions welcome: see CONTRIBUTING.md.", b.name())))),
         }

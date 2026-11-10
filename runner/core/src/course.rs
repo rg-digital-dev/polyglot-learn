@@ -167,7 +167,7 @@ exercises = [\"hello\"]
     /// Every reading has a titled concept page and a note on every track its module is on.
     #[test]
     fn repo_course_readings_exist() {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let course = Course::load(&root).unwrap();
         for m in &course.modules {
             for id in &m.readings {
@@ -184,7 +184,7 @@ exercises = [\"hello\"]
 
     #[test]
     fn repo_course_references_existing_specs() {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let course = Course::load(&root).unwrap();
         for m in &course.modules {
             for slug in &m.exercises {
@@ -211,7 +211,7 @@ exercises = [\"hello\"]
                 }
             }
         }
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let course = Course::load(&root).unwrap();
         for m in &course.modules {
             let Some(track) = &m.track else { continue };
@@ -246,7 +246,7 @@ exercises = [\"hello\"]
         ];
         // A command without its trailing `   # comment`.
         let bare = |c: &str| c.split("   #").next().unwrap().trim().to_string();
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let mut problems = Vec::new();
         for track in ["rust", "typescript", "python", "php", "lua", "go", "qml"] {
             let meta = TrackMeta::load(&root, track).unwrap();
@@ -286,7 +286,7 @@ exercises = [\"hello\"]
 
     #[test]
     fn repo_track_tomls_parse() {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         for track in ["rust", "typescript", "python", "php", "lua", "go", "qml"] {
             let meta = TrackMeta::load(&root, track).unwrap();
             for links in meta.links.values() {

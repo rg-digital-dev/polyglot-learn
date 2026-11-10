@@ -115,7 +115,7 @@ Add `specs/<slug>.json` and list the slug in `course.toml`. Every track now has 
 
 ## Adding a language
 
-Write one backend module in `runner/src/backends/` and a `tracks/<lang>/` folder. [CONTRIBUTING.md](CONTRIBUTING.md) has a checklist.
+Write one backend module in `runner/core/src/backends/` and a `tracks/<lang>/` folder. [CONTRIBUTING.md](CONTRIBUTING.md) has a checklist.
 
 ## Licence
 

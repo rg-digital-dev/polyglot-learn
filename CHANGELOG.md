@@ -19,6 +19,13 @@ All notable changes to this project are listed here. The format follows
 - Web UI: a reading page with previous/next and a track picker, the primer on
   the course page, and a "Read the Syntax Primer first" button for new learners.
 
+### Changed
+- The runner is split into two crates: `learn-core` (`runner/core`: course,
+  specs, progress, notes, checks and backends, with no terminal or web code)
+  and the `learn` binary, which draws the engine's view data as the CLI and
+  the web UI. Nothing changes for learners; a test pins the web API's JSON
+  shape. See docs/decisions/0001-track-paths.md for where this is going.
+
 ### Fixed
 - `learn serve` now listens on `[::1]` as well as `127.0.0.1`. Browsers try
   `learn.localhost` over IPv6 first, so another program on the same port there
