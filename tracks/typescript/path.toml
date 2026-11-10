@@ -1,0 +1,49 @@
+# The TypeScript path: the stages a TypeScript learner works through, in order.
+# `use` takes a shared module from course.toml (`skip = [...]` leaves out some
+# of its exercises); a stage with an `id` is this track's own, with exercises
+# in tracks/typescript/extras/<slug>/. See docs/decisions/0001-track-paths.md.
+
+[[stage]]
+use = "syntax-primer"
+
+[[stage]]
+use = "foundations"
+
+[[stage]]
+use = "building-blocks"
+
+[[stage]]
+use = "values-and-references"
+
+[[stage]]
+use = "text-and-unicode"
+
+[[stage]]
+use = "numbers-and-division"
+
+[[stage]]
+use = "real-world-basics"
+
+[[stage]]
+use = "files-and-resources"
+
+[[stage]]
+id = "deeper-typescript"
+title = "Deeper TypeScript"
+exercises = [
+  "shape-union",
+  "pick-fields",
+  "parse-unknown",
+  "typed-emitter",
+  "lazy-range",
+]
+
+[[stage]]
+id = "typescript-in-practice"
+title = "TypeScript in Practice"
+exercises = [
+  "cancellable-task",
+  "disposable-resource",
+  "branded-ids",
+  "infer-types",
+]

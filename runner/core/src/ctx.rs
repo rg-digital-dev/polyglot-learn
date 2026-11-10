@@ -20,11 +20,28 @@ pub struct Config {
     /// The active track.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub track: Option<String>,
+    /// What the learner is here for: one of `GOALS` (`learn` when unset).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub goal: Option<String>,
+    /// For the `compare` goal: the tracks compare views start with.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub compare: Vec<String>,
     /// Set in workspaces that live outside the course repo, so `learn` can be
     /// run from inside them.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub course_root: Option<PathBuf>,
 }
+
+/// What `learn init` offers as a goal, and what each changes:
+/// - `learn`: nothing extra.
+/// - `switch`: notes lead with their "coming from X" section, and the task card says so.
+/// - `compare`: compare views start with the tracks in `compare`, and `learn status`
+///   shows every track side by side.
+pub const GOALS: &[(&str, &str)] = &[
+    ("learn", "Learn one language well"),
+    ("switch", "Move from a language I know to a new one"),
+    ("compare", "Compare languages side by side"),
+];
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Progress {
@@ -54,8 +71,11 @@ pub struct Ctx {
     pub workspace: PathBuf,
     pub state_dir: PathBuf,
     pub external_workspace: bool,
+    /// Shared modules from course.toml, then each track's own stages from its path.toml.
     pub course: Course,
-    /// Specs in course order.
+    /// Each track's path: which modules it uses, in its order.
+    pub paths: BTreeMap<String, Vec<crate::path::Step>>,
+    /// Specs in module order (use `track_specs` for one track's order).
     pub specs: Vec<Spec>,
     /// Readings in course order.
     pub readings: Vec<Reading>,
@@ -126,9 +146,12 @@ impl Ctx {
         let external_workspace = workspace != default_ws;
         let state_dir = if external_workspace { workspace.join(".learn") } else { root.join(".learn") };
 
-        let course = Course::load(&root)?;
+        let mut course = Course::load(&root)?;
+        let paths = crate::path::load_all(&root, &mut course, &crate::backends::ids())?;
+        // Own stages joined the module list: no exercise may now appear twice.
+        course.validate()?;
         let mut specs = Vec::new();
-        for m in &course.modules {
+        for (mi, m) in course.modules.iter().enumerate() {
             if let Some(track) = &m.track {
                 if crate::backends::get(track).ok().map(|b| b.id()) != Some(track.as_str()) {
                     bail!("course.toml: module `{}` has unknown track `{track}`", m.id);
@@ -165,19 +188,26 @@ impl Ctx {
                         if spec.slug != *slug {
                             bail!("{} has slug `{}`; it must match the file name", path.display(), spec.slug);
                         }
-                        spec.tracks = m.tracks.clone();
+                        // On exactly the tracks whose path includes it.
+                        spec.tracks = Some(
+                            paths
+                                .iter()
+                                .filter(|(_, steps)| steps.iter().any(|st| st.module == mi && !st.skip.contains(slug)))
+                                .map(|(t, _)| t.clone())
+                                .collect(),
+                        );
                         // Every track the exercise is on must be able to run it.
                         for b in crate::backends::all().iter().filter(|b| spec.on_track(b.id())) {
                             if spec.resources && b.resource_module(&spec).is_none() {
                                 bail!(
-                                    "{slug} uses the resource module, which the {} track doesn't have; list the tracks of module `{}` without it (`tracks = [...]`)",
+                                    "{slug} uses the resource module, which the {} track doesn't have; leave module `{}` out of that track (its path.toml, or `tracks = [...]` in course.toml)",
                                     b.name(),
                                     m.id
                                 );
                             }
                             if spec.uses_paths() && b.path_literal("x").is_none() {
                                 bail!(
-                                    "{slug} reads files, which the {} track can't do; list the tracks of module `{}` without it (`tracks = [...]`)",
+                                    "{slug} reads files, which the {} track can't do; leave module `{}` out of that track (its path.toml, or `tracks = [...]` in course.toml)",
                                     b.name(),
                                     m.id
                                 );
@@ -214,7 +244,7 @@ impl Ctx {
             Progress::default()
         };
 
-        Ok(Ctx { root, workspace, state_dir, external_workspace, course, specs, readings, config, progress })
+        Ok(Ctx { root, workspace, state_dir, external_workspace, course, paths, specs, readings, config, progress })
     }
 
     pub fn spec(&self, slug: &str) -> Result<&Spec> {
@@ -228,7 +258,7 @@ Exercises: {}", all.join(", ")))
     /// An exercise on a given track (shared, or that track's own).
     pub fn spec_on(&self, track: &str, slug: &str) -> Result<&Spec> {
         let Ok(spec) = self.spec(slug) else {
-            let all: Vec<&str> = self.specs.iter().filter(|s| s.on_track(track)).map(|s| s.slug.as_str()).collect();
+            let all: Vec<&str> = self.path_specs(track).iter().map(|s| s.slug.as_str()).collect();
             bail!("no exercise called `{slug}` on the {track} track.
 Exercises: {}", all.join(", "));
         };
@@ -243,23 +273,57 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
         }
     }
 
-    /// Every exercise on a track, in course order (owned: backends take a slice).
+    /// Every exercise on a track, in its path's order (owned: backends take a slice).
     pub fn track_specs(&self, track: &str) -> Vec<Spec> {
-        self.specs.iter().filter(|s| s.on_track(track)).cloned().collect()
+        self.path_specs(track).into_iter().cloned().collect()
+    }
+
+    /// The modules on a track's path, in order, with what it skips of each.
+    pub fn path(&self, track: &str) -> &[crate::path::Step] {
+        self.paths.get(track).map(Vec::as_slice).unwrap_or(&[])
+    }
+
+    /// Whether a track's path uses module `i` of `course.modules`.
+    pub fn module_on_track(&self, i: usize, track: &str) -> bool {
+        self.path(track).iter().any(|s| s.module == i)
+    }
+
+    /// A module's exercises on a track (its skips left out).
+    pub fn module_exercises<'a>(&'a self, step: &'a crate::path::Step) -> impl Iterator<Item = &'a String> + 'a {
+        self.course.modules[step.module].exercises.iter().filter(|s| !step.skip.contains(*s))
+    }
+
+    /// The exercises on a track, in its path's order.
+    pub fn path_specs(&self, track: &str) -> Vec<&Spec> {
+        self.path(track)
+            .iter()
+            .flat_map(|step| self.module_exercises(step))
+            .filter_map(|slug| self.specs.iter().find(|s| s.slug == *slug))
+            .collect()
     }
 
     pub fn is_done(&self, track: &str, slug: &str) -> bool {
         self.progress.done.get(track).is_some_and(|d| d.contains(slug))
     }
 
-    /// The first unfinished exercise on a track, in course order.
+    /// The first unfinished exercise on a track, in its path's order.
     pub fn current(&self, track: &str) -> Option<&Spec> {
-        self.specs.iter().filter(|s| s.on_track(track)).find(|s| !self.is_done(track, &s.slug))
+        self.path_specs(track).into_iter().find(|s| !self.is_done(track, &s.slug))
     }
 
     /// The learner's background for "coming from X" notes; `none` means neutral notes.
     pub fn background(&self) -> Option<&str> {
         self.config.from.as_deref().filter(|f| *f != "none")
+    }
+
+    /// The learner's goal, `learn` when none was chosen.
+    pub fn goal(&self) -> &str {
+        self.config.goal.as_deref().unwrap_or("learn")
+    }
+
+    /// How to render notes: the background, leading with it for the `switch` goal.
+    pub fn note_style(&self) -> crate::notes::Style<'_> {
+        crate::notes::Style { from: self.background(), lead: self.goal() == "switch" && self.background().is_some() }
     }
 
     /// The readings a learner on `track` (or on no track yet) works through.
@@ -272,7 +336,7 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
 
     /// Readings on a track, in course order.
     pub fn readings_on(&self, track: &str) -> Vec<&Reading> {
-        self.readings.iter().filter(|r| self.course.modules[r.module].on_track(track)).collect()
+        self.readings.iter().filter(|r| self.module_on_track(r.module, track)).collect()
     }
 
     /// A reading by id, or by its id without the `syntax-` style prefix

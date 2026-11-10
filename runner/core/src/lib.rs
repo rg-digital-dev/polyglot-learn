@@ -10,6 +10,7 @@ pub mod ctx;
 pub mod error;
 pub mod naming;
 pub mod notes;
+pub mod path;
 pub mod spec;
 pub mod toolchain;
 pub mod views;

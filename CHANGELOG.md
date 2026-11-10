@@ -19,7 +19,25 @@ All notable changes to this project are listed here. The format follows
 - Web UI: a reading page with previous/next and a track picker, the primer on
   the course page, and a "Read the Syntax Primer first" button for new learners.
 
+### Added
+- Per-track paths: `tracks/<lang>/path.toml` orders a track's stages. It uses
+  shared modules from `course.toml` (and can `skip` exercises) and holds the
+  track's own stages, so the "Deeper" and "in Practice" modules moved there
+  from `course.toml`. Progress is unchanged.
+- Track families (compiled: Rust, Go; JavaScript: TypeScript, QML; scripting:
+  Python, Lua, PHP), with a one-line "what it's for" per track in `learn
+  status` and on the web UI's track cards. `learn compare` and the web compare
+  page start with your track's family; `--all` adds the rest, and mixing
+  families shows a short note on why they differ (`families.toml`).
+- `learn init` asks what you're here for: learning one language, switching
+  from one you know (notes lead with their "coming from" section and the task
+  card says so), or comparing tracks you pick (`learn compare` starts with
+  them and `learn status` shows every track side by side). Flags: `--goal`,
+  `--compare rust,go`.
+
 ### Changed
+- `course.toml` holds only the shared modules now. A 0.3 binary on this
+  checkout still runs, but doesn't see the tracks' own stages.
 - The runner is split into two crates: `learn-core` (`runner/core`: course,
   specs, progress, notes, checks and backends, with no terminal or web code)
   and the `learn` binary, which draws the engine's view data as the CLI and

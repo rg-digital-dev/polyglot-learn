@@ -1,5 +1,8 @@
 id = "python"
 name = "Python"
+# Comparing starts with the tracks of the same family (see families.toml).
+family = "scripting"
+for = "Scripting, automation and working with data"
 
 # No [lings] table: no "pythonlings" with rustlings-style folders is maintained
 # well enough to link to exercise by exercise.

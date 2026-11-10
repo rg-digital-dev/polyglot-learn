@@ -9,6 +9,8 @@ interface Compare {
   /** The page's title when the concept is a reading. */
   reading: string | null
   columns: { track: string; name: string; note: string | null; links: { label: string; title: string; url: string }[] }[]
+  /** Why the shown tracks' families differ, one note per pair. */
+  why: { between: [string, string]; text: string }[]
 }
 
 const route = useRoute()
@@ -17,7 +19,12 @@ const { state } = useLearn()
 const concept = computed(() => route.params.concept as string)
 const selected = computed<string[]>(() => {
   const q = route.query.tracks as string | undefined
-  return q ? q.split(',').filter(Boolean) : ['rust', 'go', 'lua', 'typescript']
+  if (q) return q.split(',').filter(Boolean)
+  if (state.value?.goal === 'compare' && state.value.compare.length >= 2) return state.value.compare
+  // Start with the active track's family; other tracks are one click away.
+  const family = state.value?.tracks.find((t) => t.id === state.value?.track)?.family
+  const members = state.value?.families.find((f) => f.id === family)?.tracks
+  return members?.length ? members : ['rust', 'go', 'lua', 'typescript']
 })
 const data = ref<Compare | null>(null)
 const error = ref<string | null>(null)
@@ -77,6 +84,10 @@ function toggle(id: string) {
         </div>
         <Markdown v-if="showLesson" :source="data.lesson" />
       </section>
+      <aside v-for="w in data.why" :key="w.between.join('-')" class="panel pad compare__why">
+        <p class="tag">Why {{ w.between.join(' and ') }} differ</p>
+        <p>{{ w.text }}</p>
+      </aside>
       <div class="compare">
         <section v-for="col in data.columns" :key="col.track" class="panel pad compare__col">
           <p class="tag tag--accent">{{ col.name }}</p>

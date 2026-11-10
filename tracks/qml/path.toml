@@ -1,0 +1,35 @@
+# The QML path: the stages a QML learner works through, in order.
+# `use` takes a shared module from course.toml (`skip = [...]` leaves out some
+# of its exercises); a stage with an `id` is this track's own, with exercises
+# in tracks/qml/extras/<slug>/. See docs/decisions/0001-track-paths.md.
+
+[[stage]]
+use = "syntax-primer"
+
+[[stage]]
+use = "foundations"
+
+[[stage]]
+use = "building-blocks"
+
+[[stage]]
+use = "values-and-references"
+
+[[stage]]
+use = "text-and-unicode"
+
+[[stage]]
+use = "numbers-and-division"
+
+[[stage]]
+use = "real-world-basics"
+
+[[stage]]
+id = "deeper-qml"
+title = "Deeper QML"
+exercises = [
+  "temperature-binding",
+  "signal-counter",
+  "connections",
+  "todo-model",
+]

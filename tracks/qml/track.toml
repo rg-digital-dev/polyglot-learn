@@ -1,5 +1,8 @@
 id = "qml"
 name = "QML (Qt 6)"
+# Comparing starts with the tracks of the same family (see families.toml).
+family = "javascript"
+for = "Declarative user interfaces for Qt apps and devices"
 
 # No [lings] table: no rustlings-style QML repo exists on GitHub (searched
 # 2026-10-30). There is no Exercism QML track either, so the links below are

@@ -33,7 +33,7 @@ By contributing you agree that code is licensed under MIT and lesson text under 
    - Descriptions must be unique; they become test names. Aim for 6–10 cases including edge cases.
    - Keep int values within ±(2^53 − 1), and use ASCII whitespace only (trim functions disagree about Unicode). TypeScript and QML numbers are doubles, exact only up to there, and the spec check enforces it. Intermediate results may go beyond it (see `checked-multiply.json`).
    - Non-ASCII text is fine where the exercise is about it (see `char-count.json`). Write invisible characters such as combining marks as `\u` escapes in the JSON, and expect code points, not graphemes: grapheme support isn't built into every track.
-2. Add the slug to a module in `course.toml`. A shared module is on every track unless it lists some: `tracks = ["typescript", "rust", "go", "php", "lua"]`.
+2. Add the slug to a module in `course.toml`. A shared module is on every track whose `tracks/<lang>/path.toml` uses it. To keep it off a track that can't run it, leave it out of that path and list the others in course.toml: `tracks = ["typescript", "rust", "go", "php", "lua"]`. A path can also leave out single exercises with `skip`.
 
 ### Richer specs
 
@@ -65,13 +65,12 @@ Module 2 uses four optional extensions. See the specs named below for complete e
 
 ## Adding a track-only exercise
 
-Some features only exist in one language: Rust's ownership, Go's channels, QML's bindings. Those exercises are written by hand in that language and live in the track's own *Deeper* module. In `course.toml` such a module has a `track` field:
+Some features only exist in one language: Rust's ownership, Go's channels, QML's bindings. Those exercises are written by hand in that language and live in a stage of the track's own, in `tracks/<lang>/path.toml`:
 
 ```toml
-[[module]]
+[[stage]]
 id = "deeper-rust"
 title = "Deeper Rust"
-track = "rust"
 exercises = ["word-list", "text-slices"]
 ```
 
@@ -128,6 +127,25 @@ A **reading** is a page with no exercise. List its id under a module's `readings
 
 `learn read` shows a page and marks it read. Read marks are kept for the whole workspace, not per track, and never count towards an exercise total.
 
+### Paths and families
+
+Each track's `tracks/<lang>/path.toml` lists its stages in order (see `docs/decisions/0001-track-paths.md`):
+
+```toml
+[[stage]]
+use = "foundations"            # a shared module from course.toml
+skip = ["word-count"]          # optional: exercises this track leaves out
+
+[[stage]]
+id = "deeper-go"               # the track's own stage, exercises in tracks/go/extras/
+title = "Deeper Go"
+exercises = ["embedded-logger", "pipeline"]
+```
+
+A track without a `path.toml` gets every shared module that's on it, in course order. Tests check that every shared exercise is on some path and every `extras/` folder is on its track's path.
+
+Each `track.toml` names its `family` (compiled, javascript or scripting) and has a one-line `for` that says what the language is for. `families.toml` describes each family and has a `why` note for every pair; `learn compare` and the web UI start with your track's family and show the note when families are mixed. A new language needs both.
+
 ### Adding a "coming from X" section
 
 Notes mark background-specific blocks with HTML comments. `learn` shows the block that matches the learner's background (`learn init`), or the `default` block if none matches:
@@ -156,7 +174,8 @@ A track is one Rust module plus one folder. Checklist:
   - [ ] **Toolchain**: a `Tool` with PATH names *and* common absolute install paths, plus `check_tool` for minimum versions.
 - [ ] Register it in `BACKENDS` in `runner/core/src/backends/mod.rs`.
 - [ ] `tracks/<lang>/README.md`: install per OS, how tests run, editor setup, references.
-- [ ] `tracks/<lang>/track.toml`: `[install]` lines for `windows`, `macos`, `arch`, `debian` and `fedora`, plus links for each concept.
+- [ ] `tracks/<lang>/track.toml`: `family`, a one-line `for`, `[install]` lines for `windows`, `macos`, `arch`, `debian` and `fedora`, plus links for each concept.
+- [ ] `tracks/<lang>/path.toml`: the shared modules the track uses, in order, and its own stages.
 - [ ] One note per concept in `tracks/<lang>/`.
 - [ ] Toolchain setup in `.github/workflows/ci.yml`.
 - [ ] The verification suite passes for the new track.

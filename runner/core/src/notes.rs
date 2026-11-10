@@ -48,7 +48,26 @@ struct Block {
     end: usize,
 }
 
+/// How to render a note for a learner: their background, and whether its
+/// "coming from" section leads (the `switch` goal) or stays where it's written.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Style<'a> {
+    pub from: Option<&'a str>,
+    pub lead: bool,
+}
+
+impl<'a> From<Option<&'a str>> for Style<'a> {
+    fn from(from: Option<&'a str>) -> Self {
+        Style { from, lead: false }
+    }
+}
+
 pub fn render(md: &str, from: Option<&str>) -> String {
+    render_styled(md, from.into())
+}
+
+pub fn render_styled(md: &str, style: Style) -> String {
+    let from = style.from;
     let lines: Vec<&str> = md.lines().collect();
     let mut blocks = Vec::new();
     let mut open: Option<(String, usize)> = None;
@@ -77,7 +96,9 @@ pub fn render(md: &str, from: Option<&str>) -> String {
             skip_until = None;
         }
         if let Some(b) = blocks.iter().find(|b| b.start == i) {
-            if !keep(&b.key) {
+            // A leading block is taken out here and put under the title below.
+            let leads = style.lead && b.key != "default" && matched.as_deref() == Some(b.key.as_str());
+            if !keep(&b.key) || leads {
                 skip_until = Some(b.end);
             }
             continue;
@@ -86,6 +107,15 @@ pub fn render(md: &str, from: Option<&str>) -> String {
             continue;
         }
         out.push(*line);
+    }
+    if style.lead {
+        if let Some(b) = blocks.iter().find(|b| matched.as_deref() == Some(b.key.as_str()) && b.key != "default") {
+            let at = out.iter().position(|l| l.starts_with("# ")).map_or(0, |i| i + 1);
+            let mut block: Vec<&str> = vec![""];
+            block.extend(&lines[b.start + 1..b.end]);
+            block.push("");
+            out.splice(at..at, block);
+        }
     }
     // Collapse the blank lines left behind by removed blocks.
     let mut text = String::new();
@@ -105,14 +135,14 @@ pub fn render(md: &str, from: Option<&str>) -> String {
     text.trim().to_string()
 }
 
-pub fn read_concept(root: &Path, concept: &str, from: Option<&str>) -> Option<String> {
+pub fn read_concept<'a>(root: &Path, concept: &str, from: impl Into<Style<'a>>) -> Option<String> {
     let text = std::fs::read_to_string(root.join("concepts").join(format!("{concept}.md"))).ok()?;
-    Some(render(&text, from))
+    Some(render_styled(&text, from.into()))
 }
 
-pub fn read_track_note(root: &Path, track: &str, concept: &str, from: Option<&str>) -> Option<String> {
+pub fn read_track_note<'a>(root: &Path, track: &str, concept: &str, from: impl Into<Style<'a>>) -> Option<String> {
     let text = std::fs::read_to_string(root.join("tracks").join(track).join(format!("{concept}.md"))).ok()?;
-    Some(render(&text, from))
+    Some(render_styled(&text, from.into()))
 }
 
 /// A page's title: its first `# ` heading.
@@ -121,10 +151,10 @@ pub fn title_of(md: &str) -> Option<String> {
 }
 
 /// The lesson of a track-only exercise (`tracks/<track>/extras/<slug>/lesson.md`).
-pub fn read_native_lesson(spec: &crate::spec::Spec, from: Option<&str>) -> Option<String> {
+pub fn read_native_lesson<'a>(spec: &crate::spec::Spec, from: impl Into<Style<'a>>) -> Option<String> {
     let path = spec.native.as_ref()?.lesson.as_ref()?;
     let text = std::fs::read_to_string(path).ok()?;
-    Some(render(&text, from))
+    Some(render_styled(&text, from.into()))
 }
 
 #[cfg(test)]
@@ -159,6 +189,18 @@ mod tests {
         let js = NOTE.replace("from:python", "from:javascript");
         let out = render(&js, Some("javascript"));
         assert!(out.contains("Py bit.") && !out.contains("TS bit."));
+    }
+
+    #[test]
+    fn a_leading_background_section_moves_under_the_title() {
+        let out = render_styled(NOTE, Style { from: Some("python"), lead: true });
+        let py = out.find("Py bit.").unwrap();
+        assert!(py < out.find("Intro.").unwrap(), "{out}");
+        assert!(out.starts_with("# Title"), "{out}");
+        assert!(out.contains("Neutral bit.") && !out.contains("TS bit."));
+        assert_eq!(out.matches("Py bit.").count(), 1);
+        // Nothing to lead with: unchanged.
+        assert_eq!(render_styled(NOTE, Style { from: Some("java"), lead: true }), render(NOTE, Some("java")));
     }
 
     #[test]
