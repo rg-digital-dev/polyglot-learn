@@ -6,6 +6,8 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-10
+
 ### Added
 - *Syntax Primer*: seven short reading pages before the first exercise, on how
   each track writes files, variables and constants, types, operators and
@@ -18,8 +20,6 @@ All notable changes to this project are listed here. The format follows
   read a page or pass an exercise.
 - Web UI: a reading page with previous/next and a track picker, the primer on
   the course page, and a "Read the Syntax Primer first" button for new learners.
-
-### Added
 - Per-track paths: `tracks/<lang>/path.toml` orders a track's stages. It uses
   shared modules from `course.toml` (and can `skip` exercises) and holds the
   track's own stages, so the "Deeper" and "in Practice" modules moved there
@@ -34,7 +34,6 @@ All notable changes to this project are listed here. The format follows
   card says so), or comparing tracks you pick (`learn compare` starts with
   them and `learn status` shows every track side by side). Flags: `--goal`,
   `--compare rust,go`.
-
 - Web UI, rebuilt around your track's path:
   - The home page is your path: a "Continue" card, the primer for new
     learners, progress, and every stage with its marks.
