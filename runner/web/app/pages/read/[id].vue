@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import IconArrowRight from '~icons/lucide/arrow-right'
 import IconArrowLeft from '~icons/lucide/arrow-left'
+import IconList from '~icons/lucide/list'
 
 interface Brief {
   id: string
@@ -28,6 +29,7 @@ const id = computed(() => route.params.id as string)
 const track = computed(() => (route.query.track as string | undefined) ?? state.value?.track ?? null)
 const data = ref<ReadingPage | null>(null)
 const error = ref<string | null>(null)
+const drawer = ref(false)
 
 async function load() {
   error.value = null
@@ -58,11 +60,18 @@ const after = computed(() => {
 </script>
 
 <template>
-  <div class="stack-lg">
-    <p v-if="error" class="error-box">{{ error }}</p>
-    <template v-else-if="data">
+  <p v-if="error" class="error-box">{{ error }}</p>
+  <div v-else-if="data" class="learn learn--two" :class="{ 'learn--drawer': drawer }">
+    <aside v-if="data.track" class="learn__path">
+      <PathSidebar :track="data.track" :active="data.id" @navigate="drawer = false" />
+    </aside>
+    <button v-if="drawer" type="button" class="learn__scrim" aria-label="Close the path" @click="drawer = false" />
+    <div class="learn__main stack-lg">
       <header class="stack-sm">
-        <p class="eyebrow">{{ data.module }} · {{ data.index }} of {{ data.count }}</p>
+        <div class="crumbs">
+          <button v-if="data.track" type="button" class="iconlink learn__path-toggle" :aria-expanded="drawer" @click="drawer = !drawer"><IconList /> Path</button>
+          <p class="eyebrow">{{ data.module }} · {{ data.index }} of {{ data.count }}</p>
+        </div>
         <div class="chips" role="group" aria-label="Your track's note">
           <button
             v-for="t in state?.tracks ?? []"
@@ -103,6 +112,6 @@ const after = computed(() => {
           On to the exercises <IconArrowRight class="btn__arrow" />
         </NuxtLink>
       </nav>
-    </template>
+    </div>
   </div>
 </template>

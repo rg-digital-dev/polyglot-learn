@@ -35,6 +35,20 @@ All notable changes to this project are listed here. The format follows
   them and `learn status` shows every track side by side). Flags: `--goal`,
   `--compare rust,go`.
 
+- Web UI, rebuilt around your track's path:
+  - The home page is your path: a "Continue" card, the primer for new
+    learners, progress, and every stage with its marks.
+  - A first-run screen (`/welcome`, also "Change track or goal") picks the
+    track, the language you know and your goal, like `learn start` and
+    `learn init`.
+  - Exercises use three columns: the path on the left, then Lesson / Task /
+    Compare tabs, then the tests and hints. Task puts the note beside the
+    editor on very wide screens; Compare starts with your track's family.
+    Below 1280px the path is a drawer; below 900px everything stacks.
+  - Reading pages show the path too, and the old all-tracks grid moved to
+    "All tracks" (`/tracks`).
+  - The API adds `/api/path` and `POST /api/goal`.
+
 ### Changed
 - `course.toml` holds only the shared modules now. A 0.3 binary on this
   checkout still runs, but doesn't see the tracks' own stages.

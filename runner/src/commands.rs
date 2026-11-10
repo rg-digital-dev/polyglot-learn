@@ -127,22 +127,13 @@ fn init_goal(ctx: &mut Ctx, goal_flag: Option<String>, compare_flag: Vec<String>
             }
         }
     };
-    if !GOALS.iter().any(|(id, _)| *id == goal) {
-        let ids: Vec<&str> = GOALS.iter().map(|(id, _)| *id).collect();
-        bail!("unknown goal `{goal}`.\nChoose one of: {}", ids.join(", "));
-    }
     let mut compare = compare_flag;
     if goal == "compare" && compare.is_empty() && interactive {
         let answer = ask(&format!("Which tracks? Comma-separated, e.g. rust,go ({}): ", backends::ids().join(", ")))?;
         compare = answer.split(',').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect();
     }
-    let compare: Vec<String> = compare.iter().map(|t| backends::get(t).map(|b| b.id().to_string())).collect::<Result<_>>()?;
-    if goal == "compare" && compare.len() == 1 {
-        bail!("name at least two tracks to compare, e.g. --compare rust,go");
-    }
-    ctx.config.goal = Some(goal.clone());
-    ctx.config.compare = if goal == "compare" { compare.clone() } else { Vec::new() };
-    ctx.save_config()?;
+    ctx.set_goal(&goal, &compare)?;
+    let compare = ctx.config.compare.clone();
     let saved = match goal.as_str() {
         "switch" if ctx.background().is_none() => {
             "Saved. Pick the language you know with learn init --from <lang>, so notes can lead with what's different.".to_string()

@@ -252,3 +252,76 @@ a.chip:hover, button.chip:hover { border-color: var(--accent-border); }
 .editor__host .cm-cursor { border-left-color: var(--text); }
 .editor__host .cm-selectionBackground, .editor__host .cm-focused .cm-selectionBackground { background: var(--accent-wash) !important; }
 .editor__host .cm-focused { outline: none; }
+
+/* ── Learning layout: path | lesson, task, compare | tests ─────────────────
+   Wide: three columns. Up to 1279px the path becomes a drawer behind a
+   "Path" button; below 900px the tests stack under the main column. */
+.wrap--wide { max-width: 1920px; }
+.learn { display: grid; grid-template-columns: 240px minmax(0, 1fr) 340px; gap: var(--space-8); align-items: start; }
+.learn--two { grid-template-columns: 240px minmax(0, 1fr); }
+.learn__main { min-width: 0; }
+.learn__path, .learn__tests { position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; min-width: 0; }
+.learn__tests .tests-panel { display: grid; gap: var(--space-4); padding-bottom: var(--space-4); }
+.learn__path-toggle, .learn__scrim { display: none; }
+@media (max-width: 1279px) {
+  .learn { grid-template-columns: minmax(0, 1fr) 320px; }
+  .learn--two { grid-template-columns: minmax(0, 1fr); }
+  .learn__path {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 40; width: min(320px, 85vw); max-height: none;
+    padding: var(--space-6); background: var(--bg); box-shadow: var(--shadow-float);
+    transform: translateX(-105%); transition: transform var(--dur-base) var(--ease-out);
+  }
+  .learn--drawer .learn__path { transform: none; }
+  .learn--drawer .learn__scrim { display: block; position: fixed; inset: 0; z-index: 39; border: 0; background: rgb(0 0 0 / 0.35); }
+  .learn__path-toggle { display: inline-flex; background: none; border: 0; cursor: pointer; padding: 0; }
+}
+@media (max-width: 899px) {
+  .learn { grid-template-columns: minmax(0, 1fr); }
+  .learn__tests { position: static; max-height: none; overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { .learn__path { transition: none; } }
+
+/* Task tab: the editor, with the note beside it from 1800px (room for both). */
+.task { display: grid; gap: var(--space-6); align-items: start; }
+.task__lesson { display: none; }
+@media (min-width: 1800px) {
+  .task { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+  .task__lesson { display: block; max-height: calc(100vh - 140px); overflow-y: auto; position: sticky; top: 80px; }
+}
+
+/* The path: stages that fold open, items with their marks. */
+.path { display: grid; gap: var(--space-1); font-size: var(--fs-body-sm); }
+.path__head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.path__stage > summary { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; cursor: pointer; font-weight: var(--fw-semibold); list-style: none; }
+.path__stage > summary::-webkit-details-marker { display: none; }
+.path__stage > summary::before { content: '›'; display: inline-block; width: 1ch; color: var(--text-muted); transition: transform var(--dur-fast) var(--ease-out); }
+.path__stage[open] > summary::before { transform: rotate(90deg); }
+.path__stage-title { flex: 1; min-width: 0; }
+.path__count { flex: none; }
+.path__items { display: grid; gap: 2px; margin: 0 0 var(--space-2); padding: 0 0 0 var(--space-3); list-style: none; }
+.path__item { display: flex; align-items: center; gap: var(--space-2); padding: 3px var(--space-2); border-radius: var(--radius-md); color: var(--text-secondary); }
+.path__item:hover { background: var(--surface-2); color: var(--text); }
+.path__item--active { background: var(--surface-2); color: var(--text); font-weight: var(--fw-semibold); }
+.path__item .dot { margin: 6px; flex: none; }
+.path__item .dot--next, .path__item .check { margin: 0; flex: none; }
+.path__icon { display: inline-flex; width: 20px; justify-content: center; color: var(--text-muted); flex: none; }
+.path__icon svg { width: 14px; height: 14px; }
+.path__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.path--full .path__items { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+
+/* Home and first run. */
+.home__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); }
+.continue { display: grid; gap: var(--space-2); align-content: start; }
+.continue:hover { box-shadow: var(--shadow-card-hover); }
+.continue__btn { justify-self: start; margin-top: var(--space-2); }
+.continue--soft .tag { display: inline-flex; align-items: center; gap: var(--space-1); }
+.progress-card { display: grid; gap: var(--space-2); align-content: start; }
+.goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4); }
+.goal { display: grid; gap: var(--space-1); padding: var(--pad-card); border: 1px solid var(--border); border-radius: var(--radius-card); cursor: pointer; }
+.goal input { position: absolute; opacity: 0; pointer-events: none; }
+.goal:hover { border-color: var(--border-strong); }
+.goal--on { border-color: var(--accent-border); box-shadow: var(--ring-accent); }
+.goal:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.track__for { text-align: left; }
+.topnav a { white-space: nowrap; }
+@media (max-width: 899px) { .topbar__goal { display: none; } }

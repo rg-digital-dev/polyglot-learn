@@ -45,6 +45,8 @@ async function quit() {
 }
 
 const route = useRoute()
+// The three-column learning pages use the whole window; the others keep the reading width.
+const wide = computed(() => route.path.startsWith('/exercise') || route.path.startsWith('/read'))
 const navActive = (prefix: string) => (prefix === '/' ? route.path === '/' : route.path.startsWith(prefix))
 </script>
 
@@ -54,11 +56,14 @@ const navActive = (prefix: string) => (prefix === '/' ? route.path === '/' : rou
       <div class="wrap topbar__inner">
         <NuxtLink to="/" class="brandname">polyglot-learn</NuxtLink>
         <nav class="topnav" aria-label="Main">
-          <NuxtLink to="/" :class="{ active: navActive('/') }">Course</NuxtLink>
+          <NuxtLink to="/" :class="{ active: navActive('/') || navActive('/exercise') || navActive('/read') }">Path</NuxtLink>
+          <NuxtLink to="/tracks" :class="{ active: navActive('/tracks') }">All tracks</NuxtLink>
           <NuxtLink to="/compare/errors" :class="{ active: navActive('/compare') }">Compare</NuxtLink>
         </nav>
         <div class="topbar__actions">
-          <span v-if="state?.track" class="tag">track: {{ trackName(state, state.track) }}</span>
+          <NuxtLink v-if="state?.track" to="/welcome" class="tag" title="Change your track or goal">
+            {{ trackName(state, state.track) }}<span class="topbar__goal"> · {{ state.goals.find((g) => g.id === state?.goal)?.label ?? state.goal }}</span>
+          </NuxtLink>
           <button class="iconbtn" type="button" :aria-label="'Switch theme'" title="Switch light / dark" @click="toggleTheme">
             <IconSun class="only-dark" /><IconMoon class="only-light" />
           </button>
@@ -76,7 +81,7 @@ const navActive = (prefix: string) => (prefix === '/' ? route.path === '/' : rou
       <div class="wrap"><IconWifiOff /> Lost the connection to <code>learn serve</code>. Is it still running?</div>
     </div>
 
-    <main class="wrap main">
+    <main class="wrap main" :class="{ 'wrap--wide': wide }">
       <p v-if="loadError" class="error-box">{{ loadError }}</p>
       <NuxtPage v-else-if="state" />
       <p v-else class="muted">Loading…</p>

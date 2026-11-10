@@ -321,6 +321,25 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
         self.config.goal.as_deref().unwrap_or("learn")
     }
 
+    /// Check and save a goal; `compare` (tracks for the compare goal) needs two or
+    /// more known tracks, and is dropped for the other goals.
+    pub fn set_goal(&mut self, goal: &str, compare: &[String]) -> Result<()> {
+        if !GOALS.iter().any(|(id, _)| *id == goal) {
+            let ids: Vec<&str> = GOALS.iter().map(|(id, _)| *id).collect();
+            bail!("unknown goal `{goal}`.\nChoose one of: {}", ids.join(", "));
+        }
+        let mut tracks = Vec::new();
+        for t in compare {
+            tracks.push(crate::backends::get(t)?.id().to_string());
+        }
+        if goal == "compare" && tracks.len() == 1 {
+            bail!("name at least two tracks to compare, e.g. --compare rust,go");
+        }
+        self.config.goal = Some(goal.to_string());
+        self.config.compare = if goal == "compare" { tracks } else { Vec::new() };
+        self.save_config()
+    }
+
     /// How to render notes: the background, leading with it for the `switch` goal.
     pub fn note_style(&self) -> crate::notes::Style<'_> {
         crate::notes::Style { from: self.background(), lead: self.goal() == "switch" && self.background().is_some() }
