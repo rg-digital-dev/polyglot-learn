@@ -19,6 +19,12 @@ All notable changes to this project are listed here. The format follows
 - Web UI: a reading page with previous/next and a track picker, the primer on
   the course page, and a "Read the Syntax Primer first" button for new learners.
 
+### Fixed
+- `learn serve` now listens on `[::1]` as well as `127.0.0.1`. Browsers try
+  `learn.localhost` over IPv6 first, so another program on the same port there
+  (a dev server, say) used to answer instead. If that port is taken on `[::1]`,
+  `learn serve` now says so and asks for another `--port`.
+
 ## [0.3.1] - 2026-11-09
 
 ### Fixed
