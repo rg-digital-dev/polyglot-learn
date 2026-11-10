@@ -11,7 +11,13 @@ rust-version = "1.88"
 name = "learn"
 path = "src/main.rs"
 
+[workspace]
+members = ["core"]
+# Plain `cargo test` and `cargo build` (as CI runs them) cover the engine too.
+default-members = [".", "core"]
+
 [dependencies]
+learn-core = { path = "core" }
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }

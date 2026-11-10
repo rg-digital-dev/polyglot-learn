@@ -29,9 +29,6 @@ fn spread(left: &str, right: &str, ui: &Ui) -> String {
     format!("{left}{}{right}", " ".repeat(gap))
 }
 
-fn from(ctx: &Ctx) -> Option<&str> {
-    ctx.config.from.as_deref().filter(|f| *f != "none")
-}
 
 // ---- show ------------------------------------------------------------------------
 
@@ -103,10 +100,10 @@ pub fn all_done(ctx: &Ctx, backend: &dyn Backend, ui: &Ui) -> String {
 pub fn lesson(ctx: &Ctx, backend: &dyn Backend, spec: &Spec, ui: &Ui) -> String {
     let mut parts = Vec::new();
     if spec.native.is_some() {
-        parts.extend(notes::read_native_lesson(spec, from(ctx)));
+        parts.extend(notes::read_native_lesson(spec, ctx.background()));
     } else {
-        parts.extend(notes::read_concept(&ctx.root, &spec.concept, from(ctx)));
-        parts.extend(notes::read_track_note(&ctx.root, backend.id(), &spec.concept, from(ctx)));
+        parts.extend(notes::read_concept(&ctx.root, &spec.concept, ctx.background()));
+        parts.extend(notes::read_track_note(&ctx.root, backend.id(), &spec.concept, ctx.background()));
     }
     let rule = ui.muted(&(if ui.unicode { "─" } else { "-" }).repeat(ui.width.saturating_sub(MARGIN.len())));
     let mut out: Vec<String> = parts.iter().map(|md| markdown::render(md, ui)).collect::<Vec<_>>();
@@ -126,17 +123,10 @@ pub fn lesson(ctx: &Ctx, backend: &dyn Backend, spec: &Spec, ui: &Ui) -> String 
 
 // ---- readings ------------------------------------------------------------------------
 
-/// The readings a learner on `track` (or on no track yet) works through.
-pub fn readings_for<'a>(ctx: &'a Ctx, track: Option<&str>) -> Vec<&'a Reading> {
-    match track {
-        Some(t) => ctx.readings_on(t),
-        None => ctx.readings.iter().collect(),
-    }
-}
 
 /// The reading after `id`, in course order.
 pub fn next_reading<'a>(ctx: &'a Ctx, track: Option<&str>, id: &str) -> Option<&'a Reading> {
-    let list = readings_for(ctx, track);
+    let list = ctx.readings_for(track);
     let i = list.iter().position(|r| r.id == id)?;
     list.get(i + 1).copied()
 }
@@ -144,14 +134,14 @@ pub fn next_reading<'a>(ctx: &'a Ctx, track: Option<&str>, id: &str) -> Option<&
 /// A reading page: where it sits, the concept page, the track's note, what next.
 pub fn reading(ctx: &Ctx, r: &Reading, backend: Option<&dyn Backend>, ui: &Ui) -> String {
     let track = backend.map(|b| b.id());
-    let list = readings_for(ctx, track);
+    let list = ctx.readings_for(track);
     let i = list.iter().position(|x| x.id == r.id).map_or(0, |i| i + 1);
     let module = &ctx.course.modules[r.module].title;
     let rule = ui.muted(&(if ui.unicode { "─" } else { "-" }).repeat(ui.width.saturating_sub(MARGIN.len())));
     let mut out = vec![format!("{MARGIN}{}", ui.muted(&format!("{module} {} {i} of {}", ui.dot(), list.len())))];
-    out.extend(notes::read_concept(&ctx.root, &r.id, from(ctx)).map(|md| markdown::render(&md, ui)));
+    out.extend(notes::read_concept(&ctx.root, &r.id, ctx.background()).map(|md| markdown::render(&md, ui)));
     match backend {
-        Some(b) => match notes::read_track_note(&ctx.root, b.id(), &r.id, from(ctx)) {
+        Some(b) => match notes::read_track_note(&ctx.root, b.id(), &r.id, ctx.background()) {
             Some(md) => out.push(format!("{MARGIN}{rule}\n\n{}", markdown::render(&md, ui))),
             None => out.push(format!("{MARGIN}{}", ui.muted(&format!("No {} note for this page yet.", b.name())))),
         },
@@ -171,7 +161,7 @@ pub fn reading(ctx: &Ctx, r: &Reading, backend: Option<&dyn Backend>, ui: &Ui) -
 /// Every reading with its mark, for `learn read` once they're all read.
 pub fn reading_list(ctx: &Ctx, track: Option<&str>, ui: &Ui) -> String {
     let mut out = Vec::new();
-    for r in readings_for(ctx, track) {
+    for r in ctx.readings_for(track) {
         let mark = if ctx.is_read(&r.id) { ui.pass_mark() } else { ui.todo_mark() };
         out.push(format!("{MARGIN}{mark} {}  {}", r.title, ui.muted(&r.id)));
     }

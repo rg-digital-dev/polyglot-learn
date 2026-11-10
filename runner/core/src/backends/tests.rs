@@ -134,7 +134,7 @@ fn function_names_follow_conventions() {
 
 #[test]
 fn every_backend_renders_every_repo_spec() {
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../specs");
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../specs");
     for entry in std::fs::read_dir(dir).unwrap() {
         let spec = Spec::load(&entry.unwrap().path()).unwrap();
         for b in all() {

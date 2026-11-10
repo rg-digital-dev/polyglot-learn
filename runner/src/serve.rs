@@ -25,11 +25,11 @@ use tokio::sync::{broadcast, watch};
 
 use crate::backends::{self, Backend};
 use crate::check;
-use crate::course::TrackMeta;
+use crate::views;
 use crate::ctx::Ctx;
 use crate::error::{Error, Result};
 use crate::notes;
-use crate::spec::{CaseKind, Outcome, Spec};
+use crate::spec::Spec;
 use crate::toolchain;
 
 #[derive(rust_embed::Embed)]
@@ -231,70 +231,13 @@ async fn static_file(req: Request) -> Response {
     res
 }
 
-// ---- JSON views ----------------------------------------------------------------------
+// ---- views ------------------------------------------------------------------------
+//
+// The JSON bodies are `learn_core::views`, the same data the CLI draws.
 
-fn track_json(ctx: &Ctx, b: &dyn Backend) -> Value {
-    let tool = b.tool().find();
-    json!({
-        "id": b.id(),
-        "name": b.name(),
-        "tool": {
-            "label": b.tool().label,
-            "found": tool.is_some(),
-            "path": tool.as_ref().map(|t| t.path.display().to_string()),
-            "version": tool.as_ref().map(|t| t.version.clone()),
-            "warning": tool.as_ref().and_then(|t| b.check_tool(t)),
-        },
-        "done": ctx.progress.done.get(b.id()).map_or(0, |d| d.len()),
-        "current": ctx.current(b.id()).map(|s| s.slug.clone()),
-    })
-}
-
-async fn state(State(app): State<Shared>) -> ApiResult<Json<Value>> {
+async fn state(State(app): State<Shared>) -> ApiResult<Json<views::CourseView>> {
     let ctx = app.ctx()?;
-    let tracks: Vec<Value> = backends::all().iter().map(|b| track_json(&ctx, *b)).collect();
-    let modules: Vec<Value> = ctx
-        .course
-        .modules
-        .iter()
-        .map(|m| {
-            let exercises: Vec<Value> = m
-                .exercises
-                .iter()
-                .filter_map(|slug| ctx.spec(slug).ok())
-                .map(|s| {
-                    let done: Vec<&str> = backends::ids().into_iter().filter(|t| ctx.is_done(t, &s.slug)).collect();
-                    json!({ "slug": s.slug, "title": s.title, "concept": s.concept, "done": done })
-                })
-                .collect();
-            let readings: Vec<Value> = ctx
-                .readings
-                .iter()
-                .filter(|r| m.readings.contains(&r.id))
-                .map(|r| json!({ "id": r.id, "title": r.title, "read": ctx.is_read(&r.id) }))
-                .collect();
-            // Every track the module is on: all of them, its own (`track`), or its `tracks` list.
-            let tracks: Vec<&str> = backends::ids().into_iter().filter(|t| m.on_track(t)).collect();
-            json!({ "id": m.id, "title": m.title, "track": m.track, "tracks": tracks, "exercises": exercises, "readings": readings })
-        })
-        .collect();
-    let backgrounds: Vec<Value> =
-        notes::BACKGROUNDS.iter().map(|(id, label)| json!({ "id": id, "label": label })).collect();
-    let mut concepts: Vec<&str> =
-        ctx.specs.iter().filter(|s| s.native.is_none()).map(|s| s.concept.as_str()).collect();
-    concepts.dedup();
-    Ok(Json(json!({
-        "title": ctx.course.title,
-        "track": ctx.config.track,
-        "from": ctx.config.from,
-        "backgrounds": backgrounds,
-        "tracks": tracks,
-        "modules": modules,
-        "concepts": concepts,
-        // Nothing done on the active track and nothing read: point at the primer.
-        "new": ctx.config.track.as_deref().is_some_and(|t| ctx.is_new(t)),
-        "workspace": ctx.workspace.display().to_string(),
-    })))
+    Ok(Json(views::course(&ctx)))
 }
 
 #[derive(Deserialize)]
@@ -339,46 +282,6 @@ fn resolve_track(ctx: &Ctx, q: &TrackQuery) -> Result<&'static dyn Backend> {
     }
 }
 
-fn from_of(ctx: &Ctx) -> Option<&str> {
-    ctx.config.from.as_deref().filter(|f| *f != "none")
-}
-
-fn links_json(meta: &TrackMeta, concept: &str) -> Vec<Value> {
-    meta.links_for(concept)
-        .iter()
-        .map(|l| json!({ "kind": l.kind, "label": meta.kind_label(&l.kind), "title": l.title, "url": l.url }))
-        .collect()
-}
-
-fn cases_json(spec: &Spec) -> Vec<Value> {
-    if spec.native.is_some() {
-        // Native tests are code, not data: only the descriptions are known.
-        return spec.cases().into_iter().map(|(_, c)| json!({ "index": c.index, "description": c.description, "lines": [] })).collect();
-    }
-    let join = |vals: &[Value]| vals.iter().map(backends::json).collect::<Vec<_>>().join(", ");
-    spec.cases()
-        .into_iter()
-        .map(|(f, c)| {
-            let lines: Vec<String> = match &c.kind {
-                CaseKind::Call { input, outcome } => {
-                    let expected = match outcome {
-                        Outcome::Value(v) => backends::json(v),
-                        Outcome::Error(contains) => crate::spec::describe_error(contains),
-                    };
-                    vec![format!("{}({}) → {expected}", f.name, join(input))]
-                }
-                CaseKind::Scenario { create, steps } => {
-                    let mut l: Vec<String> =
-                        create.iter().enumerate().map(|(i, a)| format!("v{i} = {}({})", f.name, join(a))).collect();
-                    l.extend(steps.iter().map(|s| format!("v{}({}) → {}", s.on, join(&s.input), backends::json(&s.expected))));
-                    l
-                }
-            };
-            json!({ "index": c.index, "description": c.description, "function": f.name, "lines": lines })
-        })
-        .collect()
-}
-
 fn rel_string(p: &std::path::Path) -> String {
     p.components().map(|c| c.as_os_str().to_string_lossy().to_string()).collect::<Vec<_>>().join("/")
 }
@@ -387,7 +290,7 @@ async fn exercise(
     State(app): State<Shared>,
     UrlPath(slug): UrlPath<String>,
     Query(q): Query<TrackQuery>,
-) -> ApiResult<Json<Value>> {
+) -> ApiResult<Json<views::ExerciseView>> {
     let ctx = app.ctx()?;
     let b = resolve_track(&ctx, &q)?;
     let spec = spec_or_404(&ctx, b.id(), &slug)?;
@@ -395,45 +298,7 @@ async fn exercise(
     if !dir.join(backends::main_file(b, spec)).exists() {
         backends::generate(b, &ctx.track_specs(b.id()), &dir)?;
     }
-    let meta = TrackMeta::load(&ctx.root, b.id())?;
-    let shown = ctx.progress.hints.get(&slug).copied().unwrap_or(0).min(spec.hints.len());
-    let files: Vec<Value> = backends::learner_files(b, spec)
-        .into_iter()
-        .map(|(rel, sigs)| json!({ "path": rel_string(&rel), "absolute": dir.join(&rel).display().to_string(), "signatures": sigs }))
-        .collect();
-    let order: Vec<&str> = ctx.specs.iter().filter(|s| s.on_track(b.id())).map(|s| s.slug.as_str()).collect();
-    let pos = order.iter().position(|s| *s == slug).unwrap_or(0);
-    let module = ctx.course.modules.iter().find(|m| m.exercises.contains(&slug));
-    Ok(Json(json!({
-        "slug": spec.slug,
-        "title": spec.title,
-        "concept": spec.concept,
-        "summary": spec.main.summary,
-        "module": module.map(|m| m.title.clone()),
-        "track": b.id(),
-        "trackName": b.name(),
-        "fence": b.fence(),
-        "toolFound": b.tool().find().is_some(),
-        "toolLabel": b.tool().label,
-        "done": ctx.is_done(b.id(), &slug),
-        "files": files,
-        "native": spec.native.is_some(),
-        "tracks": backends::ids().into_iter().filter(|t| spec.on_track(t)).collect::<Vec<_>>(),
-        "lesson": match spec.native {
-            Some(_) => notes::read_native_lesson(spec, from_of(&ctx)),
-            None => notes::read_concept(&ctx.root, &spec.concept, from_of(&ctx)),
-        },
-        "note": match spec.native {
-            Some(_) => None,
-            None => notes::read_track_note(&ctx.root, b.id(), &spec.concept, from_of(&ctx)),
-        },
-        "links": links_json(&meta, &spec.concept),
-        "hints": spec.hints.iter().take(shown).collect::<Vec<_>>(),
-        "hintsTotal": spec.hints.len(),
-        "cases": cases_json(spec),
-        "prev": pos.checked_sub(1).and_then(|i| order.get(i)),
-        "next": order.get(pos + 1),
-    })))
+    Ok(Json(views::exercise(&ctx, b, spec)?))
 }
 
 async fn hint(State(app): State<Shared>, UrlPath(slug): UrlPath<String>) -> ApiResult<Json<Value>> {
@@ -451,46 +316,16 @@ async fn compare(
     State(app): State<Shared>,
     UrlPath(concept): UrlPath<String>,
     Query(q): Query<HashMap<String, String>>,
-) -> ApiResult<Json<Value>> {
+) -> ApiResult<Json<views::CompareView>> {
     let ctx = app.ctx()?;
-    let reading = ctx.readings.iter().find(|r| r.id == concept);
-    if reading.is_none() && !ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept) {
+    if !views::is_comparable(&ctx, &concept) {
         return Err(ApiError(StatusCode::NOT_FOUND, format!("unknown concept `{concept}`")));
     }
     let wanted: Vec<String> = q
         .get("tracks")
         .map(|t| t.split(',').filter(|s| !s.is_empty()).map(String::from).collect())
         .unwrap_or_default();
-    let mut columns = Vec::new();
-    for b in backends::all() {
-        if !wanted.is_empty() && !wanted.iter().any(|w| w == b.id()) {
-            continue;
-        }
-        // Only tracks that have an exercise for the concept (`files` isn't on QML),
-        // or, for a reading, the tracks its module is on.
-        let on = match reading {
-            Some(r) => ctx.course.modules[r.module].on_track(b.id()),
-            None => ctx.specs.iter().any(|s| s.native.is_none() && s.concept == concept && s.on_track(b.id())),
-        };
-        if !on {
-            continue;
-        }
-        let meta = TrackMeta::load(&ctx.root, b.id())?;
-        columns.push(json!({
-            "track": b.id(),
-            "name": b.name(),
-            "note": notes::read_track_note(&ctx.root, b.id(), &concept, from_of(&ctx)),
-            "links": links_json(&meta, &concept),
-        }));
-    }
-    let exercise = ctx.specs.iter().find(|s| s.native.is_none() && s.concept == concept).map(|s| s.slug.clone());
-    Ok(Json(json!({
-        "concept": concept,
-        "lesson": notes::read_concept(&ctx.root, &concept, from_of(&ctx)),
-        "exercise": exercise,
-        "columns": columns,
-        "reading": reading.map(|r| r.title.clone()),
-    })))
+    Ok(Json(views::compare(&ctx, &concept, &wanted)?))
 }
 
 /// A reading page: the concept page and one track's note, with its neighbours.
@@ -498,7 +333,7 @@ async fn reading(
     State(app): State<Shared>,
     UrlPath(id): UrlPath<String>,
     Query(q): Query<TrackQuery>,
-) -> ApiResult<Json<Value>> {
+) -> ApiResult<Json<views::ReadingView>> {
     let ctx = app.ctx()?;
     let Some(r) = ctx.reading(&id) else {
         return Err(ApiError(StatusCode::NOT_FOUND, format!("unknown reading `{id}`")));
@@ -507,23 +342,7 @@ async fn reading(
         Some(t) => Some(backends::get(t)?),
         None => ctx.config.track.as_deref().map(backends::get).transpose()?,
     };
-    let track = backend.map(|b| b.id());
-    let list = crate::view::readings_for(&ctx, track);
-    let i = list.iter().position(|x| x.id == r.id);
-    let brief = |x: &&crate::ctx::Reading| json!({ "id": x.id, "title": x.title });
-    Ok(Json(json!({
-        "id": r.id,
-        "title": r.title,
-        "module": ctx.course.modules[r.module].title,
-        "index": i.map_or(0, |i| i + 1),
-        "count": list.len(),
-        "prev": i.and_then(|i| i.checked_sub(1)).and_then(|i| list.get(i)).map(brief),
-        "next": i.and_then(|i| list.get(i + 1)).map(brief),
-        "track": track,
-        "lesson": notes::read_concept(&ctx.root, &r.id, from_of(&ctx)),
-        "note": track.and_then(|t| notes::read_track_note(&ctx.root, t, &r.id, from_of(&ctx))),
-        "read": ctx.is_read(&r.id),
-    })))
+    Ok(Json(views::reading(&ctx, r, backend)))
 }
 
 async fn mark_read(State(app): State<Shared>, UrlPath(id): UrlPath<String>) -> ApiResult<Json<Value>> {
