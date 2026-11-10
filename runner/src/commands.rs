@@ -13,6 +13,7 @@ use crate::backends::{self, Backend};
 use crate::bail;
 use crate::check::{self, CheckResult};
 use crate::course::TrackMeta;
+use crate::lessons;
 use crate::ctx::Ctx;
 use crate::error::{Context, Error, Result};
 use crate::markdown;
@@ -72,7 +73,7 @@ fn all_done_message(ctx: &Ctx, backend: &dyn Backend) {
 /// Make sure the exercise's files exist (a slug named before `start` ran).
 fn ensure_generated(ctx: &Ctx, backend: &dyn Backend, spec: &Spec) -> Result<()> {
     if !track_dir(ctx, backend).join(backends::main_file(backend, spec)).exists() {
-        backends::generate(backend, &ctx.track_specs(backend.id()), &track_dir(ctx, backend))?;
+        lessons::generate_track(ctx, backend)?;
     }
     Ok(())
 }
@@ -97,6 +98,8 @@ fn init(ctx: &mut Ctx, from_flag: Option<String>, goal_flag: Option<String>, com
     if goal_flag.is_some() || !compare_flag.is_empty() || interactive {
         init_goal(ctx, goal_flag, compare_flag, interactive)?;
     }
+    // Notes follow the background and goal, so the LESSON.md files do too.
+    lessons::refresh(ctx)?;
     let ui = ui::get();
     println!("{MARGIN}{}", ui.muted("Change it any time with learn init."));
     if ctx.config.track.is_none() {
@@ -336,7 +339,7 @@ fn start(ctx: &mut Ctx, lang: &str) -> Result<ExitCode> {
     let ui = ui::get();
     let backend = backends::get(lang)?;
     let dir = track_dir(ctx, backend);
-    let report = backends::generate(backend, &ctx.track_specs(backend.id()), &dir)?;
+    let report = lessons::generate_track(ctx, backend)?;
     ctx.config.track = Some(backend.id().to_string());
     ctx.save_config()?;
 
@@ -512,7 +515,8 @@ pub fn latest_mtime(dir: &Path) -> Option<SystemTime> {
         for e in entries.flatten() {
             let path = e.path();
             let name = e.file_name();
-            if matches!(name.to_str(), Some("target" | "node_modules" | ".git")) {
+            // LESSON.md is ours: rewriting it isn't the learner saving.
+            if matches!(name.to_str(), Some("target" | "node_modules" | ".git" | lessons::FILE)) {
                 continue;
             }
             let Ok(meta) = e.metadata() else { continue };
@@ -539,7 +543,7 @@ fn watch(ctx: &mut Ctx) -> Result<ExitCode> {
     let track = ctx.active_track()?;
     let backend = backends::get(&track)?;
     check::require_tool(backend)?;
-    backends::generate(backend, &ctx.track_specs(backend.id()), &track_dir(ctx, backend))?;
+    lessons::generate_track(ctx, backend)?;
 
     let Some(mut slug) = ctx.current(&track).map(|s| s.slug.clone()) else {
         all_done_message(ctx, backend);
@@ -729,7 +733,7 @@ fn generate(ctx: &Ctx, lang: Option<&str>) -> Result<ExitCode> {
     };
     for b in selected {
         let dir = track_dir(ctx, b);
-        let report = backends::generate(b, &ctx.track_specs(b.id()), &dir)?;
+        let report = lessons::generate_track(ctx, b)?;
         let d = ui.dot();
         println!(
             "{MARGIN}{} {:<11} {}",

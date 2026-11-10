@@ -6,6 +6,14 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+- `LESSON.md` in every exercise folder: the task and signature, the concept
+  lesson, your track's note and the "go deeper" links, written for the language
+  you know. Open it beside the code in your editor's Markdown preview. `learn`
+  rewrites it when it sets up a track and when `learn init` (or the web UI's
+  settings, or the terminal view) changes your background or goal, so don't
+  edit it; saving it doesn't count as a save for `learn watch`.
+
 ## [0.4.0] - 2026-11-10
 
 ### Added

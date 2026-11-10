@@ -14,7 +14,7 @@ mod view;
 
 // The engine lives in `learn-core`; these keep `crate::ctx` and friends working
 // in the interface modules.
-use learn_core::{backends, bail, check, course, ctx, error, notes, spec, toolchain, views};
+use learn_core::{backends, bail, check, course, ctx, error, lessons, notes, spec, toolchain, views};
 
 #[derive(Parser)]
 #[command(name = "learn", version, about = "Learn languages locally with small, test-driven exercises.")]

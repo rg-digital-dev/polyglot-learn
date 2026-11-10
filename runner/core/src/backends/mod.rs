@@ -262,7 +262,7 @@ pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Resu
     Ok(report)
 }
 
-fn write(path: &Path, contents: &str) -> Result<()> {
+pub(crate) fn write(path: &Path, contents: &str) -> Result<()> {
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir).context(|| format!("can't create {}", dir.display()))?;
     }

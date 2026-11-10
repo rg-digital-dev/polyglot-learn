@@ -10,6 +10,7 @@ use crate::backends::{self, Backend};
 use crate::check::CheckResult;
 use crate::ctx::{Ctx, GOALS};
 use crate::error::Result;
+use crate::lessons;
 use crate::notes::BACKGROUNDS;
 use crate::views::{self, PathItem, PathView};
 
@@ -178,7 +179,7 @@ impl App {
                 if let Ok(spec) = self.ctx.spec_on(b.id(), slug) {
                     let dir = self.ctx.workspace.join(b.id());
                     if !dir.join(backends::main_file(b, spec)).exists() {
-                        if let Err(e) = backends::generate(b, &self.ctx.track_specs(b.id()), &dir) {
+                        if let Err(e) = lessons::generate_track(&self.ctx, b) {
                             self.message = Some(e.0);
                         }
                     }
@@ -324,7 +325,7 @@ impl App {
     }
 
     fn set_track(&mut self, b: &'static dyn Backend) -> Result<()> {
-        backends::generate(b, &self.ctx.track_specs(b.id()), &self.ctx.workspace.join(b.id()))?;
+        lessons::generate_track(&self.ctx, b)?;
         self.ctx.config.track = Some(b.id().to_string());
         self.ctx.save_config()?;
         self.tests = None;
@@ -468,7 +469,7 @@ impl App {
             Overlay::Background { cursor, first_run } => {
                 if key.code == KeyCode::Enter {
                     self.ctx.config.from = Some(BACKGROUNDS[cursor].0.to_string());
-                    if let Err(e) = self.ctx.save_config() {
+                    if let Err(e) = self.ctx.save_config().and_then(|()| lessons::refresh(&self.ctx)) {
                         self.message = Some(e.0);
                     }
                     self.version += 1;
@@ -547,7 +548,7 @@ impl App {
     }
 
     fn finish_goal(&mut self, goal: &str, compare: &[String]) {
-        match self.ctx.set_goal(goal, compare) {
+        match self.ctx.set_goal(goal, compare).and_then(|()| lessons::refresh(&self.ctx)) {
             Ok(()) => self.message = Some("All set. ? lists the keys.".into()),
             Err(e) => self.message = Some(e.0),
         }

@@ -8,6 +8,7 @@ pub mod check;
 pub mod course;
 pub mod ctx;
 pub mod error;
+pub mod lessons;
 pub mod naming;
 pub mod notes;
 pub mod path;
