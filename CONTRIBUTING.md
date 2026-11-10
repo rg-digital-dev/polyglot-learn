@@ -206,6 +206,14 @@ Plain `learn` on a terminal runs `runner/src/tui/` (ratatui with crossterm):
 - **`mod.rs`** owns the terminal, runs checks on a thread (cases stream in as `Msg`s), polls the open exercise's folder for saves, and suspends the screen while `$EDITOR` runs.
 - Layout: three columns from 110 columns wide; below that the path is hidden (`p`), and below 76 the tests go under the open item.
 
+## Working on the language server
+
+`learn lsp` is `runner/src/lsp.rs`, on `lsp-server` with plain JSON messages (no `lsp-types`).
+
+- It never assumes a course at start-up: each request finds the workspace from its file (`Ctx::discover_from`), and files outside a workspace get nothing.
+- Checks run on a thread, one at a time, and publish diagnostics on the exercise's main file, anchored to the signature line (`anchor`).
+- Tests talk to the server over `lsp-server`'s in-memory connection: hover, code actions, hints, `window/showDocument`, a real save, and silence outside a workspace.
+
 ## Verification suite
 
 ```bash

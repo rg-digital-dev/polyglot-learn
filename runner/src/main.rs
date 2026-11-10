@@ -6,6 +6,7 @@ use std::process::ExitCode;
 use clap::{Parser, Subcommand};
 
 mod commands;
+mod lsp;
 mod markdown;
 mod serve;
 mod tui;
@@ -124,6 +125,9 @@ enum Command {
     },
     /// Check every link in tracks/*/track.toml and report dead ones.
     CheckLinks,
+    /// A language server for your editor (stdio): failing tests as diagnostics on
+    /// save, the task on hover, check / hint / lesson as code actions.
+    Lsp,
     /// Open the web UI at http://learn.localhost:4321 (stops with Ctrl+C or Quit).
     Serve {
         #[arg(long, default_value_t = 4321)]
