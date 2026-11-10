@@ -1,7 +1,26 @@
 # The course: modules in order, each listing exercise slugs in order.
 # Every slug must have a matching specs/<slug>.json.
+# A module may also list `readings`: pages with no exercise, read with
+# `learn read`. Each needs concepts/<id>.md and tracks/<lang>/<id>.md.
 
 title = "polyglot-learn"
+
+# Reading only, and optional: how each language writes the basics, before the
+# first exercise. `exercises = []` stays written out for learn 0.3.x binaries,
+# which require the field.
+[[module]]
+id = "syntax-primer"
+title = "Syntax Primer"
+readings = [
+  "syntax-a-file",
+  "syntax-variables",
+  "syntax-types",
+  "syntax-expressions",
+  "syntax-control-flow",
+  "syntax-functions",
+  "syntax-collections",
+]
+exercises = []
 
 [[module]]
 id = "foundations"

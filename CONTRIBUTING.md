@@ -122,6 +122,12 @@ url = "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.htm
 
 Open every URL before you add it, and point *lings links at the exact exercise folder. `learn check-links` reports dead links.
 
+### Reading pages (the Syntax Primer)
+
+A **reading** is a page with no exercise. List its id under a module's `readings` in `course.toml`, then add `concepts/<id>.md` (its first `# ` heading is the title) and a note in `tracks/<lang>/<id>.md` for every track the module is on. A test checks both. Reading ids can't reuse an exercise slug or concept, so the primer's start with `syntax-`; `learn read variables` also finds `syntax-variables`. Reading notes follow the rules above, without the "In this exercise" line. Keep tables to about 85 characters wide: a wider one is shown as a list in the terminal.
+
+`learn read` shows a page and marks it read. Read marks are kept for the whole workspace, not per track, and never count towards an exercise total.
+
 ### Adding a "coming from X" section
 
 Notes mark background-specific blocks with HTML comments. `learn` shows the block that matches the learner's background (`learn init`), or the `default` block if none matches:

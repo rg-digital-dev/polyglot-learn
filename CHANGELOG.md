@@ -6,6 +6,19 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+- *Syntax Primer*: seven short reading pages before the first exercise, on how
+  each track writes files, variables and constants, types, operators and
+  strings, control flow, functions, and lists, maps and tuples. Each page has a
+  cross-track table and a note for your track. It's optional: no tests, and an
+  experienced learner can skip it.
+- `learn read [page]` shows the next unread page (or the one you name) and marks
+  it read. `learn status` lists the pages, `learn compare` accepts them, and
+  `learn start` and `learn status` point a new learner at the primer until they
+  read a page or pass an exercise.
+- Web UI: a reading page with previous/next and a track picker, the primer on
+  the course page, and a "Read the Syntax Primer first" button for new learners.
+
 ## [0.3.1] - 2026-11-09
 
 ### Fixed

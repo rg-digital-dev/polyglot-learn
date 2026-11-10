@@ -969,12 +969,17 @@ Expected (): [2]"), None);
         let ctx = ctx();
         let out = status_track(&ctx, go(), &Ui::plain(80));
         let head: Vec<&str> = out.lines().take(5).collect();
-        assert_eq!(head, ["  Go · 0 of 31 done", "", "  Foundations            ░░░░░░░░░░░░  0/6", "    ○ Hello", "    ○ Leap Year"]);
+        assert_eq!(
+            head,
+            ["  Go · 0 of 31 done", "", "  Syntax Primer          ░░░░░░░░░░░░  0/7 read", "    ○ A File at a Glance", "    ○ Variables and Constants"]
+        );
+        assert!(out.contains("  Foundations            ░░░░░░░░░░░░  0/6\n    ○ Hello\n    ○ Leap Year"), "{out}");
         assert!(out.contains("  Deeper Go              ░░░░░░░░░░░░  0/5"), "{out}");
         assert!(!out.contains("Deeper Rust"), "other tracks' modules aren't listed: {out}");
         let all = status_all(&ctx, &Ui::plain(80));
         assert!(all.lines().next().unwrap().ends_with("ts    py    rust  go    php   lua   qml"), "{all}");
         assert!(all.contains("  Deeper Rust  6 exercises · not started"), "{all}");
+        assert!(all.contains("  Syntax Primer  0 of 7 read"), "{all}");
         // A module with a `tracks` list leaves the other tracks' cells empty.
         let read_file = all.lines().find(|l| l.trim_start().starts_with("Read File")).unwrap();
         assert!(read_file.ends_with("○     ○     ○     ○     ○     ○"), "QML has no read-file: {all}");
