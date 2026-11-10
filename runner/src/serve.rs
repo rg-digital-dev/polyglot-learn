@@ -6,7 +6,7 @@
 
 use std::collections::HashMap;
 use std::convert::Infallible;
-use std::net::SocketAddr;
+use std::net::{Ipv6Addr, SocketAddr};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -99,9 +99,21 @@ async fn run(workspace: Option<PathBuf>, port: u16, open: bool) -> Result<()> {
             "can't listen on port {port} ({e}). Is another `learn serve` running? Pick another port with `--port`."
         ))
     })?;
+    // Browsers try `learn.localhost` over IPv6 first. Claim [::1] as well, so
+    // another program listening there on the same port can't answer instead.
+    let listener_v6 = match tokio::net::TcpListener::bind(SocketAddr::from((Ipv6Addr::LOCALHOST, port))).await {
+        Ok(l) => Some(l),
+        Err(e) if e.kind() == std::io::ErrorKind::AddrInUse => {
+            return Err(Error(format!(
+                "port {port} is already used by another program on [::1] (IPv6), so http://learn.localhost:{port} would open that one. Pick another port with `--port`."
+            )));
+        }
+        // No IPv6 on this machine: browsers fall back to 127.0.0.1.
+        Err(_) => None,
+    };
 
     let (events, _) = broadcast::channel(256);
-    let (shutdown, mut shutdown_rx) = watch::channel(false);
+    let (shutdown, shutdown_rx) = watch::channel(false);
     let app = Arc::new(App { workspace, port, events, shutdown, check_lock: Mutex::new(()) });
 
     let watcher = {
@@ -136,13 +148,22 @@ async fn run(workspace: Option<PathBuf>, port: u16, open: bool) -> Result<()> {
         }
     }
 
-    let signal = async move {
+    // Ctrl+C or the Quit button stops both listeners.
+    let signal = |mut rx: watch::Receiver<bool>| async move {
         tokio::select! {
             _ = tokio::signal::ctrl_c() => {}
-            _ = shutdown_rx.wait_for(|stop| *stop) => {}
+            _ = rx.wait_for(|stop| *stop) => {}
         }
     };
-    let result = axum::serve(listener, router).with_graceful_shutdown(signal).await;
+    let v4 = axum::serve(listener, router.clone()).with_graceful_shutdown(signal(shutdown_rx.clone()));
+    let v6 = async {
+        match listener_v6 {
+            Some(l) => axum::serve(l, router).with_graceful_shutdown(signal(shutdown_rx)).await,
+            None => Ok(()),
+        }
+    };
+    let (result, result_v6) = tokio::join!(v4, v6);
+    let result = result.and(result_v6);
 
     // Stop the watcher and any test process still running.
     let _ = app.shutdown.send(true);
@@ -163,6 +184,7 @@ async fn guard(State(app): State<Shared>, req: Request, next: Next) -> Response 
         format!("learn.localhost:{}", app.port),
         format!("localhost:{}", app.port),
         format!("127.0.0.1:{}", app.port),
+        format!("[::1]:{}", app.port),
     ];
     if !allowed.iter().any(|a| a == host) {
         return (StatusCode::FORBIDDEN, "learn serve only answers on localhost").into_response();
