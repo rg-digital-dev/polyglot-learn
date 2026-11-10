@@ -6,6 +6,8 @@ interface Compare {
   concept: string
   lesson: string | null
   exercise: string | null
+  /** The page's title when the concept is a reading. */
+  reading: string | null
   columns: { track: string; name: string; note: string | null; links: { label: string; title: string; url: string }[] }[]
 }
 
@@ -41,7 +43,7 @@ function toggle(id: string) {
   <div class="stack-lg">
     <header class="stack-sm">
       <p class="eyebrow">Compare</p>
-      <h1 class="h-title">{{ concept }}, side by side</h1>
+      <h1 class="h-title">{{ data?.reading ?? concept }}, side by side</h1>
       <div class="chips" role="group" aria-label="Concept">
         <NuxtLink v-for="c in state?.concepts ?? []" :key="c" class="chip" :class="{ 'chip--on': c === concept }" :to="{ path: `/compare/${c}`, query: route.query }">
           {{ c }}
@@ -67,7 +69,7 @@ function toggle(id: string) {
       <section class="panel pad stack-md">
         <div class="compare__intro">
           <button type="button" class="disclosure" :aria-expanded="showLesson" @click="showLesson = !showLesson">
-            {{ showLesson ? 'Hide' : 'Show' }} the lesson for {{ concept }}
+            {{ showLesson ? 'Hide' : 'Show' }} the {{ data.reading ? 'page' : 'lesson' }} for {{ data.reading ?? concept }}
           </button>
           <NuxtLink v-if="data.exercise" class="text-link" :to="`/exercise/${data.exercise}?track=${state?.track ?? 'typescript'}`">
             Try the exercise <IconArrowRight />

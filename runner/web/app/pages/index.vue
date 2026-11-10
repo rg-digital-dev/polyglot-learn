@@ -41,6 +41,9 @@ const toolText = (tool: { label: string; version: string | null; path: string | 
 const isCurrent =(track: string, slug: string) => state.value?.tracks.find((t) => t.id === track)?.current === slug
 const active = computed(() => state.value?.tracks.find((t) => t.id === state.value?.track))
 const resumeSlug = computed(() => active.value?.current ?? null)
+/** The reading-only module (the Syntax Primer) and its first unread page. */
+const primer = computed(() => state.value?.modules.find((m) => m.readings.length && !m.exercises.length) ?? null)
+const firstUnread = computed(() => primer.value?.readings.find((r) => !r.read) ?? null)
 </script>
 
 <template>
@@ -55,6 +58,9 @@ const resumeSlug = computed(() => active.value?.current ?? null)
       <div class="intro__actions">
         <NuxtLink v-if="state.track && resumeSlug" class="btn btn--primary" :to="`/exercise/${resumeSlug}?track=${state.track}`">
           Continue in {{ trackName(state, state.track) }} <IconArrowRight class="btn__arrow" />
+        </NuxtLink>
+        <NuxtLink v-if="state.new && firstUnread" class="btn btn--secondary" :to="`/read/${firstUnread.id}`">
+          New to this? Read the {{ primer?.title }} first
         </NuxtLink>
         <label class="field">
           <span class="tag">Notes compare against</span>
@@ -100,7 +106,30 @@ const resumeSlug = computed(() => active.value?.current ?? null)
         <span v-if="m.track" class="pill">{{ trackName(state, m.track) }} only</span>
         <span v-else-if="missingFrom(m).length" class="pill">not on {{ missingFrom(m).map((t) => t.name).join(', ') }}</span>
       </h2>
-      <div class="panel grid-wrap">
+      <div v-if="m.readings.length" class="panel grid-wrap">
+        <table class="grid">
+          <thead>
+            <tr>
+              <th scope="col" class="tag">Reading</th>
+              <th scope="col" class="tag grid__track">read</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="r in m.readings" :key="r.id">
+              <th scope="row">
+                <NuxtLink :to="`/read/${r.id}`" class="grid__title">{{ r.title }}</NuxtLink>
+              </th>
+              <td class="grid__cell">
+                <NuxtLink :to="`/read/${r.id}`" :aria-label="`${r.title}: ${r.read ? 'read' : 'not read yet'}`">
+                  <span v-if="r.read" class="check check--sm"><IconCheck /></span>
+                  <span v-else class="dot" />
+                </NuxtLink>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-if="m.exercises.length" class="panel grid-wrap">
         <table class="grid">
           <thead>
             <tr>
