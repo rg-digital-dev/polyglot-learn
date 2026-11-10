@@ -101,6 +101,13 @@ impl Ctx {
     /// `course.toml` (or to an external workspace that records its course).
     pub fn discover(workspace_flag: Option<PathBuf>) -> Result<Ctx> {
         let cwd = std::env::current_dir().context(|| "can't read the current directory".into())?;
+        Ctx::discover_from(&cwd, workspace_flag)
+    }
+
+    /// `discover`, walking up from `start` instead of the current directory
+    /// (`learn lsp` starts from the file being edited).
+    pub fn discover_from(start: &Path, workspace_flag: Option<PathBuf>) -> Result<Ctx> {
+        let cwd = start;
         let requested = match workspace_flag.or_else(|| std::env::var_os(WORKSPACE_ENV).map(PathBuf::from)) {
             Some(p) => Some(absolute(&p)?),
             None => None,

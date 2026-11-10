@@ -37,6 +37,8 @@ pulldown-cmark = { version = "0.13", default-features = false }
 # `learn` on a terminal (the TUI)
 ratatui = { version = "0.30", default-features = false, features = ["crossterm"] }
 crossterm = "0.29"
+lsp-server = "0.10"
+crossbeam-channel = "0.5"
 
 # Killing a test command together with everything it started (process groups / Job Objects).
 [target."cfg(unix)".dependencies]

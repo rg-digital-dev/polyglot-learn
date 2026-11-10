@@ -13,6 +13,12 @@ All notable changes to this project are listed here. The format follows
   rewrites it when it sets up a track and when `learn init` (or the web UI's
   settings, or the terminal view) changes your background or goal, so don't
   edit it; saving it doesn't count as a save for `learn watch`.
+- `learn lsp`, a language server for any editor that runs next to your
+  language's own one. Saving runs the tests and shows failing cases as
+  warnings on the function's signature (a compile error as one error); hovering
+  the signature shows the task, what the tests check and the hints you've
+  revealed; code actions check the exercise, show the next hint and open
+  `LESSON.md`. Files outside a learn workspace get nothing.
 
 ## [0.4.0] - 2026-11-10
 

@@ -25,6 +25,10 @@ use crate::view;
 use crate::Command;
 
 pub fn dispatch(workspace: Option<PathBuf>, command: Option<Command>) -> Result<ExitCode> {
+    // Editors start the language server anywhere; it finds the course from each file.
+    if matches!(command, Some(Command::Lsp)) {
+        return crate::lsp::run(workspace);
+    }
     let mut ctx = Ctx::discover(workspace.clone())?;
     match command.unwrap_or(Command::Show { slug: None, full: false }) {
         Command::Init { from, goal, compare } => init(&mut ctx, from, goal, compare),
@@ -41,6 +45,7 @@ pub fn dispatch(workspace: Option<PathBuf>, command: Option<Command>) -> Result<
         Command::Status { all } => status(&ctx, all),
         Command::Docs { concept, lang, open } => docs(&ctx, concept.as_deref(), lang.as_deref(), open),
         Command::CheckLinks => check_links(&ctx),
+        Command::Lsp => unreachable!("handled before discovery"),
         Command::Serve { port, open } => crate::serve::serve(workspace, port, open).map(|_| ExitCode::SUCCESS),
         Command::Selftest { lang, solutions, require_all } => selftest(&ctx, &lang, solutions.as_deref(), require_all),
     }
