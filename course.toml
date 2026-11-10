@@ -4,7 +4,7 @@
 # A module may also list `readings`: pages with no exercise, read with
 # `learn read`. Each needs concepts/<id>.md and tracks/<lang>/<id>.md.
 
-title = "polyglot-learn"
+title = "polysyntax"
 
 # Reading only, and optional: how each language writes the basics, before the
 # first exercise. `exercises = []` stays written out for learn 0.3.x binaries,

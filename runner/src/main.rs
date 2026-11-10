@@ -163,7 +163,7 @@ fn install_panic_hook() {
         eprintln!(
             "error: learn hit an internal problem: {msg}{place}\n\
              This is a bug. Please report it with the command you ran and the output of `learn doctor`:\n\
-             https://github.com/rg-digital-dev/polyglot-learn/issues"
+             https://github.com/rg-digital-dev/polysyntax/issues"
         );
         std::process::exit(101);
     }));

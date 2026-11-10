@@ -1,4 +1,6 @@
-# polyglot-learn
+# polysyntax
+
+*Formerly polyglot-learn.*
 
 Learn another programming language on your own machine with small, test-driven exercises. It's free, it works offline, and you use your own editor.
 
@@ -12,24 +14,24 @@ Every exercise is written **once** as language-neutral data: a signature plus te
 
 ## Quick start
 
-Go to the folder where you keep your projects. One command installs the `learn` CLI and fetches the course into a `polyglot-learn` folder there:
+Go to the folder where you keep your projects. One command installs the `learn` CLI and fetches the course into a `polysyntax` folder there:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/rg-digital-dev/polysyntax/main/install.sh | sh
 ```
 
 On Windows, in PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/rg-digital-dev/polysyntax/main/install.ps1 | iex
 ```
 
-The installer picks the [release](https://github.com/rg-digital-dev/polyglot-learn/releases/latest) binary for your system (Linux, macOS and Windows, x86-64 and ARM), checks it against the published checksums, and ends with `learn doctor`, which lists the language toolchains to install. To update, run it again from the same folder (or from inside `polyglot-learn`); your work stays. Read [install.sh](install.sh) or [install.ps1](install.ps1) first if you like; the top of each lists its settings, such as other install folders.
+The installer picks the [release](https://github.com/rg-digital-dev/polysyntax/releases/latest) binary for your system (Linux, macOS and Windows, x86-64 and ARM), checks it against the published checksums, and ends with `learn doctor`, which lists the language toolchains to install. To update, run it again from the same folder (or from inside `polysyntax`); your work stays. Read [install.sh](install.sh) or [install.ps1](install.ps1) first if you like; the top of each lists its settings, such as other install folders.
 
 Then:
 
 ```bash
-cd polyglot-learn
+cd polysyntax
 learn init          # which language do you already know?
 learn start rust    # or typescript, python, go, php, lua, qml
 learn               # the full-screen view: edit the file, save, watch the tests

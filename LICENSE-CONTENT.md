@@ -11,7 +11,7 @@ Summary: <https://creativecommons.org/licenses/by-sa/4.0/>
 
 When you reuse or adapt this text, credit it as:
 
-> "polyglot-learn" lessons by RG Digital and contributors, CC BY-SA 4.0,
-> https://github.com/rg-digital-dev/polyglot-learn
+> "polysyntax" lessons by RG Digital and contributors, CC BY-SA 4.0,
+> https://github.com/rg-digital-dev/polysyntax
 
 Everything else (the `runner/` code, `specs/`, `course.toml`, `tracks/*/track.toml` and generated files) is under the MIT licence in [LICENSE](LICENSE).

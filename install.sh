@@ -1,29 +1,31 @@
 #!/bin/sh
-# Install the `learn` CLI and the polyglot-learn course (Linux and macOS):
+# Install the `learn` CLI and the polysyntax course (Linux and macOS):
 #
-#   curl -fsSL https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/rg-digital-dev/polysyntax/main/install.sh | sh
 #
 # It downloads the latest release's binary for this machine, checks it against
 # SHA256SUMS, installs it, and fetches the matching version of the course into
-# ./polyglot-learn in the folder you run it from. Run it again from that same
+# ./polysyntax in the folder you run it from. Run it again from that same
 # folder, or from inside the course, to update both; your work in the course's
 # workspace/ stays.
 #
 # Settings (environment variables):
 #   LEARN_BIN_DIR     where `learn` goes          (default: ~/.local/bin)
-#   LEARN_COURSE_DIR  where the course goes       (default: ./polyglot-learn)
+#   LEARN_COURSE_DIR  where the course goes       (default: ./polysyntax)
 #   LEARN_VERSION     a release such as 0.1.0     (default: the latest)
 
 set -eu
 
-REPO="rg-digital-dev/polyglot-learn"
+REPO="rg-digital-dev/polysyntax"
 BIN_DIR="${LEARN_BIN_DIR:-$HOME/.local/bin}"
 if [ -n "${LEARN_COURSE_DIR:-}" ]; then
   COURSE_DIR="$LEARN_COURSE_DIR"
 elif [ -f "$PWD/course.toml" ]; then
   COURSE_DIR="$PWD"   # run from inside the course: update it in place
+elif [ ! -e "$PWD/polysyntax" ] && [ -f "$PWD/polyglot-learn/course.toml" ]; then
+  COURSE_DIR="$PWD/polyglot-learn"   # the course's folder from before the rename: keep using it
 else
-  COURSE_DIR="$PWD/polyglot-learn"
+  COURSE_DIR="$PWD/polysyntax"
 fi
 
 say() { printf '%s\n' "$*"; }

@@ -142,7 +142,7 @@ async fn run(workspace: Option<PathBuf>, port: u16, open: bool) -> Result<()> {
         .with_state(app.clone());
 
     let url = format!("http://learn.localhost:{port}");
-    println!("polyglot-learn is running at {url}");
+    println!("polysyntax is running at {url}");
     println!("(also http://127.0.0.1:{port}). Stop it with Ctrl+C or the Quit button in the page.");
     if open {
         if let Err(e) = crate::commands::open_url(&url) {

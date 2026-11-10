@@ -14,7 +14,7 @@ export default defineNuxtConfig({
   css: ['~/assets/brand/styles.css', '~/assets/app.css'],
   app: {
     head: {
-      title: 'polyglot-learn',
+      title: 'polysyntax',
       htmlAttrs: { lang: 'en' },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },

@@ -129,14 +129,14 @@ impl Ctx {
         let Some(root) = root else {
             bail!(
                 "couldn't find course.toml in this folder or any parent.\n\
-                 Run `learn` from inside your polyglot-learn checkout, or from a workspace \
+                 Run `learn` from inside your polysyntax checkout, or from a workspace \
                  that was created with `learn --workspace <dir> start <lang>`."
             );
         };
         if !root.join("course.toml").is_file() {
             bail!(
                 "this workspace points at {} but there is no course.toml there.\n\
-                 Edit course_root in .learn/config.toml to point at your polyglot-learn checkout.",
+                 Edit course_root in .learn/config.toml to point at your polysyntax checkout.",
                 root.display()
             );
         }
