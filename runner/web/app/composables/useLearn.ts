@@ -32,9 +32,24 @@ export interface CourseState {
   tracks: TrackInfo[]
   /** `track` is set for a track-only module. */
   /** `track`: a track-only module's track. `tracks`: every track the module is on. */
-  modules: { id: string; title: string; track: string | null; tracks: string[]; exercises: ExerciseSummary[] }[]
+  modules: {
+    id: string
+    title: string
+    track: string | null
+    tracks: string[]
+    exercises: ExerciseSummary[]
+    readings: ReadingSummary[]
+  }[]
   concepts: string[]
+  /** Nothing done on the active track and nothing read yet: point at the primer. */
+  new: boolean
   workspace: string
+}
+
+export interface ReadingSummary {
+  id: string
+  title: string
+  read: boolean
 }
 
 export interface CaseResult {
