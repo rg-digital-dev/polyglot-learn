@@ -84,7 +84,7 @@ jobs:
         if: env.HAS_SOLUTIONS_KEY == 'true'
         uses: actions/checkout@v7
         with:
-          repository: rg-digital-dev/polyglot-learn-solutions
+          repository: rg-digital-dev/polysyntax-solutions
           ssh-key: ${{ secrets.SOLUTIONS_DEPLOY_KEY }}
           path: solutions
 

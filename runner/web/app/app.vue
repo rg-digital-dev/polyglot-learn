@@ -54,7 +54,7 @@ const navActive = (prefix: string) => (prefix === '/' ? route.path === '/' : rou
   <div class="shell">
     <header class="topbar">
       <div class="wrap topbar__inner">
-        <NuxtLink to="/" class="brandname">polyglot-learn</NuxtLink>
+        <NuxtLink to="/" class="brandname">polysyntax</NuxtLink>
         <nav class="topnav" aria-label="Main">
           <NuxtLink to="/" :class="{ active: navActive('/') || navActive('/exercise') || navActive('/read') }">Path</NuxtLink>
           <NuxtLink to="/tracks" :class="{ active: navActive('/tracks') }">All tracks</NuxtLink>

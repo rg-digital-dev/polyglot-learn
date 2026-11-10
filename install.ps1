@@ -1,16 +1,16 @@
-# Install the `learn` CLI and the polyglot-learn course (Windows, PowerShell):
+# Install the `learn` CLI and the polysyntax course (Windows, PowerShell):
 #
-#   irm https://raw.githubusercontent.com/rg-digital-dev/polyglot-learn/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/rg-digital-dev/polysyntax/main/install.ps1 | iex
 #
 # It downloads the latest release's binary, checks it against SHA256SUMS,
 # installs it, adds it to your user PATH, and fetches the matching version of
-# the course into .\polyglot-learn in the folder you run it from. Run it again
+# the course into .\polysyntax in the folder you run it from. Run it again
 # from that same folder, or from inside the course, to update both; your work
 # in the course's workspace\ stays.
 #
 # Settings (environment variables):
 #   LEARN_BIN_DIR          where learn.exe goes   (default: %LOCALAPPDATA%\Programs\learn)
-#   LEARN_COURSE_DIR       where the course goes  (default: .\polyglot-learn)
+#   LEARN_COURSE_DIR       where the course goes  (default: .\polysyntax)
 #   LEARN_VERSION          a release like 0.1.0   (default: the latest)
 #   LEARN_NO_MODIFY_PATH   set to 1 to leave your PATH alone
 
@@ -18,7 +18,7 @@
     $ErrorActionPreference = 'Stop'
     $ProgressPreference = 'SilentlyContinue'   # Invoke-WebRequest is much faster without it
 
-    $repo = 'rg-digital-dev/polyglot-learn'
+    $repo = 'rg-digital-dev/polysyntax'
     $binDir = if ($env:LEARN_BIN_DIR) { $env:LEARN_BIN_DIR } else { Join-Path $env:LOCALAPPDATA 'Programs\learn' }
     $here = (Get-Location).ProviderPath
     $courseDir = if ($env:LEARN_COURSE_DIR) {
@@ -31,7 +31,12 @@
             Write-Host "Run this from the folder you want the course in (for example: cd ~), not from $here." -ForegroundColor Red
             return
         }
-        Join-Path $here 'polyglot-learn'
+        $old = Join-Path $here 'polyglot-learn'   # the course's folder from before the rename
+        if (-not (Test-Path (Join-Path $here 'polysyntax')) -and (Test-Path (Join-Path $old 'course.toml'))) {
+            $old
+        } else {
+            Join-Path $here 'polysyntax'
+        }
     }
 
     # x86-64 build; Windows on ARM runs it through emulation.

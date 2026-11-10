@@ -86,5 +86,5 @@ jobs:
         run: |
           gh release create "${GITHUB_REF_NAME}" dist/* \
             --draft \
-            --title "polyglot-learn ${GITHUB_REF_NAME}" \
+            --title "polysyntax ${GITHUB_REF_NAME}" \
             --notes-file <(awk -v v="${GITHUB_REF_NAME#v}" '/^## \[/ { p = index($0, "## [" v "]") == 1; next } p' CHANGELOG.md)

@@ -61,6 +61,21 @@ All notable changes to this project are listed here. The format follows
     that isn't a terminal. Subcommands are unchanged.
 
 ### Changed
+- The project is now **polysyntax** (it was polyglot-learn), and so are the
+  repositories: `rg-digital-dev/polysyntax` and `polysyntax-solutions`. The
+  command is still `learn`, and the release archives are still
+  `learn-<version>-<target>`. Workspaces and progress need nothing. Old links,
+  clones and installers still work, because GitHub redirects them. To move
+  across:
+  - The installer keeps using an existing `./polyglot-learn` folder. A fresh
+    install goes into `./polysyntax`. You can rename your folder; if you use
+    an external workspace, also update `course_root` in its
+    `.learn/config.toml`.
+  - In a git clone, you can point it at the new name:
+    `git remote set-url origin https://github.com/rg-digital-dev/polysyntax`.
+  - If you built from source with `cargo install`, run
+    `cargo uninstall polyglot-learn` first, because the crate has a new name
+    and installs the same `learn` binary.
 - `course.toml` holds only the shared modules now. A 0.3 binary on this
   checkout still runs, but doesn't see the tracks' own stages.
 - The runner is split into two crates: `learn-core` (`runner/core`: course,
