@@ -34,6 +34,9 @@ anstream = "1"
 terminal_size = "0.4"
 unicode-width = "0.2"
 pulldown-cmark = { version = "0.13", default-features = false }
+# `learn` on a terminal (the TUI)
+ratatui = { version = "0.30", default-features = false, features = ["crossterm"] }
+crossterm = "0.29"
 
 # Killing a test command together with everything it started (process groups / Job Objects).
 [target."cfg(unix)".dependencies]

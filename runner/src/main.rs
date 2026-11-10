@@ -8,6 +8,7 @@ use clap::{Parser, Subcommand};
 mod commands;
 mod markdown;
 mod serve;
+mod tui;
 mod ui;
 mod view;
 
@@ -34,6 +35,11 @@ struct Cli {
     /// Print long text directly instead of through a pager.
     #[arg(long, global = true)]
     no_pager: bool,
+
+    /// Plain `learn` on a terminal opens the full-screen view; this prints
+    /// `learn show` instead (also: NO_TUI=1).
+    #[arg(long)]
+    no_tui: bool,
 
     #[command(subcommand)]
     command: Option<Command>,
@@ -167,7 +173,12 @@ fn main() -> ExitCode {
     install_panic_hook();
     let cli = Cli::parse();
     ui::init(cli.color, cli.ascii, cli.no_pager);
-    match commands::dispatch(cli.workspace, cli.command) {
+    let outcome = if cli.command.is_none() && tui::wanted(cli.no_tui) {
+        tui::run(cli.workspace)
+    } else {
+        commands::dispatch(cli.workspace, cli.command)
+    };
+    match outcome {
         Ok(code) => code,
         Err(e) => {
             anstream::eprintln!("{}", ui::get().error(&e.0));

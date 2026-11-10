@@ -48,6 +48,17 @@ All notable changes to this project are listed here. The format follows
   - Reading pages show the path too, and the old all-tracks grid moved to
     "All tracks" (`/tracks`).
   - The API adds `/api/path` and `POST /api/goal`.
+- A full-screen terminal view: plain `learn` on a terminal opens it.
+  - The same three areas as the web UI: your path, the open item with Lesson /
+    Task / Compare tabs, and the tests, which tick off case by case.
+  - Saving the exercise file runs the tests, like `learn watch`; `e` opens it in
+    `$EDITOR` (or Zed), `c` checks, `h` shows a hint, `n` goes to the next item,
+    `r` to the next unread page, `t` switches track, `/` finds an exercise, `?`
+    lists the keys.
+  - On first run it asks for the track, the language you know and your goal.
+  - Narrow terminals hide the path (`p` shows it) and put the tests below.
+  - `--no-tui` or `NO_TUI=1` prints `learn show` as before, and so does output
+    that isn't a terminal. Subcommands are unchanged.
 
 ### Changed
 - `course.toml` holds only the shared modules now. A 0.3 binary on this
