@@ -24,6 +24,8 @@ pub struct CourseView {
     /// For the `compare` goal: the tracks compare views start with.
     pub compare: Vec<String>,
     pub backgrounds: Vec<Background>,
+    /// What `learn init` and the first-run screen offer as goals.
+    pub goals: Vec<Background>,
     pub tracks: Vec<TrackView>,
     pub modules: Vec<ModuleView>,
     pub families: Vec<FamilyView>,
@@ -154,6 +156,7 @@ pub fn course(ctx: &Ctx) -> CourseView {
         goal: ctx.goal().to_string(),
         compare: ctx.config.compare.clone(),
         backgrounds: notes::BACKGROUNDS.iter().map(|(id, label)| Background { id, label }).collect(),
+        goals: crate::ctx::GOALS.iter().map(|(id, label)| Background { id, label }).collect(),
         tracks: backends::all().iter().map(|b| track(ctx, *b)).collect(),
         modules,
         families: Families::load(&ctx.root)
@@ -439,6 +442,88 @@ pub fn compare(ctx: &Ctx, concept: &str, wanted: &[String]) -> Result<CompareVie
     })
 }
 
+// ---- one track's path -----------------------------------------------------------------
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PathView {
+    pub track: &'static str,
+    pub track_name: &'static str,
+    /// What the language is for, in one line.
+    #[serde(rename = "for")]
+    pub purpose: Option<String>,
+    pub stages: Vec<StageView>,
+    /// The first unfinished exercise on the path.
+    pub current: Option<String>,
+    pub done: usize,
+    pub total: usize,
+    pub read: usize,
+    pub readings: usize,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StageView {
+    pub id: String,
+    pub title: String,
+    /// The track's own stage (written for this language), not a shared module.
+    pub own: bool,
+    pub items: Vec<PathItem>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PathItem {
+    /// `reading` or `exercise`.
+    pub kind: &'static str,
+    /// The reading id or the exercise slug.
+    pub id: String,
+    pub title: String,
+    pub concept: Option<String>,
+    /// Read, or passed on this track.
+    pub done: bool,
+}
+
+/// A track's path: its stages in order, each reading and exercise with its mark.
+pub fn path(ctx: &Ctx, b: &dyn Backend) -> PathView {
+    let track = b.id();
+    let stages: Vec<StageView> = ctx
+        .path(track)
+        .iter()
+        .map(|step| {
+            let m = &ctx.course.modules[step.module];
+            let readings = ctx.readings.iter().filter(|r| m.readings.contains(&r.id)).map(|r| PathItem {
+                kind: "reading",
+                id: r.id.clone(),
+                title: r.title.clone(),
+                concept: None,
+                done: ctx.is_read(&r.id),
+            });
+            let exercises = ctx.module_exercises(step).filter_map(|slug| ctx.spec(slug).ok()).map(|s| PathItem {
+                kind: "exercise",
+                id: s.slug.clone(),
+                title: s.title.clone(),
+                concept: Some(s.concept.clone()),
+                done: ctx.is_done(track, &s.slug),
+            });
+            StageView { id: m.id.clone(), title: m.title.clone(), own: m.track.is_some(), items: readings.chain(exercises).collect() }
+        })
+        .collect();
+    let count = |kind: &str, done: bool| {
+        stages.iter().flat_map(|s| &s.items).filter(|i| i.kind == kind && (!done || i.done)).count()
+    };
+    PathView {
+        track,
+        track_name: b.name(),
+        purpose: TrackMeta::load(&ctx.root, track).ok().and_then(|m| m.purpose),
+        current: ctx.current(track).map(|s| s.slug.clone()),
+        done: count("exercise", true),
+        total: count("exercise", false),
+        read: count("reading", true),
+        readings: count("reading", false),
+        stages,
+    }
+}
+
 // ---- a reading page ------------------------------------------------------------------
 
 #[derive(Debug, Serialize)]
@@ -541,6 +626,7 @@ mod tests {
         put("compare", serde_json::to_value(compare(&ctx, "functions", &[]).unwrap()).unwrap());
         put("compare-reading", serde_json::to_value(compare(&ctx, "syntax-types", &[]).unwrap()).unwrap());
         put("reading", serde_json::to_value(reading(&ctx, ctx.reading("syntax-types").unwrap(), Some(lua))).unwrap());
+        put("path", serde_json::to_value(path(&ctx, go)).unwrap());
         let _ = std::fs::remove_dir_all(&workspace);
 
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests").join("api-shapes.json");
@@ -582,6 +668,25 @@ mod tests {
         ctx.config.compare = vec!["qml".into(), "lua".into()];
         // QML has no `files`: one chosen track left, so back to the family.
         assert_eq!(ids(default_compare_tracks(&ctx, "files", Some("rust"))), ["rust", "go"]);
+    }
+
+    #[test]
+    fn a_path_lists_stages_in_order_with_marks() {
+        let mut ctx = repo_ctx("path");
+        let go = backends::get("go").unwrap();
+        let p = path(&ctx, go);
+        assert_eq!(p.stages[0].id, "syntax-primer");
+        assert!(p.stages[0].items.iter().all(|i| i.kind == "reading"));
+        assert_eq!(p.stages[1].items[0].id, "hello");
+        assert!(p.stages.last().unwrap().own, "the track's own stage comes last on Go's path");
+        assert_eq!(p.current.as_deref(), Some("hello"));
+        assert_eq!((p.done, p.read), (0, 0));
+        assert_eq!(p.total, ctx.path_specs("go").len());
+        ctx.progress.done.entry("go".into()).or_default().insert("hello".into());
+        ctx.progress.read.insert("syntax-types".into());
+        let p = path(&ctx, go);
+        assert_eq!((p.done, p.read), (1, 1));
+        assert_eq!(p.current.as_deref(), Some("leap-year"));
     }
 
     #[test]

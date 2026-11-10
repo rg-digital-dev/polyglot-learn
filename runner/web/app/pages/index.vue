@@ -1,171 +1,67 @@
 <script setup lang="ts">
-import IconCheck from '~icons/lucide/check'
+// Home: your track's path, with where to continue. No track yet: the first-run screen.
 import IconArrowRight from '~icons/lucide/arrow-right'
-import IconAlert from '~icons/lucide/triangle-alert'
-import type { CourseState } from '~/composables/useLearn'
+import IconBook from '~icons/lucide/book-open'
 
-const { state, refresh } = useLearn()
-/** Exercises on a track: the modules that are on it (shared, limited to some tracks, or its own). */
-const totalFor = (track: string) =>
-  state.value?.modules.filter((m) => m.tracks.includes(track)).reduce((n, m) => n + m.exercises.length, 0) ?? 0
-const tracksOf = (m: CourseState['modules'][number]) => state.value?.tracks.filter((t) => m.tracks.includes(t.id)) ?? []
-/** Tracks a shared module leaves out, for its "not on" label. */
-const missingFrom = (m: CourseState['modules'][number]) =>
-  m.track ? [] : (state.value?.tracks.filter((t) => !m.tracks.includes(t.id)) ?? [])
-/** Where an exercise's title links to: the active track if the module is on it. */
-const linkTrack = (m: CourseState['modules'][number]) =>
-  m.track ?? (state.value?.track && m.tracks.includes(state.value.track) ? state.value.track : m.tracks[0])
-const busy = ref(false)
+const { state, paths, loadPath } = useLearn()
 
-async function pickTrack(id: string) {
-  busy.value = true
-  try {
-    await api('/api/track', { method: 'POST', body: JSON.stringify({ track: id }) })
-    await refresh()
-  } finally {
-    busy.value = false
-  }
-}
+watchEffect(() => {
+  if (state.value && !state.value.track) navigateTo('/welcome', { replace: true })
+})
+watch(
+  () => state.value?.track,
+  (t) => t && loadPath(t).catch(() => {}),
+  { immediate: true },
+)
 
-async function pickFrom(ev: Event) {
-  const from = (ev.target as HTMLSelectElement).value
-  await api('/api/from', { method: 'POST', body: JSON.stringify({ from }) })
-  await refresh()
-}
-
-/** "cargo 1.99.1": the tool and its version number, without the banner text. */
-const toolText = (tool: { label: string; version: string | null; path: string | null }) => {
-  const v = tool.version?.match(/\d+\.\d+(\.\d+)?/)?.[0] ?? tool.path?.match(/\b6\.\d+(\.\d+)?\b/)?.[0]
-  return v ? `${tool.label} ${v}` : tool.label
-}
-const isCurrent =(track: string, slug: string) => state.value?.tracks.find((t) => t.id === track)?.current === slug
-const active = computed(() => state.value?.tracks.find((t) => t.id === state.value?.track))
-const resumeSlug = computed(() => active.value?.current ?? null)
-/** The reading-only module (the Syntax Primer) and its first unread page. */
-const primer = computed(() => state.value?.modules.find((m) => m.readings.length && !m.exercises.length) ?? null)
-const firstUnread = computed(() => primer.value?.readings.find((r) => !r.read) ?? null)
+const path = computed(() => (state.value?.track ? paths.value[state.value.track] : null))
+const items = computed(() => path.value?.stages.flatMap((s) => s.items.map((i) => ({ ...i, stage: s.title }))) ?? [])
+const current = computed(() => items.value.find((i) => i.kind === 'exercise' && i.id === path.value?.current) ?? null)
+/** New learners get the primer first; it stays optional. */
+const firstUnread = computed(() => (state.value?.new ? items.value.find((i) => i.kind === 'reading' && !i.done) : null) ?? null)
+const goalLabel = computed(() => state.value?.goals.find((g) => g.id === state.value?.goal)?.label ?? '')
 </script>
 
 <template>
-  <div v-if="state" class="stack-xl">
+  <div v-if="state?.track && path" class="stack-xl">
     <section class="intro">
-      <p class="eyebrow">Learn a language by fixing small files</p>
-      <h1 class="h-title">Pick a track, then work through the exercises</h1>
-      <p class="lead">
-        Each exercise is one function, with tests generated for every language. Edit the file in your own editor (or here); the
-        tests re-run when you save.
-      </p>
-      <div class="intro__actions">
-        <NuxtLink v-if="state.track && resumeSlug" class="btn btn--primary" :to="`/exercise/${resumeSlug}?track=${state.track}`">
-          Continue in {{ trackName(state, state.track) }} <IconArrowRight class="btn__arrow" />
+      <p class="eyebrow">Your path · {{ goalLabel }}</p>
+      <h1 class="h-title">{{ path.trackName }}</h1>
+      <p v-if="path.for" class="lead">{{ path.for }}</p>
+      <div class="home__cards">
+        <NuxtLink v-if="current" class="panel pad continue" :to="itemLink(path.track, current)">
+          <span class="tag">Continue · {{ current.stage }}</span>
+          <span class="h-card-lg">{{ current.title }}</span>
+          <span class="muted small">{{ current.concept }}</span>
+          <span class="btn btn--primary continue__btn">Open <IconArrowRight class="btn__arrow" /></span>
         </NuxtLink>
-        <NuxtLink v-if="state.new && firstUnread" class="btn btn--secondary" :to="`/read/${firstUnread.id}`">
-          New to this? Read the {{ primer?.title }} first
+        <div v-else class="panel pad continue">
+          <span class="tag">Done</span>
+          <span class="h-card-lg">You've finished every {{ path.trackName }} exercise.</span>
+          <NuxtLink to="/welcome" class="text-link">Pick another track <IconArrowRight /></NuxtLink>
+        </div>
+        <NuxtLink v-if="firstUnread" class="panel pad continue continue--soft" :to="itemLink(path.track, firstUnread)">
+          <span class="tag"><IconBook /> New to this?</span>
+          <span class="h-card">Read the {{ firstUnread.stage }} first</span>
+          <span class="muted small">Short pages on how each language writes the basics. Optional.</span>
         </NuxtLink>
-        <label class="field">
-          <span class="tag">Notes compare against</span>
-          <select :value="state.from ?? 'none'" @change="pickFrom">
-            <option v-for="b in state.backgrounds" :key="b.id" :value="b.id">{{ b.label }}</option>
-          </select>
-        </label>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="h-card-lg section-title">Tracks</h2>
-      <div class="tracks">
-        <button
-          v-for="t in state.tracks"
-          :key="t.id"
-          type="button"
-          class="track"
-          :class="{ 'track--active': t.id === state.track }"
-          :disabled="busy"
-          @click="pickTrack(t.id)"
-        >
-          <span class="track__top">
-            <span class="h-card">{{ t.name }}</span>
-            <span v-if="t.id === state.track" class="pill pill--good">active</span>
-          </span>
-          <span v-if="t.for" class="track__for muted small">{{ t.for }}</span>
+        <div class="panel pad progress-card">
+          <span class="tag">Progress</span>
           <span class="track__progress">
-            <span class="bar"><span :style="{ width: `${(t.done / totalFor(t.id)) * 100}%` }" /></span>
-            <span class="tag">{{ t.done }}/{{ totalFor(t.id) }}</span>
+            <span class="bar"><span :style="{ width: `${path.total ? (path.done / path.total) * 100 : 0}%` }" /></span>
+            <span class="tag">{{ path.done }}/{{ path.total }}</span>
           </span>
-          <span v-if="t.tool.found" class="track__tool tag" :title="t.tool.path ?? ''">{{ toolText(t.tool) }}</span>
-          <span v-else class="track__tool track__tool--missing">
-            <IconAlert /> {{ t.tool.label }} not found. Run <code>learn doctor</code>
-          </span>
-          <span v-if="t.tool.warning" class="track__warn">{{ t.tool.warning }}</span>
-        </button>
+          <span v-if="path.readings" class="muted small">{{ path.read }} of {{ path.readings }} reading pages read</span>
+          <NuxtLink to="/welcome" class="text-link">Change track or goal</NuxtLink>
+        </div>
       </div>
     </section>
 
-    <section v-for="m in state.modules" :key="m.id">
-      <h2 class="h-card-lg section-title">
-        {{ m.title }}
-        <span v-if="m.track" class="pill">{{ trackName(state, m.track) }} only</span>
-        <span v-else-if="missingFrom(m).length" class="pill">not on {{ missingFrom(m).map((t) => t.name).join(', ') }}</span>
-      </h2>
-      <div v-if="m.readings.length" class="panel grid-wrap">
-        <table class="grid">
-          <thead>
-            <tr>
-              <th scope="col" class="tag">Reading</th>
-              <th scope="col" class="tag grid__track">read</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="r in m.readings" :key="r.id">
-              <th scope="row">
-                <NuxtLink :to="`/read/${r.id}`" class="grid__title">{{ r.title }}</NuxtLink>
-              </th>
-              <td class="grid__cell">
-                <NuxtLink :to="`/read/${r.id}`" :aria-label="`${r.title}: ${r.read ? 'read' : 'not read yet'}`">
-                  <span v-if="r.read" class="check check--sm"><IconCheck /></span>
-                  <span v-else class="dot" />
-                </NuxtLink>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div v-if="m.exercises.length" class="panel grid-wrap">
-        <table class="grid">
-          <thead>
-            <tr>
-              <th scope="col" class="tag">Exercise</th>
-              <th scope="col" class="tag">Concept</th>
-              <th v-for="t in tracksOf(m)" :key="t.id" scope="col" class="tag grid__track" :class="{ active: t.id === state.track }">
-                {{ t.id === 'typescript' ? 'ts' : t.id === 'python' ? 'py' : t.id }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="e in m.exercises" :key="e.slug">
-              <th scope="row">
-                <NuxtLink :to="`/exercise/${e.slug}?track=${linkTrack(m)}`" class="grid__title">{{ e.title }}</NuxtLink>
-              </th>
-              <td>
-                <span v-if="m.track" class="chip chip--static">{{ e.concept }}</span>
-                <NuxtLink v-else class="chip" :to="`/compare/${e.concept}`">{{ e.concept }}</NuxtLink>
-              </td>
-              <td v-for="t in tracksOf(m)" :key="t.id" class="grid__cell">
-                <NuxtLink
-                  :to="`/exercise/${e.slug}?track=${t.id}`"
-                  :aria-label="`${e.title} in ${t.name}: ${e.done.includes(t.id) ? 'done' : isCurrent(t.id, e.slug) ? 'up next' : 'not done'}`"
-                >
-                  <span v-if="e.done.includes(t.id)" class="check check--sm"><IconCheck /></span>
-                  <span v-else-if="t.id === state.track && isCurrent(t.id, e.slug)" class="dot dot--next"><IconArrowRight /></span>
-                  <span v-else class="dot" />
-                </NuxtLink>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <section class="panel pad">
+      <PathSidebar :track="path.track" full />
     </section>
 
     <p class="muted small">Your work lives in <code>{{ state.workspace }}</code>, outside the course files.</p>
   </div>
+  <p v-else class="muted">Loading your path…</p>
 </template>

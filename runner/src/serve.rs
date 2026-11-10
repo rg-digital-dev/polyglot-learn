@@ -125,6 +125,8 @@ async fn run(workspace: Option<PathBuf>, port: u16, open: bool) -> Result<()> {
         .route("/api/state", get(state))
         .route("/api/track", post(set_track))
         .route("/api/from", post(set_from))
+        .route("/api/goal", post(set_goal))
+        .route("/api/path", get(path))
         .route("/api/exercise/{slug}", get(exercise))
         .route("/api/hint/{slug}", post(hint))
         .route("/api/check/{slug}", post(start_check))
@@ -268,6 +270,26 @@ async fn set_from(State(app): State<Shared>, Json(body): Json<FromBody>) -> ApiR
     ctx.config.from = Some(body.from.clone());
     ctx.save_config()?;
     Ok(Json(json!({ "from": body.from })))
+}
+
+#[derive(Deserialize)]
+struct GoalBody {
+    goal: String,
+    #[serde(default)]
+    compare: Vec<String>,
+}
+
+async fn set_goal(State(app): State<Shared>, Json(body): Json<GoalBody>) -> ApiResult<Json<Value>> {
+    let mut ctx = app.ctx()?;
+    ctx.set_goal(&body.goal, &body.compare)?;
+    Ok(Json(json!({ "goal": ctx.goal(), "compare": ctx.config.compare })))
+}
+
+/// A track's path (the active track's by default).
+async fn path(State(app): State<Shared>, Query(q): Query<TrackQuery>) -> ApiResult<Json<views::PathView>> {
+    let ctx = app.ctx()?;
+    let b = resolve_track(&ctx, &q)?;
+    Ok(Json(views::path(&ctx, b)))
 }
 
 #[derive(Deserialize)]

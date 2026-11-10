@@ -11,6 +11,12 @@
         "label": "value"
       }
     ],
+    "goals": [
+      {
+        "id": "value",
+        "label": "value"
+      }
+    ],
     "tracks": [
       {
         "id": "value",
@@ -233,5 +239,31 @@
     "lesson": "value",
     "note": "value",
     "read": "value"
+  },
+  "path": {
+    "track": "value",
+    "trackName": "value",
+    "for": "value",
+    "stages": [
+      {
+        "id": "value",
+        "title": "value",
+        "own": "value",
+        "items": [
+          {
+            "kind": "value",
+            "id": "value",
+            "title": "value",
+            "concept": "value",
+            "done": "value"
+          }
+        ]
+      }
+    ],
+    "current": "value",
+    "done": "value",
+    "total": "value",
+    "read": "value",
+    "readings": "value"
   }
 }

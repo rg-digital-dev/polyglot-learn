@@ -192,6 +192,7 @@ pnpm build                       # writes runner/web/dist; commit it with your c
 ```
 
 - **The server owns all logic.** It's in `runner/src/serve.rs`, and its JSON is the view data from `runner/core/src/views.rs`, which the CLI draws too. The UI only displays it; `runner/core/tests/api-shapes.json` pins the shape it relies on.
+- **Pages:** `/` is your track's path (no track yet: `/welcome`, the first-run screen for track, background and goal), `/exercise/<slug>` and `/read/<id>` use the three-column learning layout (`.learn`: path, main, tests; the path becomes a drawer below 1280px and everything stacks below 900px), `/compare/<concept>` and `/tracks` (every track side by side). Shared pieces are components: `PathSidebar`, `TrackCard`, `ComparePanel`, `TestsPanel`, `ExerciseGrid`.
 - **Style comes from RG Digital's design tokens** (copied unchanged into `app/assets/brand/`). Use its variables and utility classes (`.btn`, `.chip`, `.panel`, `.tag`…), and keep both light and dark readable.
 - **Icons are Lucide**, via `unplugin-icons` (`import IconX from '~icons/lucide/x'`). They're bundled, so there are no network requests.
 - **Every state-changing request sends `x-learn: 1`.** The server rejects requests without it, as well as requests for any host other than localhost.

@@ -37,6 +37,7 @@ export interface CourseState {
   /** For the compare goal: the tracks compare views start with. */
   compare: string[]
   backgrounds: { id: string; label: string }[]
+  goals: { id: string; label: string }[]
   tracks: TrackInfo[]
   /** `track` is set for a track-only module. */
   /** `track`: a track-only module's track. `tracks`: every track the module is on. */
@@ -60,6 +61,59 @@ export interface ReadingSummary {
   title: string
   read: boolean
 }
+
+/** One exercise on one track (`/api/exercise`). */
+export interface Exercise {
+  slug: string
+  title: string
+  concept: string
+  summary: string
+  module: string | null
+  track: string
+  trackName: string
+  toolFound: boolean
+  toolLabel: string
+  done: boolean
+  /** A track-only exercise: one lesson, no cross-track note or comparison. */
+  native: boolean
+  /** The tracks this exercise is on, for the track picker. */
+  tracks: string[]
+  files: { path: string; absolute: string; signatures: string[] }[]
+  lesson: string | null
+  note: string | null
+  links: { kind: string; label: string; title: string; url: string }[]
+  hints: string[]
+  hintsTotal: number
+  cases: { index: number; description: string; lines: string[] }[]
+  prev: string | null
+  next: string | null
+}
+
+/** One track's path: its stages in order, each reading and exercise with its mark. */
+export interface PathView {
+  track: string
+  trackName: string
+  for: string | null
+  stages: { id: string; title: string; own: boolean; items: PathItem[] }[]
+  /** The first unfinished exercise. */
+  current: string | null
+  done: number
+  total: number
+  read: number
+  readings: number
+}
+
+export interface PathItem {
+  kind: 'reading' | 'exercise'
+  id: string
+  title: string
+  concept: string | null
+  done: boolean
+}
+
+/** Where a path item's page is. */
+export const itemLink = (track: string, item: { kind: string; id: string }) =>
+  item.kind === 'reading' ? `/read/${item.id}?track=${track}` : `/exercise/${item.id}?track=${track}`
 
 export interface CaseResult {
   index: number
@@ -112,9 +166,17 @@ export function useLearn() {
   const connected = useState<boolean>('connected', () => true)
   const stopped = useState<boolean>('stopped', () => false)
   const listeners = useState<Listener[]>('listeners', () => [])
+  const paths = useState<Record<string, PathView>>('paths', () => ({}))
 
   async function refresh() {
     state.value = await api<CourseState>('/api/state')
+    // Paths that are on screen follow progress too.
+    await Promise.all(Object.keys(paths.value).map((t) => loadPath(t)))
+  }
+
+  async function loadPath(track: string) {
+    paths.value[track] = await api<PathView>(`/api/path?track=${track}`)
+    return paths.value[track]
   }
 
   function onEvent(fn: Listener) {
@@ -137,6 +199,7 @@ export function useLearn() {
       }
       case 'check-finished':
         runs.value[key] = { running: false, total: e.cases.length, live: {}, final: e, error: null }
+        if (e.passed && paths.value[e.track]) loadPath(e.track).catch(() => {})
         break
       case 'check-error':
         runs.value[key] = { running: false, total: 0, live: {}, final: null, error: e.error }
@@ -148,7 +211,7 @@ export function useLearn() {
     for (const l of listeners.value) l(e)
   }
 
-  return { state, runs, connected, stopped, refresh, onEvent, handle }
+  return { state, runs, paths, connected, stopped, refresh, loadPath, onEvent, handle }
 }
 
 /** Open the event stream once, for the whole app. */
@@ -167,6 +230,11 @@ export async function startCheck(track: string, slug: string) {
   const { runs } = useLearn()
   runs.value[runKey(track, slug)] = { running: true, total: 0, live: {}, final: null, error: null }
   await api(`/api/check/${slug}?track=${track}`, { method: 'POST' })
+}
+
+/** Exercises on a track: the modules its path uses. */
+export function exercisesOn(state: CourseState | null, track: string) {
+  return state?.modules.filter((m) => m.tracks.includes(track)).reduce((n, m) => n + m.exercises.length, 0) ?? 0
 }
 
 export function trackName(state: CourseState | null, id: string | null | undefined) {
