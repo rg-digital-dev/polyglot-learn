@@ -227,6 +227,26 @@ impl Ctx {
             }
         }
 
+        // Stage folders: the path's stages that have exercises on the track,
+        // numbered in order, so a file tree reads like the path.
+        for (track, steps) in &paths {
+            let mut n = 0;
+            for step in steps {
+                let m = &course.modules[step.module];
+                let slugs: Vec<&String> = m.exercises.iter().filter(|s| !step.skip.contains(*s)).collect();
+                if slugs.is_empty() {
+                    continue;
+                }
+                n += 1;
+                let stage = format!("{n:02}-{}", m.id);
+                for slug in slugs {
+                    if let Some(spec) = specs.iter_mut().find(|s| s.slug == *slug) {
+                        spec.stages.insert(track.clone(), stage.clone());
+                    }
+                }
+            }
+        }
+
         let mut readings = Vec::new();
         for (i, m) in course.modules.iter().enumerate() {
             for id in &m.readings {
@@ -307,6 +327,21 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
             .flat_map(|step| self.module_exercises(step))
             .filter_map(|slug| self.specs.iter().find(|s| s.slug == *slug))
             .collect()
+    }
+
+    /// An exercise's folder in the workspace: `<track>/NN-stage/<slug>`.
+    pub fn exercise_dir(&self, track: &str, slug: &str) -> PathBuf {
+        let rel = self.specs.iter().find(|s| s.slug == slug).map(|s| s.dir(track)).unwrap_or_else(|| PathBuf::from(slug));
+        self.workspace.join(track).join(rel)
+    }
+
+    /// The exercise on a track that a file belongs to; `rel` is relative to
+    /// the track's folder. The folder itself isn't a file of it.
+    pub fn exercise_at(&self, track: &str, rel: &Path) -> Option<&Spec> {
+        self.path_specs(track).into_iter().find(|s| {
+            let dir = s.dir(track);
+            rel.starts_with(&dir) && rel != dir
+        })
     }
 
     pub fn is_done(&self, track: &str, slug: &str) -> bool {

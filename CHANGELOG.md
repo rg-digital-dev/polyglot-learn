@@ -23,6 +23,15 @@ All notable changes to this project are listed here. The format follows
   `task: spawn` runs them. `learn` writes it when it sets up a track, in your
   checkout (or your own workspace folder), and never over a tasks file that's
   already there.
+- Your workspace follows your path: each track folder has one numbered folder
+  per stage (`go/01-foundations/hello/`), so editors' file trees list the
+  exercises in the order you do them. Older workspaces move into this layout
+  the next time `learn` sets up the track (`learn start`, `learn generate`,
+  the TUI or the web UI), with your code.
+- `PATH.md` in each track folder: your path stage by stage, with ✓ for what
+  you've passed, "← you are here", and links to every exercise and lesson.
+  It's rewritten whenever an exercise passes.
+- `learn lsp`: an "Open next exercise" code action.
 - A Zed extension (`editors/zed`) that starts `learn lsp` in your polysyntax
   folder. Release builds of `learn` carry it: `learn init` offers it when Zed
   is installed (and keeps it current), and `learn zed` installs, updates or

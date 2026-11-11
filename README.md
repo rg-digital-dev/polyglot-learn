@@ -91,9 +91,11 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 
 - **Save** and it runs the tests. Failing cases show as warnings on the function's signature, for example "case 3, empty name" with the call, the expected value and what came back. A compile error shows as one error.
 - **Hover** the signature for the task, what the tests check and the hints you've revealed.
-- **Code actions:** "Check this exercise", "Show next hint" (it counts, like `learn hint`) and "Open LESSON.md".
+- **Code actions:** "Check this exercise", "Show next hint" (it counts, like `learn hint`), "Open LESSON.md" and "Open next exercise".
 
 Any editor that can run a language server over stdio can use it: point it at `learn lsp` for the languages you're learning. In **Zed**, `learn` does it for you: `learn init` offers the polysyntax extension when Zed is installed, and `learn zed` installs or updates it. Restart Zed, open your checkout, and save an exercise; hover a function's name for the task. It's not in Zed's extension registry, since it's only useful here; see [editors/zed](editors/zed/README.md) for settings and troubleshooting. `learn` also writes a `.zed/tasks.json` with **learn check** and **learn watch** (for `task: spawn`) when it sets up a track, unless the folder already has one.
+
+Editors list folders by name, so each track's workspace folder is laid out in the order of your path: one numbered folder per stage (`01-foundations/`, `02-building-blocks/`, …), with that stage's exercises inside. `PATH.md` beside them lists the whole path with what you've done, marks where you are, and links every exercise and lesson; open it in your editor's Markdown preview. Workspaces from older versions move into this layout the next time `learn` sets up the track, your code included.
 
 ## Keeping your own solutions
 
@@ -117,7 +119,8 @@ concepts/<concept>.md  the lesson, written once
 tracks/<lang>/         README, track.toml (links, install hints), one note per concept
 tracks/<lang>/extras/  track-only exercises, written natively (lesson, stub, tests)
 runner/                the `learn` CLI (Rust): one backend per language
-workspace/<lang>/      generated: your stubs, the tests and a LESSON.md per exercise (gitignored)
+workspace/<lang>/      generated: PATH.md, then one numbered folder per stage of your path
+                       (01-foundations/hello/…) with your stub, the tests and a LESSON.md (gitignored)
 ```
 
 A backend maps the small spec type vocabulary (`int`, `bool`, `string`, `list<T>`, `map<string,T>`, plus records, classes, interfaces and function types) to native types, renders typed literals, writes the stub and the tests, and reads per-case results back from the test output. Errors follow each language's own convention: `Result` in Rust, `(T, error)` in Go, exceptions in TypeScript, PHP and QML, and `nil, err` in Lua.

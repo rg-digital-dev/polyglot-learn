@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../harness.php';
+require __DIR__ . '/../../harness.php';
 require_once __DIR__ . '/card-suits.php';
 
 /** Fails unless $fn throws InvalidArgumentException (the stub's RuntimeException doesn't count). */

@@ -330,11 +330,15 @@ pub struct Spec {
     pub tracks: Option<Vec<String>>,
     /// Set for a track-only exercise written natively instead of generated.
     pub native: Option<Native>,
+    /// Per track, the stage folder the exercise sits in (`03-building-blocks`),
+    /// numbered in the track's path order so file trees read like the path.
+    /// Filled in by `Ctx::discover`.
+    pub stages: BTreeMap<String, String>,
 }
 
 /// A track-only exercise: `tracks/<track>/extras/<slug>/` holds an
 /// `exercise.toml`, an optional `lesson.md`, and a `files/` folder that is
-/// copied to `workspace/<track>/<slug>/`. The files listed in `stubs` belong to
+/// copied to `workspace/<track>/<NN-stage>/<slug>/`. The files listed in `stubs` belong to
 /// the learner (written only when missing); every other file is overwritten,
 /// like generated tests. Test names follow the same `cNN_<description>` rule.
 #[derive(Debug, Clone)]
@@ -834,6 +838,7 @@ impl Spec {
             resources: raw.resources,
             tracks: None,
             native: None,
+            stages: BTreeMap::new(),
         };
         if spec.resources {
             let list = Type::List(Box::new(Type::Str));
@@ -952,7 +957,25 @@ impl Spec {
             resources: false,
             tracks: None,
             native: Some(Native { track: track.to_string(), files, stubs, lesson, typecheck }),
+            stages: BTreeMap::new(),
         })
+    }
+
+    /// The exercise's folder inside a track's workspace folder: `NN-stage/slug`
+    /// (just `slug` before `Ctx::discover` placed it).
+    pub fn dir(&self, track: &str) -> std::path::PathBuf {
+        match self.stages.get(track) {
+            Some(stage) => std::path::Path::new(stage).join(&self.slug),
+            None => std::path::PathBuf::from(&self.slug),
+        }
+    }
+
+    /// [`Spec::dir`] with `/` separators, for commands and generated files.
+    pub fn rel(&self, track: &str) -> String {
+        match self.stages.get(track) {
+            Some(stage) => format!("{stage}/{}", self.slug),
+            None => self.slug.clone(),
+        }
     }
 
     /// Is this exercise part of `track`? Shared specs are part of every track.

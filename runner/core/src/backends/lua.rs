@@ -388,11 +388,11 @@ impl Backend for Lua {
     }
 
     fn stub_path(&self, spec: &Spec) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.lua", Self::module(spec)))
+        spec.dir(self.id()).join(format!("{}.lua", Self::module(spec)))
     }
 
     fn module_path(&self, spec: &Spec, module: &str) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.lua", naming::snake(module)))
+        spec.dir(self.id()).join(format!("{}.lua", naming::snake(module)))
     }
 
     fn stubs(&self, spec: &Spec) -> Vec<(PathBuf, String)> {
@@ -432,7 +432,7 @@ impl Backend for Lua {
         s.push_str(
             "\n-- Resolve modules relative to this file, wherever lua is started from.\n\
              local dir = (arg and arg[0] or \"\"):match(\"^(.*)[/\\\\]\") or \".\"\n\
-             package.path = dir .. \"/?.lua;\" .. dir .. \"/../?.lua;\" .. package.path\n\n",
+             package.path = dir .. \"/?.lua;\" .. dir .. \"/../../?.lua;\" .. package.path\n\n",
         );
         s.push_str("local H = require(\"harness\")\n");
         for m in spec.modules() {
@@ -528,7 +528,7 @@ impl Backend for Lua {
             }
         }
         s.push_str("t:finish()\n");
-        vec![(PathBuf::from(&spec.slug).join(format!("{module}_test.lua")), s)]
+        vec![(spec.dir(self.id()).join(format!("{module}_test.lua")), s)]
     }
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
@@ -536,7 +536,7 @@ impl Backend for Lua {
     }
 
     fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
-        Some((PathBuf::from(&spec.slug).join("resource.lua"), LUA_RESOURCE.to_string()))
+        Some((spec.dir(self.id()).join("resource.lua"), LUA_RESOURCE.to_string()))
     }
 
     /// `dir` is the test file's folder (set at the top of every test file).
@@ -546,7 +546,7 @@ impl Backend for Lua {
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
         Invocation::new(&tool.path, track_dir)
-            .args([format!("{}/{}_test.lua", spec.slug, Self::module(spec))])
+            .args([format!("{}/{}_test.lua", spec.rel(self.id()), Self::module(spec))])
             .timeout(Duration::from_secs(60))
     }
 

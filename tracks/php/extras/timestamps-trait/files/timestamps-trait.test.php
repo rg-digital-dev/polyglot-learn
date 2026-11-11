@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../harness.php';
+require __DIR__ . '/../../harness.php';
 require_once __DIR__ . '/timestamps-trait.php';
 
 /** A fake clock: set $time, and the closure returns it. */

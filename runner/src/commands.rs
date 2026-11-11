@@ -598,7 +598,7 @@ pub fn latest_mtime(dir: &Path) -> Option<SystemTime> {
 /// The watch screen's footer: when it last ran and what it watches.
 fn watch_footer(ctx: &Ctx, backend: &dyn Backend, slug: &str) {
     let ui = ui::get();
-    let dir = display_path(&track_dir(ctx, backend).join(slug));
+    let dir = display_path(&ctx.exercise_dir(backend.id(), slug));
     let d = ui.dot();
     println!("\n{MARGIN}{}", ui.muted(&format!("last run {} {d} watching {dir} {d} Ctrl+C to stop", ui::clock())));
 }
@@ -631,7 +631,7 @@ fn watch(ctx: &mut Ctx) -> Result<ExitCode> {
                 None => return Ok(ExitCode::SUCCESS),
             }
         }
-        let dir = track_dir(ctx, backend).join(&slug);
+        let dir = ctx.exercise_dir(backend.id(), &slug);
         let before = latest_mtime(&dir);
         loop {
             std::thread::sleep(Duration::from_millis(400));
@@ -973,10 +973,18 @@ fn selftest(ctx: &Ctx, langs: &[String], solutions: Option<&Path>, require_all: 
                 println!("   ✗ no reference solutions in {}", src.display());
                 continue;
             }
-            copy_dir(&src, &dir)?;
+            // The solutions repo keeps one folder per exercise (`<track>/<slug>`);
+            // the workspace has them in stage folders.
+            for spec in &specs {
+                let from = src.join(&spec.slug);
+                if from.is_dir() {
+                    copy_dir(&from, &dir.join(spec.dir(b.id())))?;
+                }
+            }
             for spec in &specs {
                 let main = backends::main_file(b, spec);
-                if !src.join(&main).exists() {
+                let main = main.strip_prefix(spec.dir(b.id())).unwrap_or(&main);
+                if !src.join(&spec.slug).join(main).exists() {
                     problems.push(format!("{}/{}: no reference solution", b.id(), spec.slug));
                     println!("   ✗ ref  {:<18} missing {}", spec.slug, main.display());
                     continue;

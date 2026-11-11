@@ -139,7 +139,7 @@ fn typecheck(backend: &dyn Backend, spec: &Spec, track_dir: &Path) -> Result<Opt
     if let Some(problem) = backend.check_checker(&found) {
         return not_run(problem);
     }
-    let files: Vec<std::path::PathBuf> = native.typecheck.iter().map(|f| Path::new(&spec.slug).join(f)).collect();
+    let files: Vec<std::path::PathBuf> = native.typecheck.iter().map(|f| spec.dir(backend.id()).join(f)).collect();
     let inv = backend.typecheck_command(&found, &files, track_dir);
     let out = toolchain::run(&inv)?;
     let lines: Vec<&str> = out.output.lines().map(str::trim_end).filter(|l| !l.trim().is_empty()).collect();
@@ -156,5 +156,10 @@ fn typecheck(backend: &dyn Backend, spec: &Spec, track_dir: &Path) -> Result<Opt
 /// Mark an exercise done on a track after a passing check.
 pub fn record_pass(ctx: &mut Ctx, track: &str, slug: &str) -> Result<()> {
     ctx.progress.done.entry(track.to_string()).or_default().insert(slug.to_string());
-    ctx.save_progress()
+    ctx.save_progress()?;
+    // PATH.md shows what's done; keep it current where the track is set up.
+    match crate::backends::get(track) {
+        Ok(b) if ctx.workspace.join(track).is_dir() => crate::pathfile::write(ctx, b),
+        _ => Ok(()),
+    }
 }

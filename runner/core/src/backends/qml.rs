@@ -195,11 +195,11 @@ impl Backend for Qml {
     }
 
     fn stub_path(&self, spec: &Spec) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.qml", Self::component(spec)))
+        spec.dir(self.id()).join(format!("{}.qml", Self::component(spec)))
     }
 
     fn module_path(&self, spec: &Spec, module: &str) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.mjs", naming::snake(module)))
+        spec.dir(self.id()).join(format!("{}.mjs", naming::snake(module)))
     }
 
     fn stubs(&self, spec: &Spec) -> Vec<(PathBuf, String)> {
@@ -351,7 +351,7 @@ impl Backend for Qml {
             }
         }
         s.push_str("}\n");
-        vec![(PathBuf::from(&spec.slug).join(format!("tst_{}.qml", naming::snake(&spec.slug))), s)]
+        vec![(spec.dir(self.id()).join(format!("tst_{}.qml", naming::snake(&spec.slug))), s)]
     }
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
@@ -363,7 +363,7 @@ impl Backend for Qml {
         // report goes to a file instead.
         let report = std::env::temp_dir().join(format!("learn-qml-{}-{}.txt", std::process::id(), spec.slug));
         Invocation::new(&tool.path, track_dir)
-            .args(["-platform", "offscreen", "-input", spec.slug.as_str()])
+            .args(["-platform", "offscreen", "-input", spec.rel(self.id()).as_str()])
             .args(["-o".to_string(), format!("{},txt", report.display())])
             .env("QT_QPA_PLATFORM", "offscreen")
             .output_file(report)

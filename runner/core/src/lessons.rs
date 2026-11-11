@@ -16,11 +16,11 @@ use crate::spec::Spec;
 pub const FILE: &str = "LESSON.md";
 
 /// Where an exercise's `LESSON.md` goes, relative to the track folder.
-pub fn path(spec: &Spec) -> PathBuf {
-    PathBuf::from(&spec.slug).join(FILE)
+pub fn path(track: &str, spec: &Spec) -> PathBuf {
+    spec.dir(track).join(FILE)
 }
 
-/// Stubs, tests and every `LESSON.md` for a track, plus Zed's tasks when
+/// Stubs, tests, every `LESSON.md` and the track's `PATH.md`, plus Zed's tasks when
 /// missing: what setting up a track (`learn start`, `learn generate`, the web
 /// UI, the TUI) writes.
 pub fn generate_track(ctx: &Ctx, b: &dyn Backend) -> Result<Generated> {
@@ -28,6 +28,7 @@ pub fn generate_track(ctx: &Ctx, b: &dyn Backend) -> Result<Generated> {
     let specs = ctx.track_specs(b.id());
     let report = backends::generate(b, &specs, &dir)?;
     write_all(ctx, b, &specs, &dir)?;
+    crate::pathfile::write(ctx, b)?;
     crate::zed::write_tasks(ctx)?;
     Ok(report)
 }
@@ -37,7 +38,7 @@ pub fn generate_track(ctx: &Ctx, b: &dyn Backend) -> Result<Generated> {
 pub fn write_all(ctx: &Ctx, b: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Result<()> {
     let meta = TrackMeta::load(&ctx.root, b.id())?;
     for spec in specs {
-        backends::write(&track_dir.join(path(spec)), &markdown(ctx, b, &meta, spec))?;
+        backends::write(&track_dir.join(path(b.id(), spec)), &markdown(ctx, b, &meta, spec))?;
     }
     Ok(())
 }
@@ -66,7 +67,7 @@ pub fn markdown(ctx: &Ctx, b: &dyn Backend, meta: &TrackMeta, spec: &Spec) -> St
 
     let mut edit = Vec::new();
     for (rel, sigs) in backends::learner_files(b, spec) {
-        let rel = rel.strip_prefix(&spec.slug).unwrap_or(&rel).components().map(|c| c.as_os_str().to_string_lossy()).collect::<Vec<_>>().join("/");
+        let rel = rel.strip_prefix(spec.dir(b.id())).unwrap_or(&rel).components().map(|c| c.as_os_str().to_string_lossy()).collect::<Vec<_>>().join("/");
         edit.push(format!("**Edit** `{rel}`"));
         if !sigs.is_empty() {
             edit.push(format!("```{}\n{}\n```", b.fence(), sigs.join("\n")));
@@ -116,13 +117,28 @@ mod tests {
         generate_track(&ctx, go).unwrap();
         let dir = ctx.workspace.join("go");
         for spec in ctx.track_specs("go") {
-            assert!(dir.join(path(&spec)).is_file(), "{} has no LESSON.md", spec.slug);
+            assert!(dir.join(path("go", &spec)).is_file(), "{} has no LESSON.md", spec.slug);
         }
-        let hello = std::fs::read_to_string(dir.join("hello").join(FILE)).unwrap();
+        let hello = std::fs::read_to_string(ctx.exercise_dir("go", "hello").join(FILE)).unwrap();
         assert!(hello.starts_with("<!-- Written by `learn` for the Go track."), "{hello}");
         assert!(hello.contains("# Hello\n"));
         assert!(hello.contains("**Edit** `hello.go`\n\n```go\nfunc Greet(name string) string\n```"), "{hello}");
         assert!(hello.contains("\n---\n"), "the lesson and the note follow");
+    }
+
+    #[test]
+    fn an_old_workspace_moves_into_stage_folders() {
+        let ctx = ctx("migrate");
+        let old = ctx.workspace.join("go").join("hello");
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join("hello.go"), "package hello // mine
+").unwrap();
+        generate_track(&ctx, backends::get("go").unwrap()).unwrap();
+        let new = ctx.exercise_dir("go", "hello");
+        assert!(new.ends_with("01-foundations/hello"), "{}", new.display());
+        assert_eq!(std::fs::read_to_string(new.join("hello.go")).unwrap(), "package hello // mine
+", "the learner's code moved");
+        assert!(!old.exists());
     }
 
     #[test]

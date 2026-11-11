@@ -216,7 +216,7 @@ impl App {
     /// The folder to watch for saves: the open exercise's.
     pub fn watched_dir(&self) -> Option<PathBuf> {
         let b = self.track()?;
-        Some(self.ctx.workspace.join(b.id()).join(self.exercise()?))
+        Some(self.ctx.exercise_dir(b.id(), self.exercise()?))
     }
 
     fn check(&mut self) -> Effect {
@@ -581,7 +581,7 @@ mod tests {
         let a = app("current", Some("go"));
         assert_eq!(a.open, Some(Open::Exercise("hello".into())));
         assert!(a.items()[a.cursor].1.id == "hello");
-        assert!(a.ctx.workspace.join("go").join("hello").is_dir(), "files are generated");
+        assert!(a.ctx.exercise_dir("go", "hello").is_dir(), "files are generated");
     }
 
     #[test]

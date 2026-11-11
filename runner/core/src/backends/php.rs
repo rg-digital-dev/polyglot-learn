@@ -428,11 +428,11 @@ impl Backend for Php {
     }
 
     fn stub_path(&self, spec: &Spec) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.php", spec.slug))
+        spec.dir(self.id()).join(format!("{}.php", spec.slug))
     }
 
     fn module_path(&self, spec: &Spec, module: &str) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.php", naming::kebab(module)))
+        spec.dir(self.id()).join(format!("{}.php", naming::kebab(module)))
     }
 
     fn stubs(&self, spec: &Spec) -> Vec<(PathBuf, String)> {
@@ -460,7 +460,7 @@ impl Backend for Php {
     fn tests(&self, spec: &Spec) -> Vec<(PathBuf, String)> {
         let mut s = String::from("<?php\n");
         s.push_str(&header("//", spec, &format!("{}.php", spec.slug)));
-        s.push_str("\ndeclare(strict_types=1);\n\nrequire __DIR__ . '/../harness.php';\n");
+        s.push_str("\ndeclare(strict_types=1);\n\nrequire __DIR__ . '/../../harness.php';\n");
         for m in spec.modules() {
             s.push_str(&format!("require_once __DIR__ . '/{}.php';\n", naming::kebab(m)));
         }
@@ -515,7 +515,7 @@ impl Backend for Php {
             }
         }
         s.push_str("$t->finish();\n");
-        vec![(PathBuf::from(&spec.slug).join(format!("{}.test.php", spec.slug)), s)]
+        vec![(spec.dir(self.id()).join(format!("{}.test.php", spec.slug)), s)]
     }
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
@@ -527,12 +527,12 @@ impl Backend for Php {
     }
 
     fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
-        Some((PathBuf::from(&spec.slug).join("resource.php"), PHP_RESOURCE.to_string()))
+        Some((spec.dir(self.id()).join("resource.php"), PHP_RESOURCE.to_string()))
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
         Invocation::new(&tool.path, track_dir)
-            .args([format!("{}/{}.test.php", spec.slug, spec.slug)])
+            .args([format!("{}/{}.test.php", spec.rel(self.id()), spec.slug)])
             .timeout(Duration::from_secs(60))
     }
 

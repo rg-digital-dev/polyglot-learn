@@ -302,11 +302,11 @@ impl Backend for TypeScript {
     }
 
     fn stub_path(&self, spec: &Spec) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.ts", spec.slug))
+        spec.dir(self.id()).join(format!("{}.ts", spec.slug))
     }
 
     fn module_path(&self, spec: &Spec, module: &str) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.ts", naming::kebab(module)))
+        spec.dir(self.id()).join(format!("{}.ts", naming::kebab(module)))
     }
 
     fn stubs(&self, spec: &Spec) -> Vec<(PathBuf, String)> {
@@ -451,7 +451,7 @@ impl Backend for TypeScript {
                 }
             }
         }
-        vec![(PathBuf::from(&spec.slug).join(format!("{}.test.ts", spec.slug)), s)]
+        vec![(spec.dir(self.id()).join(format!("{}.test.ts", spec.slug)), s)]
     }
 
     /// Yours to change: `npm install --save-dev @types/node` adds to it.
@@ -472,7 +472,7 @@ impl Backend for TypeScript {
     }
 
     fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
-        Some((PathBuf::from(&spec.slug).join("resource.ts"), TS_RESOURCE.to_string()))
+        Some((spec.dir(self.id()).join("resource.ts"), TS_RESOURCE.to_string()))
     }
 
     /// The test file's own folder (Node 20.11+), where `learn` writes the files.
@@ -483,7 +483,7 @@ impl Backend for TypeScript {
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
         let mut args = vec!["--disable-warning=ExperimentalWarning".to_string()];
         args.extend(["--test".into(), "--test-reporter=tap".into()]);
-        args.push(format!("{}/{}.test.ts", spec.slug, spec.slug));
+        args.push(format!("{}/{}.test.ts", spec.rel(self.id()), spec.slug));
         Invocation::new(&tool.path, track_dir).args(args).timeout(Duration::from_secs(60))
     }
 

@@ -890,7 +890,7 @@ Expected (): [2]"), None);
             "  Return a greeting for name, trimmed of surrounding whitespace, falling back to",
             "  \"world\" when nothing is left.",
             "",
-            "  Edit   target/view-snapshots/go/hello/hello.go",
+            "  Edit   target/view-snapshots/go/01-foundations/hello/hello.go",
             "         func Greet(name string) string",
             "",
             "  learn lesson   read about functions",
