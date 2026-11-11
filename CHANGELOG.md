@@ -10,7 +10,7 @@ All notable changes to this project are listed here. The format follows
 - Projects: a track's stage can be a project, a codebase that grows over several
   stages in one folder. Each stage's files arrive once the one before passes,
   your code carries forward, and checking a stage runs every test so far.
-  Go, Rust and Python run projects; the projects themselves follow one per release.
+  Go, Rust, Python and TypeScript run projects; the projects themselves follow one per release.
 - Go's project: a URL shortener HTTP service in eight stages (store,
   handlers, stats, middleware, concurrency, timeouts, expiry, graceful
   shutdown), standard library only, 43 tests. It closes the Go path.
@@ -24,6 +24,13 @@ All notable changes to this project are listed here. The format follows
   sources behind a Protocol, itertools transforms, Counter aggregation,
   SQLite storage, a Markdown report, an argparse command line), standard
   library only, 47 tests. It closes the Python path; Python runs projects too.
+- TypeScript's project: a typed task-tracker library in eight stages (branded
+  IDs, an event union with exhaustive switches, an immutable reducer, a typed
+  store, generic undo and redo, a keyof query builder, loading untrusted JSON
+  with type guards, async event feeds), Node only, 49 tests. Four stages are
+  also type-checked with tsc. It closes the TypeScript path.
+- In a project, each stage's "types check" runs tsc on that stage's own files,
+  and stays on that stage's first case as later stages arrive.
 
 ## [0.5.0] - 2026-11-11
 

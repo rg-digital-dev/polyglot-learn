@@ -1,0 +1,16 @@
+title = "Async feeds"
+concept = "async-iterators"
+summary = "Events can arrive over time, from a socket, a file being written, or another process. Turn chunks of text into lines and lines into events with async generators, then apply them to the store as they come, stopping when an AbortSignal says so."
+stubs = ["feed.ts"]
+hints = [
+  "`async function*` with `for await (const chunk of chunks)`: keep the unfinished end in `rest`, `const parts = (rest + chunk).split(\"\\n\"); rest = parts.pop() ?? \"\"; yield* parts;`, and after the loop yield rest if it isn't empty.",
+  "parseEvents counts every line (blank ones too) and skips blank ones. JSON.parse in try/catch gives \"not JSON\"; then check the type and that event's fields (isId, isStatus, isTask) before yielding `ok(data as TaskEvent)`.",
+  "follow: `for await (const r of parseEvents(lines))`, and check `signal?.aborted` first thing in the loop: `break` ends the loop, and that also stops the generators feeding it. Collect `r.error` for parse errors and dispatch's error for events that don't apply.",
+]
+cases = [
+  "linesOf joins chunks into lines",
+  "parseEvents yields events and numbered errors",
+  "follow applies events to the store",
+  "follow stops when the signal aborts",
+  "parseEvents reads only what is asked for",
+]

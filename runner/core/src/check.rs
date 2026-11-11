@@ -74,9 +74,14 @@ pub fn run_streaming(
     on_case: &mut dyn FnMut(usize, bool),
 ) -> Result<CheckResult> {
     backends::generate(backend, all_specs, track_dir)?;
-    let types = typecheck(backend, spec, track_dir)?;
-    if let Some(t) = &types {
-        on_case(0, t.passed);
+    // Each stage's type check runs on its own files, so one stage's unfinished
+    // types don't show up as another's failure.
+    let mut types = Vec::new();
+    for (first, stage) in typecheck_stages(spec, all_specs) {
+        if let Some(t) = typecheck(backend, stage, track_dir)? {
+            on_case(first, t.passed);
+            types.push((first, t));
+        }
     }
     let inv = backend.command(spec, tool, track_dir);
     let out = toolchain::run_streaming(&inv, &mut |line| {
@@ -102,9 +107,11 @@ pub fn run_streaming(
     }
     let setup_problem = if cases.iter().all(|c| c.passed.is_none()) { backend.setup_problem(&out.output) } else { None };
     let (mut command, mut output) = (inv.display(), out.output);
-    if let (Some(t), Some(first)) = (types, cases.first_mut()) {
-        first.passed = Some(t.passed);
-        first.message = (!t.passed).then_some(t.message);
+    for (first, t) in types.into_iter().rev() {
+        if let Some(c) = cases.get_mut(first) {
+            c.passed = Some(t.passed);
+            c.message = (!t.passed).then_some(t.message);
+        }
         if !t.command.is_empty() {
             command = format!("{}\n{command}", t.command);
         }
@@ -123,6 +130,33 @@ struct TypeCheck {
     /// Empty when the checker couldn't run.
     command: String,
     output: String,
+}
+
+/// The exercises whose `typecheck` files a check of `spec` covers, each with
+/// the index of its first case, which that exercise's type check fills: the
+/// exercise itself, or in a project every stage so far, since a later stage's
+/// code can break an earlier stage's types.
+pub fn typecheck_stages<'a>(spec: &'a Spec, all_specs: &'a [Spec]) -> Vec<(usize, &'a Spec)> {
+    let lists = |s: &Spec| s.native.as_ref().is_some_and(|n| !n.typecheck.is_empty());
+    let Some(p) = &spec.project else {
+        return if lists(spec) { vec![(0, spec)] } else { Vec::new() };
+    };
+    let mut stages: Vec<&Spec> =
+        all_specs.iter().filter(|s| s.project.as_ref().is_some_and(|q| q.id == p.id && q.number <= p.number)).collect();
+    stages.sort_by_key(|s| s.project.as_ref().map(|q| q.number));
+    if !stages.iter().any(|s| s.slug == spec.slug) {
+        stages.push(spec);
+    }
+    // A stage's cases include every earlier stage's, so its own start where the one before ends.
+    let mut out = Vec::new();
+    let mut before = 0;
+    for s in stages {
+        if lists(s) {
+            out.push((before, s));
+        }
+        before = s.cases().len();
+    }
+    out
 }
 
 /// Run the backend's type checker on the exercise's `typecheck` files, if it lists any.

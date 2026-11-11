@@ -1,0 +1,17 @@
+title = "Undo and redo"
+concept = "generic-classes"
+summary = "Add undo and redo with a generic History<S, E> that works with any state and any reducer: the board with apply, or a plain counter. Since states are never changed in place, keeping the old ones is all undo needs."
+stubs = ["history.ts"]
+hints = [
+  "Keep three things: `#state: S`, `#past: S[]` (states to go back to) and `#future: S[]` (states undone). do() pushes the current state onto #past before replacing it, and empties #future.",
+  "undo: if #past is empty return false; else push the current state onto #future and pop #past into #state. redo is the mirror image. Check the arrays' lengths, not the popped value, since a state could be undefined itself.",
+  "For the limit, after pushing onto #past, `if (this.#past.length > this.#limit) this.#past.shift();`. A failed reduce returns its result before touching anything.",
+]
+cases = [
+  "do applies events through the reducer",
+  "undo and redo walk back and forth",
+  "a new action clears redo",
+  "a failed action leaves the history alone",
+  "the limit keeps only the latest steps",
+  "history works for any state and event type",
+]

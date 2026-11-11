@@ -1,0 +1,17 @@
+title = "Reducer"
+concept = "immutability"
+summary = "Apply events to a board without ever changing it: each event gives a new Map that shares the untouched tasks, and a bad event is a Result error, not an exception. replay builds a board from a whole history."
+stubs = ["board.ts"]
+hints = [
+  "Copy, then change the copy: `const next = new Map(board); next.set(id, Object.freeze({ ...task, status: event.to }));`. The spread makes a new task with one field changed; tasks you don't touch are the same objects in both maps.",
+  "Check the error cases first and `return err(...)`: created with an id that's taken, any other event for an id that isn't there, a move to the current status. For renamed, call checkTitle in a try/catch and turn its exception into `err(e.message)`.",
+  "replay: keep `let board = start` and a counter; for each event `const r = apply(board, event)`; if `!r.ok` return `err({ index, error: r.error })`, else `board = r.value`. Checking `r.ok` narrows r, so `r.value` and `r.error` are only reachable on the right side.",
+]
+cases = [
+  "created adds a task",
+  "apply never changes the board it was given",
+  "rename, move and assign change one task",
+  "deleted removes the task",
+  "invalid events are errors, not exceptions",
+  "replay stops at the first bad event",
+]
