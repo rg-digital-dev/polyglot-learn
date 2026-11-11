@@ -23,6 +23,23 @@ jobs:
       - name: Build learn with Rust ${{ steps.msrv.outputs.version }}
         run: cargo build --locked --manifest-path runner/Cargo.toml
 
+  zed:
+    name: Zed extension builds
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+
+      - name: Tests
+        run: cargo test --locked --manifest-path editors/zed/Cargo.toml
+
+      # What the release embeds in learn for `learn zed`.
+      - name: Build for Zed
+        run: cargo build --release --locked --manifest-path editors/zed/Cargo.toml --target wasm32-wasip2
+
   runner:
     name: Unit tests and track selftest
     runs-on: ubuntu-24.04

@@ -12,6 +12,7 @@ mod serve;
 mod tui;
 mod ui;
 mod view;
+mod zed;
 
 // The engine lives in `learn-core`; these keep `crate::ctx` and friends working
 // in the interface modules.
@@ -128,6 +129,13 @@ enum Command {
     /// A language server for your editor (stdio): failing tests as diagnostics on
     /// save, the task on hover, check / hint / lesson as code actions.
     Lsp,
+    /// Install or update the Zed extension: tests, the task and hints in Zed
+    /// through `learn lsp`. Restart Zed after.
+    Zed {
+        /// Remove it instead.
+        #[arg(long)]
+        remove: bool,
+    },
     /// Open the web UI at http://learn.localhost:4321 (stops with Ctrl+C or Quit).
     Serve {
         #[arg(long, default_value_t = 4321)]

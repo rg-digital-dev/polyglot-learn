@@ -80,6 +80,7 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 | `learn generate [--lang <id\|all>]` | Regenerate tests after a spec changes; never overwrites your stubs |
 | `learn serve [--port N] [--open]` | The web UI at `http://learn.localhost:4321`, until you stop it |
 | `learn lsp` | A language server for your editor (see [In your editor](#in-your-editor)) |
+| `learn zed [--remove]` | Install, update or remove the Zed extension |
 | `learn check-links` | Report dead links in `tracks/*/track.toml` |
 
 `learn` works from any subfolder of the repo. Output is coloured on a terminal; `--color never` (or `NO_COLOR`) turns that off, `--ascii` uses plain ASCII symbols, and `--no-pager` prints long lessons directly.
@@ -92,7 +93,7 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 - **Hover** the signature for the task, what the tests check and the hints you've revealed.
 - **Code actions:** "Check this exercise", "Show next hint" (it counts, like `learn hint`) and "Open LESSON.md".
 
-Any editor that can run a language server over stdio can use it: point it at `learn lsp` for the languages you're learning. A Zed extension that does this for you is on the way. For Zed, `learn` also writes a `.zed/tasks.json` with **learn check** and **learn watch** (for `task: spawn`) when it sets up a track, unless the folder already has one.
+Any editor that can run a language server over stdio can use it: point it at `learn lsp` for the languages you're learning. In **Zed**, `learn` does it for you: `learn init` offers the polysyntax extension when Zed is installed, and `learn zed` installs or updates it. Restart Zed, open your checkout, and save an exercise; hover a function's name for the task. It's not in Zed's extension registry, since it's only useful here; see [editors/zed](editors/zed/README.md) for settings and troubleshooting. `learn` also writes a `.zed/tasks.json` with **learn check** and **learn watch** (for `task: spawn`) when it sets up a track, unless the folder already has one.
 
 ## Keeping your own solutions
 
