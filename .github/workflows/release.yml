@@ -30,14 +30,20 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.target }},wasm32-wasip2
 
       - name: Install musl tools
         if: contains(matrix.target, 'musl')
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends musl-tools
 
+      # `learn zed` installs this, so it's built first and embedded in learn.
+      - name: Build the Zed extension
+        run: cargo build --release --locked --manifest-path editors/zed/Cargo.toml --target wasm32-wasip2
+
       - name: Build
         run: cargo build --release --locked --manifest-path runner/Cargo.toml --target ${{ matrix.target }}
+        env:
+          LEARN_ZED_WASM: ${{ github.workspace }}/editors/zed/target/wasm32-wasip2/release/zed_polysyntax.wasm
 
       - name: Package
         shell: bash

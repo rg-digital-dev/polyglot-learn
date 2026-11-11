@@ -214,6 +214,13 @@ Plain `learn` on a terminal runs `runner/src/tui/` (ratatui with crossterm):
 - Checks run on a thread, one at a time, and publish diagnostics on the exercise's main file, anchored to the signature line (`anchor`).
 - Tests talk to the server over `lsp-server`'s in-memory connection: hover, code actions, hints, `window/showDocument`, a real save, and silence outside a workspace.
 
+## Working on the Zed extension
+
+The extension is `editors/zed`, a small Rust crate Zed loads as WebAssembly. It only finds `learn` and starts `learn lsp`. `learn zed` installs it by copying `extension.toml` and the built `extension.wasm` into Zed's `extensions/installed/polysyntax-lsp`, which Zed loads on its next start.
+
+- `runner/build.rs` embeds it: from `LEARN_ZED_WASM` (the release workflow sets it) or a local `cargo build --release --target wasm32-wasip2` in `editors/zed`. Without either, the build carries no extension and `learn zed` says so.
+- That build needs Rust from rustup with the `wasm32-wasip2` target. See [editors/zed/README.md](editors/zed/README.md) for working on it in Zed as a dev extension.
+
 ## Verification suite
 
 ```bash

@@ -1,0 +1,11 @@
+id = "polysyntax-lsp"
+name = "polysyntax"
+description = "Live tests, task hovers and hints for polysyntax exercises, through `learn lsp`."
+version = "0.5.0"
+schema_version = 1
+authors = ["RG Digital"]
+repository = "https://github.com/rg-digital-dev/polysyntax"
+
+[language_servers.polysyntax]
+name = "polysyntax"
+languages = ["Go", "Rust", "Python", "TypeScript", "PHP", "Lua", "QML"]

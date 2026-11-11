@@ -23,6 +23,11 @@ All notable changes to this project are listed here. The format follows
   `task: spawn` runs them. `learn` writes it when it sets up a track, in your
   checkout (or your own workspace folder), and never over a tasks file that's
   already there.
+- A Zed extension (`editors/zed`) that starts `learn lsp` in your polysyntax
+  folder. Release builds of `learn` carry it: `learn init` offers it when Zed
+  is installed (and keeps it current), and `learn zed` installs, updates or
+  (`--remove`) removes it. It isn't in Zed's registry, so there's nothing to
+  compile and nothing else to find.
 
 ## [0.4.0] - 2026-11-10
 

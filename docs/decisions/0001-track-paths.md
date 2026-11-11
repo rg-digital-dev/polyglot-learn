@@ -24,7 +24,7 @@ The CLI and the web server also build the same information twice (`view.rs` and 
 **Engine and interfaces**
 - A `learn-core` crate in `runner/core` holds the engine (course, paths, specs, progress, notes, checks, backends) and returns plain, serialisable view data. It has no terminal or HTTP code. `runner/Cargo.toml` stays the `learn` binary and becomes the workspace root, so CI and release paths don't change.
 - The `learn` binary draws that data as the CLI, a ratatui TUI (opened by plain `learn` on a terminal; `--no-tui` or `NO_TUI=1` skips it), and the Nuxt web UI (three columns: path, Lesson/Task/Compare, live tests; an "All tracks" page for the old grid).
-- Editors: `learn lsp`, a language server that shows failing cases as diagnostics, hints on hover and check/hint/lesson code actions, plus a generated `LESSON.md` beside each stub. A thin Zed extension in its own repo starts it (Zed extensions can't add panels yet).
+- Editors: `learn lsp`, a language server that shows failing cases as diagnostics, hints on hover and check/hint/lesson code actions, plus a generated `LESSON.md` beside each stub. A thin Zed extension starts it (Zed extensions can't add panels yet). *Changed 2026-11-11:* the extension lives in this repo (`editors/zed`) and isn't published to Zed's registry, since it's only useful to learners; release builds of `learn` embed it, and `learn init` / `learn zed` install it.
 - Later: `learn mcp` for AI assistants. Not now: a Tauri desktop app.
 
 **Releases**: 0.4.0 the engine, paths and new web UI; 0.5.0 the TUI and editor support; then one project at a time.

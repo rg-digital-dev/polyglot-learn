@@ -29,6 +29,9 @@ pub fn dispatch(workspace: Option<PathBuf>, command: Option<Command>) -> Result<
     if matches!(command, Some(Command::Lsp)) {
         return crate::lsp::run(workspace);
     }
+    if let Some(Command::Zed { remove }) = command {
+        return zed_cmd(remove);
+    }
     let mut ctx = Ctx::discover(workspace.clone())?;
     match command.unwrap_or(Command::Show { slug: None, full: false }) {
         Command::Init { from, goal, compare } => init(&mut ctx, from, goal, compare),
@@ -45,7 +48,7 @@ pub fn dispatch(workspace: Option<PathBuf>, command: Option<Command>) -> Result<
         Command::Status { all } => status(&ctx, all),
         Command::Docs { concept, lang, open } => docs(&ctx, concept.as_deref(), lang.as_deref(), open),
         Command::CheckLinks => check_links(&ctx),
-        Command::Lsp => unreachable!("handled before discovery"),
+        Command::Lsp | Command::Zed { .. } => unreachable!("handled before discovery"),
         Command::Serve { port, open } => crate::serve::serve(workspace, port, open).map(|_| ExitCode::SUCCESS),
         Command::Selftest { lang, solutions, require_all } => selftest(&ctx, &lang, solutions.as_deref(), require_all),
     }
@@ -105,12 +108,69 @@ fn init(ctx: &mut Ctx, from_flag: Option<String>, goal_flag: Option<String>, com
     }
     // Notes follow the background and goal, so the LESSON.md files do too.
     lessons::refresh(ctx)?;
+    if interactive {
+        offer_zed()?;
+    }
     let ui = ui::get();
     println!("{MARGIN}{}", ui.muted("Change it any time with learn init."));
     if ctx.config.track.is_none() {
         println!("\n{MARGIN}{} {}", ui.accent("learn start <lang>"), ui.muted(&format!("to pick a track: {}", backends::ids().join(", "))));
     }
     Ok(ExitCode::SUCCESS)
+}
+
+/// `learn zed`: install, update or remove the Zed extension this build carries.
+fn zed_cmd(remove: bool) -> Result<ExitCode> {
+    let ui = ui::get();
+    let Some(data) = crate::zed::data_dir() else { bail!("can't find your home folder, so can't find Zed's") };
+    if remove {
+        let line = if crate::zed::remove(&data)? { "Removed the Zed extension. Restart Zed." } else { "The Zed extension isn't installed (a dev extension is left alone)." };
+        println!("{MARGIN}{}", ui.muted(line));
+        return Ok(ExitCode::SUCCESS);
+    }
+    if !crate::zed::bundled() {
+        bail!("this build of learn doesn't carry the Zed extension; release builds do (or build editors/zed first, see CONTRIBUTING.md)");
+    }
+    let line = match crate::zed::state(&data) {
+        crate::zed::State::Dev => "Zed has polysyntax as a dev extension; left alone. Remove it in Zed's extensions page to use this one.",
+        crate::zed::State::Current => "The Zed extension is up to date.",
+        crate::zed::State::Missing | crate::zed::State::Outdated => {
+            crate::zed::install(&data)?;
+            "Installed the Zed extension. Restart Zed, then open your polysyntax folder in it: saving an exercise runs its tests."
+        }
+    };
+    println!("{MARGIN}{}", ui.muted(line));
+    Ok(ExitCode::SUCCESS)
+}
+
+/// During `learn init`: offer the Zed extension when Zed is there, and keep an
+/// installed one current.
+fn offer_zed() -> Result<()> {
+    use crate::zed::State;
+    let Some(data) = crate::zed::data_dir() else { return Ok(()) };
+    if !crate::zed::bundled() || !crate::zed::found() {
+        return Ok(());
+    }
+    let ui = ui::get();
+    match crate::zed::state(&data) {
+        State::Dev | State::Current => {}
+        State::Outdated => {
+            crate::zed::install(&data)?;
+            println!("
+{MARGIN}{}", ui.muted("Updated the Zed extension; restart Zed to load it."));
+        }
+        State::Missing => {
+            println!("
+{MARGIN}Zed is installed. Its polysyntax extension shows failing tests, the task and hints right in the editor.");
+            if matches!(ask("Install it? [Y/n] ")?.as_str(), "" | "y" | "yes") {
+                crate::zed::install(&data)?;
+                println!("{MARGIN}{}", ui.muted("Installed. Restart Zed, then open this folder in it."));
+            } else {
+                println!("{MARGIN}{}", ui.muted("Skipped. `learn zed` installs it later."));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn init_goal(ctx: &mut Ctx, goal_flag: Option<String>, compare_flag: Vec<String>, interactive: bool) -> Result<()> {
