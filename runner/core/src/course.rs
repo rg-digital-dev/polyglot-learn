@@ -36,6 +36,10 @@ pub struct Module {
     /// before the module's exercises. No specs, tests or progress towards "done".
     #[serde(default)]
     pub readings: Vec<String>,
+    /// A track's project: its exercises are the stages of one codebase that
+    /// grows in a single folder (see `Spec::project`).
+    #[serde(default)]
+    pub project: bool,
 }
 
 impl Module {
@@ -291,6 +295,8 @@ exercises = [\"hello\"]
         crate::path::load_all(&root, &mut course, &crate::backends::ids()).unwrap();
         for m in &course.modules {
             let Some(track) = &m.track else { continue };
+            // A project numbers its tests across its stages.
+            let mut offset = 0;
             for slug in &m.exercises {
                 let dir = root.join("tracks").join(track).join("extras").join(slug);
                 let spec = crate::spec::Spec::load_native(&dir, track, slug).unwrap();
@@ -298,7 +304,7 @@ exercises = [\"hello\"]
                 let mut tests = String::new();
                 read_all(&native.files, &native.stubs, Path::new(""), &mut tests);
                 for (_, c) in spec.cases() {
-                    let name = crate::naming::case_name(c.index, &c.description);
+                    let name = crate::naming::case_name(offset + c.index, &c.description);
                     if c.index == 0 && !native.typecheck.is_empty() {
                         // Filled in by the type checker, not by a test.
                         assert!(!tests.contains(&name), "{track}/{slug}: {name} comes from the type checker; remove the test");
@@ -306,8 +312,11 @@ exercises = [\"hello\"]
                     }
                     assert!(tests.contains(&name), "{track}/{slug}: no test named {name}");
                 }
-                let next = crate::naming::case_name(spec.cases().len(), "");
+                let next = crate::naming::case_name(offset + spec.cases().len(), "");
                 assert!(!tests.contains(&format!("{next}_")), "{track}/{slug}: a test {next}_… isn't listed in cases");
+                if m.project {
+                    offset += spec.cases().len();
+                }
             }
         }
     }

@@ -66,6 +66,9 @@ pub struct Reading {
     pub module: usize,
 }
 
+/// Tracks whose backend runs a project's tests as one codebase.
+pub const PROJECT_TRACKS: &[&str] = &["go"];
+
 pub struct Ctx {
     pub root: PathBuf,
     pub workspace: PathBuf,
@@ -247,6 +250,31 @@ impl Ctx {
             }
         }
 
+        // Projects: each stage knows its place, and its cases are every stage's
+        // so far, numbered across the project (tests are named `cNN_…` that way).
+        for m in course.modules.iter().filter(|m| m.project) {
+            let track = m.track.as_deref().unwrap_or_default();
+            if !PROJECT_TRACKS.contains(&track) {
+                bail!("project `{}`: the {track} track can't run projects yet (only {})", m.id, PROJECT_TRACKS.join(", "));
+            }
+            let mut so_far: Vec<crate::spec::Case> = Vec::new();
+            for (k, slug) in m.exercises.iter().enumerate() {
+                let Some(spec) = specs.iter_mut().find(|s| s.slug == *slug) else { continue };
+                if spec.native.is_none() {
+                    bail!("project `{}`: stage `{slug}` must be the track's own exercise (tracks/<lang>/extras/{slug}/)", m.id);
+                }
+                for mut c in std::mem::take(&mut spec.main.cases) {
+                    c.index = so_far.len();
+                    so_far.push(c);
+                }
+                if so_far.len() > 99 {
+                    bail!("project `{}` has more than 99 cases in all; test names only number two digits", m.id);
+                }
+                spec.main.cases = so_far.clone();
+                spec.project = Some(crate::spec::ProjectStage { id: m.id.clone(), title: m.title.clone(), number: k + 1, stages: m.exercises.clone() });
+            }
+        }
+
         let mut readings = Vec::new();
         for (i, m) in course.modules.iter().enumerate() {
             for id in &m.readings {
@@ -336,12 +364,33 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
     }
 
     /// The exercise on a track that a file belongs to; `rel` is relative to
-    /// the track's folder. The folder itself isn't a file of it.
+    /// the track's folder. The folder itself isn't a file of it. A project's
+    /// files belong to its current stage.
     pub fn exercise_at(&self, track: &str, rel: &Path) -> Option<&Spec> {
-        self.path_specs(track).into_iter().find(|s| {
+        let spec = self.path_specs(track).into_iter().find(|s| {
             let dir = s.dir(track);
             rel.starts_with(&dir) && rel != dir
-        })
+        })?;
+        match &spec.project {
+            Some(p) => self.project_stage(track, &p.id),
+            None => Some(spec),
+        }
+    }
+
+    /// A project's current stage: the first one not done, or the last.
+    pub fn project_stage(&self, track: &str, project: &str) -> Option<&Spec> {
+        let stages: Vec<&Spec> = self.path_specs(track).into_iter().filter(|s| s.project.as_ref().is_some_and(|p| p.id == project)).collect();
+        stages.iter().find(|s| !self.is_done(track, &s.slug)).or(stages.last()).copied()
+    }
+
+    /// Whether an exercise's files belong in the workspace yet: always, except
+    /// for a project's later stages, which arrive one by one as the stage
+    /// before passes.
+    pub fn reached(&self, track: &str, spec: &Spec) -> bool {
+        match &spec.project {
+            Some(p) if p.number > 1 => self.is_done(track, &p.stages[p.number - 2]),
+            _ => true,
+        }
     }
 
     pub fn is_done(&self, track: &str, slug: &str) -> bool {

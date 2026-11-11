@@ -334,6 +334,22 @@ pub struct Spec {
     /// numbered in the track's path order so file trees read like the path.
     /// Filled in by `Ctx::discover`.
     pub stages: BTreeMap<String, String>,
+    /// Set for a stage of a track's project (filled in by `Ctx::discover`).
+    pub project: Option<ProjectStage>,
+}
+
+/// A project stage: one of the exercises that grow a single codebase. Every
+/// stage works in the project's folder; its cases are those of all stages up to
+/// it, numbered across the project, so checking it runs every earlier test too.
+#[derive(Debug, Clone)]
+pub struct ProjectStage {
+    /// The project's module id (also its stage folder's name, after the number).
+    pub id: String,
+    pub title: String,
+    /// 1-based.
+    pub number: usize,
+    /// Every stage's slug, in order.
+    pub stages: Vec<String>,
 }
 
 /// A track-only exercise: `tracks/<track>/extras/<slug>/` holds an
@@ -839,6 +855,7 @@ impl Spec {
             tracks: None,
             native: None,
             stages: BTreeMap::new(),
+            project: None,
         };
         if spec.resources {
             let list = Type::List(Box::new(Type::Str));
@@ -958,13 +975,16 @@ impl Spec {
             tracks: None,
             native: Some(Native { track: track.to_string(), files, stubs, lesson, typecheck }),
             stages: BTreeMap::new(),
+            project: None,
         })
     }
 
     /// The exercise's folder inside a track's workspace folder: `NN-stage/slug`
     /// (just `slug` before `Ctx::discover` placed it).
+    /// A project's stages all share the stage folder itself.
     pub fn dir(&self, track: &str) -> std::path::PathBuf {
         match self.stages.get(track) {
+            Some(stage) if self.project.is_some() => std::path::PathBuf::from(stage),
             Some(stage) => std::path::Path::new(stage).join(&self.slug),
             None => std::path::PathBuf::from(&self.slug),
         }
@@ -973,6 +993,7 @@ impl Spec {
     /// [`Spec::dir`] with `/` separators, for commands and generated files.
     pub fn rel(&self, track: &str) -> String {
         match self.stages.get(track) {
+            Some(stage) if self.project.is_some() => stage.clone(),
             Some(stage) => format!("{stage}/{}", self.slug),
             None => self.slug.clone(),
         }
