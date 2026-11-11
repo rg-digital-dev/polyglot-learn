@@ -1,0 +1,19 @@
+title = "Queries"
+concept = "keyof"
+summary = "A query builder whose keys and values are checked against the item type: where(\"status\", \"done\") compiles, where(\"color\", …) doesn't, and select(\"id\", \"title\") returns objects with just those two fields. Each step returns a new query. The first case is the type check on query.types.ts."
+stubs = ["query.ts"]
+typecheck = ["query.ts", "query.types.ts"]
+hints = [
+  "`where<K extends keyof T>(key: K, test: T[K] | ((value: T[K]) => boolean))`: K is one of T's field names, and T[K] is that field's type. `select<K extends keyof T>(...keys: K[]): Pick<T, K>[]`.",
+  "Make the query immutable: keep the items (copied with `[...items]`) and a list of steps, functions from T[] to T[]. Each method returns `new Query(items, [...steps, newStep])`; all() runs the steps in order with reduce.",
+  "In where, tell a test function from a value with `typeof test === \"function\"`. sortBy: use `toSorted` (it doesn't change the array it's called on), put `== null` values last either way, and return 0 for equal values so ties keep their order.",
+]
+cases = [
+  "types check",
+  "where compares a field with a value",
+  "where takes a test function",
+  "sortBy puts nulls last either way",
+  "select keeps only the given fields",
+  "queries are immutable and reusable",
+  "limit and count",
+]

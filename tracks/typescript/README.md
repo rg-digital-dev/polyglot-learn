@@ -20,10 +20,14 @@ This track runs TypeScript directly on Node.js. There is no build step and no `n
 `learn` runs, from `workspace/typescript`:
 
 ```sh
-node --test --test-reporter=tap <slug>/<slug>.test.ts
+node --test --test-reporter=tap <stage>/<slug>/<slug>.test.ts      # e.g. 01-foundations/hello/hello.test.ts
 ```
 
+Each exercise sits inside a numbered folder for its stage.
+
 For an exercise whose `exercise.toml` lists `typecheck` files, `learn` first runs `tsc --noEmit` on them (with the same settings as `tsconfig.json`) and reports the result as case 1, "types check". The `.types.ts` file it checks is never run: each `@ts-expect-error` line in it must be a type error, so it proves your types reject what they should.
+
+The path ends with a project: a typed task-tracker library built over eight stages in one folder, `workspace/typescript/NN-task-tracker/`, from branded IDs and an event union to a reducer, a typed store, undo and redo, a query builder, loading untrusted JSON and async event feeds. Each stage adds a module and its test file (`s1-tasks.test.ts`, …) once the stage before passes; your code carries forward, and `learn` runs every test so far with `node --test "NN-task-tracker/*.test.ts"`. Four stages also have a `.types.ts` file. Each one's "types check" case runs `tsc` on that stage's files only, so an unfinished stage never turns an earlier stage's check red. `PATH.md` in `workspace/typescript/` shows where you are.
 
 You can run the same command yourself. `workspace/typescript/package.json` sets `"type": "module"`, so files use `import`/`export`, and imports must include the `.ts` extension (`from "./hello.ts"`).
 

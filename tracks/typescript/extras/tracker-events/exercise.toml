@@ -1,0 +1,18 @@
+title = "Events"
+concept = "discriminated-unions"
+summary = "Describe everything that can happen to a task as one discriminated union of five event types, and handle them with an exhaustive switch whose default branch only compiles when no type is left out. The first case is the type check on events.types.ts."
+stubs = ["events.ts"]
+typecheck = ["events.ts", "events.types.ts"]
+hints = [
+  "Write each event as its own object type with a literal `type`: `{ readonly type: \"moved\"; readonly id: TaskId; readonly to: Status }`, and join the five with `|`. `export type EventType = TaskEvent[\"type\"];` gives the union of the names.",
+  "In `switch (event.type)`, each `case` narrows `event` to that one event type, so `event.to` is only allowed under `case \"moved\"`. In the default branch every type is handled, so `event` is `never`: `return assertNever(event);`.",
+  "assertNever takes `never` and throws, e.g. `throw new Error(`unexpected value: ${JSON.stringify(value)}`)`. taskIdOf is a one-line conditional: `event.type === \"created\" ? event.task.id : event.id`; the check narrows both sides.",
+]
+cases = [
+  "types check",
+  "describe says what happened",
+  "assigning null is unassigning",
+  "taskIdOf finds the id in every event",
+  "eventsFor keeps one task's events in order",
+  "assertNever throws if reached",
+]

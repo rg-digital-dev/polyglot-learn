@@ -1,0 +1,17 @@
+title = "Loading and saving"
+concept = "type-guards"
+summary = "Save a board as versioned JSON, and load one back from text you can't trust: JSON.parse gives `unknown`, and type guards check every field before the data counts as a Task, with errors that say exactly where the problem is."
+stubs = ["persist.ts"]
+hints = [
+  "Start with a small guard: `const isObject = (v: unknown): v is Record<string, unknown> => typeof v === \"object\" && v !== null && !Array.isArray(v);`. After `isObject(v)`, TypeScript lets you read `v.id` and the rest, each still `unknown`.",
+  "Write one function that returns what's wrong with a task (or null), checking the fields in the order listed. isTask is then `taskProblem(v) === null`, and parseBoard adds the `tasks[i].` prefix. `for (const [i, t] of data.tasks.entries())` gives the index.",
+  "Wrap JSON.parse in try/catch and return `err(`not JSON: ${e.message}`)`. Check `data.version !== FORMAT_VERSION` before the tasks, using `JSON.stringify(data.version)` in the message, so a missing version reads \"undefined\".",
+]
+cases = [
+  "a board survives a round trip",
+  "bad JSON is an error, not an exception",
+  "the version and the tasks array are checked",
+  "each field is checked and named with its path",
+  "duplicate ids are rejected",
+  "isTask is a type guard for unknown values",
+]

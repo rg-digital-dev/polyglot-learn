@@ -47,3 +47,18 @@ exercises = [
   "branded-ids",
   "infer-types",
 ]
+
+[[stage]]
+id = "task-tracker"
+title = "Project: task tracker"
+project = true
+exercises = [
+  "tracker-tasks",
+  "tracker-events",
+  "tracker-board",
+  "tracker-store",
+  "tracker-history",
+  "tracker-query",
+  "tracker-persist",
+  "tracker-feed",
+]

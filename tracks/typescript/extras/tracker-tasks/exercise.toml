@@ -1,0 +1,19 @@
+title = "Tasks and IDs"
+concept = "branded-types"
+summary = "Start a typed task-tracker library with its building blocks: a branded TaskId the type checker can't confuse with any string, literal unions for status and priority, a readonly Task, and createTask, which checks what it's given. The first case is the type check: learn runs tsc on tasks.ts and tasks.types.ts."
+stubs = ["tasks.ts"]
+typecheck = ["tasks.ts", "tasks.types.ts"]
+hints = [
+  "A brand is an intersection with a property no real value has: `declare const brand: unique symbol;` then `export type TaskId = string & { readonly [brand]: \"TaskId\" };`. taskId() checks the text and returns `raw as TaskId`: the one place a string becomes a TaskId.",
+  "`export const STATUSES = [\"todo\", \"doing\", \"done\"] as const;` keeps the exact strings, and `type Status = (typeof STATUSES)[number]` turns them into a union. Priority is simply `1 | 2 | 3`. Mark every Task field `readonly`.",
+  "isDate: check the shape with `/^\\d{4}-\\d{2}-\\d{2}$/`, then make a `new Date(`${s}T00:00:00Z`)` and check that `toISOString()` starts with s: 2026-02-30 turns into March 2nd and fails. createTask returns `Object.freeze({...})`.",
+]
+cases = [
+  "types check",
+  "taskId accepts t- and digits only",
+  "createTask fills in the defaults",
+  "createTask trims and checks the title",
+  "createTask checks the due date",
+  "tasks are frozen",
+  "isStatus knows the three statuses",
+]

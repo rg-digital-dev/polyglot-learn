@@ -166,3 +166,30 @@ fn a_python_project_runs_every_stage_file_through_the_harness() {
     assert!(text.contains("Bail out! test_s3_c.py didn't load: ImportError: broken stub"), "{text}");
     assert_eq!(out.status.code(), Some(1));
 }
+
+#[test]
+fn a_typescript_project_type_checks_each_stage_on_its_own() {
+    let ws = std::env::temp_dir().join(format!("learn-project-ts-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&ws);
+    let ctx = Ctx::discover(Some(ws.clone())).unwrap();
+    let ts = backends::get("typescript").unwrap();
+    let specs: Vec<_> = ctx.track_specs("typescript").into_iter().filter(|s| s.project.is_some()).collect();
+    assert_eq!(specs.len(), 8, "the task tracker has eight stages");
+
+    // Stage 6 covers the type checks of stages 1, 2, 4 and 6, each filling its own first case.
+    let stages = check::typecheck_stages(&specs[5], &specs);
+    let firsts: Vec<(usize, &str)> = stages.iter().map(|(i, s)| (*i, s.slug.as_str())).collect();
+    assert_eq!(firsts, [(0, "tracker-tasks"), (7, "tracker-events"), (19, "tracker-store"), (31, "tracker-query")]);
+    for (i, s) in &stages {
+        assert_eq!(specs[5].cases()[*i].1.description, "types check", "{} starts with its type check", s.slug);
+    }
+    // Stage 3 only has the first two so far.
+    assert_eq!(check::typecheck_stages(&specs[2], &specs).len(), 2);
+    // An exercise outside a project: its own, at case 0.
+    let branded = ctx.spec_on("typescript", "branded-ids").unwrap();
+    assert_eq!(check::typecheck_stages(branded, &specs).iter().map(|(i, _)| *i).collect::<Vec<_>>(), [0]);
+
+    let tool = crate::toolchain::Found { path: "node".into(), version: String::new() };
+    let run = ts.command(&specs[3], &tool, &ws.join("typescript"));
+    assert_eq!(run.args.last().unwrap(), &format!("{}/*.test.ts", specs[0].rel("typescript")), "every stage's tests run");
+}

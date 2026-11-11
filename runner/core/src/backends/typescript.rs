@@ -483,7 +483,11 @@ impl Backend for TypeScript {
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
         let mut args = vec!["--disable-warning=ExperimentalWarning".to_string()];
         args.extend(["--test".into(), "--test-reporter=tap".into()]);
-        args.push(format!("{}/{}.test.ts", spec.rel(self.id()), spec.slug));
+        // A project has a test file per stage: Node expands the pattern itself.
+        args.push(match &spec.project {
+            Some(_) => format!("{}/*.test.ts", spec.rel(self.id())),
+            None => format!("{}/{}.test.ts", spec.rel(self.id()), spec.slug),
+        });
         Invocation::new(&tool.path, track_dir).args(args).timeout(Duration::from_secs(60))
     }
 

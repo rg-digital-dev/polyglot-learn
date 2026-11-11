@@ -1,0 +1,18 @@
+title = "Typed store"
+concept = "generics"
+summary = "Put the board in a store that applies events, keeps a log, and lets code listen for one event type, where the listener gets exactly that event's type: on(\"moved\", e => e.to) type-checks, e.title doesn't. The first case is the type check on store.types.ts."
+stubs = ["store.ts"]
+typecheck = ["store.ts", "store.types.ts"]
+hints = [
+  "`export type EventOf<K extends EventType> = Extract<TaskEvent, { type: K }>;` picks the members of the union whose type is K. Then `on<K extends EventType>(type: K, handler: (event: EventOf<K>) => void)`: K is inferred from the string you pass.",
+  "Keep state in private fields: `#board: Board`, `#log: TaskEvent[] = []`, and `#handlers = new Map<EventType, Set<(event: TaskEvent) => void>>()`. Storing the handler needs one cast, `handler as (event: TaskEvent) => void`, since the map holds handlers of every type.",
+  "Return `ReadonlyMap` and `readonly TaskEvent[]` from the getters so callers can't change them. dispatch: apply, and on failure return the result untouched; on success update, push to the log, then call the handlers. on() returns `() => { set.delete(h); }`.",
+]
+cases = [
+  "types check",
+  "dispatch applies and logs the event",
+  "handlers get only their event type",
+  "the returned function unsubscribes",
+  "a failed dispatch changes nothing",
+  "onAny sees every event with the new board",
+]
