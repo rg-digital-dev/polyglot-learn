@@ -542,7 +542,7 @@ fn check_once(ctx: &mut Ctx, backend: &dyn Backend, slug: &str, verbose: bool) -
         print!("{MARGIN}{}", ui.muted(&format!("Running {} tests for {}…", backend.name(), spec.slug)));
         std::io::stdout().flush().ok();
     }
-    let result = check::run(backend, &spec, &ctx.track_specs(backend.id()), &track_dir(ctx, backend), &tool);
+    let result = check::run(backend, &spec, &ctx.workspace_specs(backend.id()), &track_dir(ctx, backend), &tool);
     if ui.tty {
         print!("\r\x1b[2K");
     }
@@ -961,13 +961,10 @@ fn selftest(ctx: &Ctx, langs: &[String], solutions: Option<&Path>, require_all: 
                 .cloned()
                 .collect()
         };
-        backends::generate(b, &up_to(None), &dir)?;
-
         for spec in &specs {
-            if spec.project.as_ref().is_some_and(|p| p.number > 1) {
-                backends::generate(b, &up_to(spec.project.as_ref()), &dir)?;
-            }
-            let r = check::run(b, spec, &specs, &dir, &tool)?;
+            // check::run writes every spec it's given, so give it only these.
+            let present = up_to(spec.project.as_ref());
+            let r = check::run(b, spec, &present, &dir, &tool)?;
             let passing = r.count(Some(true));
             if r.passed {
                 problems.push(format!("{}/{}: the untouched stub PASSES", b.id(), spec.slug));

@@ -97,10 +97,14 @@ fn checking_a_stage_runs_every_test_so_far() {
     let mut ctx = ctx(&root, &ws);
     let go = backends::get("go").unwrap();
     lessons::generate_track(&ctx, go).unwrap();
-    check::record_pass(&mut ctx, "go", "counter-add").unwrap();
     let dir = ctx.exercise_dir("go", "counter-add");
+    // A check writes the specs it's given: the workspace's leave stage 2 out.
+    let one = ctx.spec("counter-add").unwrap().clone();
+    check::run(go, &one, &ctx.workspace_specs("go"), &ws.join("go"), &tool).unwrap();
+    assert!(!dir.join("double_test.go").exists(), "checking stage 1 brought stage 2's tests");
+    check::record_pass(&mut ctx, "go", "counter-add").unwrap();
     std::fs::write(dir.join("counter.go"), "package counter\n\ntype Counter struct{ n int }\n\nfunc (c *Counter) Add() { c.n++ }\n\nfunc (c *Counter) Value() int { return c.n }\n").unwrap();
-    let specs = ctx.track_specs("go");
+    let specs = ctx.workspace_specs("go");
     let two = ctx.spec("counter-double").unwrap().clone();
     let r = check::run(go, &two, &specs, &ws.join("go"), &tool).unwrap();
     assert_eq!(r.cases.iter().map(|c| c.passed).collect::<Vec<_>>(), [Some(true), Some(true), Some(false)], "{}", r.output);

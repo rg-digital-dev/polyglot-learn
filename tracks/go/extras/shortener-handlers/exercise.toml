@@ -1,0 +1,17 @@
+title = "Handlers"
+concept = "http-handlers"
+summary = "Put the store behind HTTP: POST /links creates a link from JSON, GET /{code} redirects to it, and errors come back as JSON with the right status."
+stubs = ["server.go"]
+hints = [
+  "Go 1.22's `http.ServeMux` matches methods and wildcards: `mux.HandleFunc(\"POST /links\", …)` and `mux.HandleFunc(\"GET /{code}\", …)`, then `r.PathValue(\"code\")` inside the handler.",
+  "Decode the body with `json.NewDecoder(r.Body).Decode(&body)` into a struct with a `URL` field tagged `json:\"url\"`. A small `writeJSON(w, status, v)` helper that sets Content-Type, calls WriteHeader, then encodes, keeps every handler short.",
+  "Set headers before `WriteHeader`: after it, header changes are ignored. For the redirect, `http.Redirect(w, r, link.URL, http.StatusFound)` does it all; use `errors.Is(err, ErrNotFound)` to pick the 404.",
+]
+cases = [
+  "POST /links creates a link",
+  "responses are JSON",
+  "a body that isn't JSON is a 400",
+  "an invalid URL is a 400 saying so",
+  "a code redirects to its URL",
+  "an unknown code is a 404",
+]

@@ -11,6 +11,9 @@ All notable changes to this project are listed here. The format follows
   stages in one folder. Each stage's files arrive once the one before passes,
   your code carries forward, and checking a stage runs every test so far.
   Go runs projects first; the projects themselves follow one per release.
+- Go's project: a URL shortener HTTP service in eight stages (store,
+  handlers, stats, middleware, concurrency, timeouts, expiry, graceful
+  shutdown), standard library only, 43 tests. It closes the Go path.
 
 ## [0.5.0] - 2026-11-11
 

@@ -333,6 +333,13 @@ Switch with `learn start {}`, or pick another exercise.", n.track, n.track),
         self.path_specs(track).into_iter().cloned().collect()
     }
 
+    /// The exercises whose files belong in the workspace now: every one, except
+    /// a project's stages that the learner hasn't reached yet. Pass these to
+    /// `backends::generate` and `check::run`, which write every spec they get.
+    pub fn workspace_specs(&self, track: &str) -> Vec<Spec> {
+        self.path_specs(track).into_iter().filter(|s| self.reached(track, s)).cloned().collect()
+    }
+
     /// The modules on a track's path, in order, with what it skips of each.
     pub fn path(&self, track: &str) -> &[crate::path::Step] {
         self.paths.get(track).map(Vec::as_slice).unwrap_or(&[])

@@ -110,7 +110,7 @@ fn run_check(tx: Sender<Msg>, workspace: Option<PathBuf>, track: &'static str, s
             let tool = check::require_tool(b)?;
             let spec = ctx.spec_on(track, &slug)?.clone();
             let dir = ctx.workspace.join(track);
-            let result = check::run_streaming(b, &spec, &ctx.track_specs(track), &dir, &tool, &mut |index, passed| {
+            let result = check::run_streaming(b, &spec, &ctx.workspace_specs(track), &dir, &tool, &mut |index, passed| {
                 let _ = tx.send(Msg::Case { index, passed });
             })?;
             if result.passed {

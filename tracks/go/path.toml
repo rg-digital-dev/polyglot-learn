@@ -37,3 +37,19 @@ exercises = [
   "generic-set",
   "wrapped-errors",
 ]
+
+# The project: one codebase that grows over eight stages, in one folder.
+[[stage]]
+id = "url-shortener"
+title = "Project: URL shortener"
+project = true
+exercises = [
+  "shortener-store",
+  "shortener-handlers",
+  "shortener-stats",
+  "shortener-middleware",
+  "shortener-concurrency",
+  "shortener-timeouts",
+  "shortener-expiry",
+  "shortener-shutdown",
+]

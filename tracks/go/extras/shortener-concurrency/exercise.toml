@@ -1,0 +1,14 @@
+title = "Concurrency"
+concept = "concurrency"
+summary = "An HTTP server runs every request in its own goroutine, so the store is used from many at once. Make it safe: no lost hits, no duplicate codes, no crashes."
+stubs = ["store.go"]
+hints = [
+  "Add a `sync.RWMutex` to Store. Methods that change the map or the counter take `s.mu.Lock()`; Get only reads, so `s.mu.RLock()` lets many readers in at once. Follow each with `defer s.mu.Unlock()` (or `RUnlock`).",
+  "Visit reads and changes the link, so it needs the full Lock: with RLock, two visits could both read 5 hits and both write 6.",
+  "Validate the URL before taking the lock: parsing needs no shared state, and keeping the locked part short keeps the store fast.",
+]
+cases = [
+  "parallel adds get unique codes",
+  "parallel visits count every hit",
+  "parallel requests all succeed",
+]

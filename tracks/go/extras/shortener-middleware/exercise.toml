@@ -1,0 +1,18 @@
+title = "Middleware"
+concept = "middleware"
+summary = "Wrap the server in middleware, functions from handler to handler: a request ID, a request log, and a recovery that turns a panic into a 500. Chain puts them together in order."
+stubs = ["middleware.go"]
+hints = [
+  "A middleware returns `http.HandlerFunc(func(w, r) { …before…; next.ServeHTTP(w, r); …after… })`. Chain applies them from the last to the first, so the first ends up outermost.",
+  "To see the status a handler sends, pass it your own writer: a struct embedding `http.ResponseWriter` with a `status` field, whose WriteHeader records the status and calls the embedded one. Write without WriteHeader means 200.",
+  "Recover needs `defer func() { if v := recover(); v != nil { … } }()` at the top of the wrapping handler. For request IDs, a package-level `atomic.Int64` with `Add(1)` is safe from many goroutines.",
+]
+cases = [
+  "chain runs the first middleware outermost",
+  "a request without an ID gets one",
+  "an incoming request ID is kept",
+  "logger writes method, path and status",
+  "logger counts a plain write as 200",
+  "recover turns a panic into a 500",
+  "recover leaves other responses alone",
+]

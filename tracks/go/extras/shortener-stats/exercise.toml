@@ -1,0 +1,17 @@
+title = "Stats"
+concept = "json"
+summary = "Count visits: Visit is Get that adds a hit, the redirect uses it, and GET /links/{code} shows a link's stats as JSON."
+stubs = ["stats.go"]
+hints = [
+  "Store pointers (`map[string]*Link`) or write the changed Link back into the map: a `Link` taken out of a `map[string]Link` is a copy, so `link.Hits++` on it changes nothing in the store.",
+  "Register `GET /links/{code}` next to `GET /{code}`; the mux picks the most specific pattern, so /links/1 goes to stats and /1 to the redirect.",
+  "Encode a `map[string]any` or a struct with JSON tags; for \"created\" use `link.Created.Format(time.RFC3339)`.",
+]
+cases = [
+  "visit counts a hit",
+  "visiting an unknown code is ErrNotFound",
+  "get doesn't count a hit",
+  "a redirect counts a hit",
+  "GET /links/{code} shows the link as JSON",
+  "stats for an unknown code are a 404",
+]

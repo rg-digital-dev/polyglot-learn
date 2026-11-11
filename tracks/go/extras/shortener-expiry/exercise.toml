@@ -1,0 +1,16 @@
+title = "Expiry"
+concept = "goroutines"
+summary = "Links that expire: AddTTL sets an expiry by the store's clock, expired links are gone at once, Expire removes them, and a janitor goroutine calls Expire on a ticker until it's stopped."
+stubs = ["expiry.go"]
+hints = [
+  "Keep the expiry next to each link (a zero `time.Time` for never) and write one helper, \"is this code live now?\", that Get, Visit and Expire all use: `!expires.IsZero() && !s.now().Before(expires)` means expired.",
+  "Deleting from a map while ranging over it is allowed in Go, so Expire can loop over the map, delete the expired codes and count them, all under the write lock.",
+  "StartJanitor: `ticker := time.NewTicker(every)` and a `quit` channel; the goroutine selects on `ticker.C` (call Expire) and `quit` (stop the ticker and return). Make stop close quit inside a `sync.Once`, since closing a channel twice panics.",
+]
+cases = [
+  "a link without a TTL never expires",
+  "an expired link is not found",
+  "expire removes expired links and counts them",
+  "the janitor expires links in the background",
+  "stop ends the janitor and is safe twice",
+]

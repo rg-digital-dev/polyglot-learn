@@ -1,0 +1,15 @@
+title = "Graceful shutdown"
+concept = "graceful-shutdown"
+summary = "Run the service for real: serve on a listener until the context is cancelled, then shut down gracefully, letting requests in flight finish."
+stubs = ["run.go"]
+hints = [
+  "`srv := &http.Server{Handler: h}`, then `go func() { served <- srv.Serve(ln) }()` with a buffered `served` channel. `select` on `served` (serving failed: return the error) and `ctx.Done()`.",
+  "After ctx is done, call `srv.Shutdown` with a fresh context that times out after 5 seconds: `ctx` itself is already cancelled, and Shutdown would give up at once.",
+  "Once Shutdown returns, Serve has returned `http.ErrServerClosed`: that's the normal end, so receive it from `served` and return nil for it (`errors.Is`), or the error otherwise.",
+]
+cases = [
+  "run serves requests",
+  "run returns nil once cancelled",
+  "a request in flight still gets its answer",
+  "new connections are refused after shutdown",
+]

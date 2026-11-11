@@ -979,15 +979,16 @@ Expected (): [2]"), None);
         assert_eq!(
             head,
             [
-                "  Go · 0 of 31 done",
+                "  Go · 0 of 39 done",
                 "  Simple, concurrent services and command-line tools",
                 "",
-                "  Syntax Primer          ░░░░░░░░░░░░  0/7 read",
+                "  Syntax Primer           ░░░░░░░░░░░░  0/7 read",
                 "    ○ A File at a Glance"
             ]
         );
-        assert!(out.contains("  Foundations            ░░░░░░░░░░░░  0/6\n    ○ Hello\n    ○ Leap Year"), "{out}");
-        assert!(out.contains("  Deeper Go              ░░░░░░░░░░░░  0/5"), "{out}");
+        assert!(out.contains("  Foundations             ░░░░░░░░░░░░  0/6\n    ○ Hello\n    ○ Leap Year"), "{out}");
+        assert!(out.contains("  Deeper Go               ░░░░░░░░░░░░  0/5"), "{out}");
+        assert!(out.contains("  Project: URL shortener  ░░░░░░░░░░░░  0/8"), "{out}");
         assert!(!out.contains("Deeper Rust"), "other tracks' modules aren't listed: {out}");
         let all = status_all(&ctx, &Ui::plain(80));
         assert!(all.lines().next().unwrap().ends_with("ts    py    rust  go    php   lua   qml"), "{all}");
@@ -1004,7 +1005,7 @@ Expected (): [2]"), None);
         let ctx = ctx();
         let ui = Ui { unicode: false, ..Ui::plain(80) };
         let out = status_track(&ctx, go(), &ui);
-        assert!(out.contains("    - Hello") && out.contains("Foundations            ............  0/6"), "{out}");
+        assert!(out.contains("    - Hello") && out.contains("Foundations             ............  0/6"), "{out}");
         assert!(out.is_ascii(), "{out}");
     }
 

@@ -26,7 +26,7 @@ pub fn path(track: &str, spec: &Spec) -> PathBuf {
 pub fn generate_track(ctx: &Ctx, b: &dyn Backend) -> Result<Generated> {
     let dir = ctx.workspace.join(b.id());
     // A project's later stages are written as the one before passes.
-    let specs: Vec<Spec> = ctx.track_specs(b.id()).into_iter().filter(|s| ctx.reached(b.id(), s)).collect();
+    let specs = ctx.workspace_specs(b.id());
     let report = backends::generate(b, &specs, &dir)?;
     write_all(ctx, b, &specs, &dir)?;
     crate::pathfile::write(ctx, b)?;
