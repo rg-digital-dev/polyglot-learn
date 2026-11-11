@@ -183,7 +183,7 @@ impl Server {
             let outcome = (|| -> Result<CheckResult> {
                 let tool = check::require_tool(t.track)?;
                 let spec = t.spec().clone();
-                let result = check::run(t.track, &spec, &t.ctx.track_specs(t.track.id()), &t.track_dir(), &tool)?;
+                let result = check::run(t.track, &spec, &t.ctx.workspace_specs(t.track.id()), &t.track_dir(), &tool)?;
                 if result.passed {
                     check::record_pass(&mut t.ctx, t.track.id(), &t.slug)?;
                 }

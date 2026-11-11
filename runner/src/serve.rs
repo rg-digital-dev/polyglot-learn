@@ -477,7 +477,7 @@ fn run_check(app: &App, track: &str, slug: &str) {
         let spec = ctx.spec_on(track, slug)?.clone();
         app.emit(json!({ "type": "check-started", "track": track, "slug": slug, "total": spec.cases().len() }));
         let dir = ctx.workspace.join(b.id());
-        let result = check::run_streaming(b, &spec, &ctx.track_specs(track), &dir, &tool, &mut |index, passed| {
+        let result = check::run_streaming(b, &spec, &ctx.workspace_specs(track), &dir, &tool, &mut |index, passed| {
             app.emit(json!({ "type": "case", "track": track, "slug": slug, "index": index, "passed": passed }));
         })?;
         if result.passed {

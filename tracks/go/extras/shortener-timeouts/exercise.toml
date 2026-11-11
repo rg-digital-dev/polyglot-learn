@@ -1,0 +1,15 @@
+title = "Timeouts"
+concept = "context"
+summary = "Don't let a slow request hang forever: a Timeout middleware gives the handler a deadline through its request's context and answers 503 when it passes."
+stubs = ["timeout.go"]
+hints = [
+  "`ctx, cancel := context.WithTimeout(r.Context(), d)` and `defer cancel()`; then run `next.ServeHTTP(buf, r.WithContext(ctx))` in a goroutine that closes (or sends on) a `done` channel when it returns.",
+  "`select` on `done` and `ctx.Done()`. If done wins, copy the buffer: headers into `w.Header()`, then `w.WriteHeader(status)` (200 if none was set), then the body. If the context wins, write the 503 error.",
+  "The buffer is a small http.ResponseWriter: Header returns its map, Write appends to its body, WriteHeader keeps the first status. Writing to `w` from the handler's goroutine would race with the timeout's answer.",
+]
+cases = [
+  "a fast handler answers as usual",
+  "a slow handler gets a 503 in time",
+  "the slow handler's context is cancelled",
+  "the timeout answer is a JSON error",
+]

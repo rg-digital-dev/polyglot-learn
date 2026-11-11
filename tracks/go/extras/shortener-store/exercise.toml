@@ -1,0 +1,19 @@
+title = "Store"
+concept = "errors"
+summary = "Start the URL shortener with its store: Add checks a URL and keeps it under the next short code (base 62: 1, 2, … a, … Z, 10), Get looks a code up, and two sentinel errors say what went wrong."
+stubs = ["store.go"]
+hints = [
+  "Keep a `map[string]Link` and a counter. Add increments the counter and turns it into a code; base 62 is the usual digit loop: take `n % 62` as the last digit (an index into \"0-9a-zA-Z\"), divide by 62, repeat until n is 0, and prepend each digit.",
+  "`url.Parse` accepts almost anything, so check the result yourself: `u.Scheme` must be \"http\" or \"https\" and `u.Host` must not be empty. Trim with `strings.TrimSpace` first, and only bump the counter once the URL is accepted.",
+  "Return the sentinel errors themselves (`return \"\", ErrInvalidURL`), so callers can test them with `errors.Is`. Set `Created: s.now()` when you store the link.",
+]
+cases = [
+  "the first link gets code 1",
+  "codes count up in base 62",
+  "get returns the stored link",
+  "an unknown code is ErrNotFound",
+  "only http and https URLs are accepted",
+  "a URL needs a host",
+  "spaces around the URL are trimmed",
+  "a rejected URL uses no code",
+]
