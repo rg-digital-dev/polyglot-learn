@@ -92,7 +92,7 @@ This opens `http://learn.localhost:4321`. It shows the same course with rendered
 - **Hover** the signature for the task, what the tests check and the hints you've revealed.
 - **Code actions:** "Check this exercise", "Show next hint" (it counts, like `learn hint`) and "Open LESSON.md".
 
-Any editor that can run a language server over stdio can use it: point it at `learn lsp` for the languages you're learning. A Zed extension that does this for you is on the way.
+Any editor that can run a language server over stdio can use it: point it at `learn lsp` for the languages you're learning. A Zed extension that does this for you is on the way. For Zed, `learn` also writes a `.zed/tasks.json` with **learn check** and **learn watch** (for `task: spawn`) when it sets up a track, unless the folder already has one.
 
 ## Keeping your own solutions
 
