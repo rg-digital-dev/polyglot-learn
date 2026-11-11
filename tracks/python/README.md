@@ -19,10 +19,12 @@ A `python3` (or `python`) of version 3.12 or later. Check with `python3 --versio
 `learn` runs, from `workspace/python`:
 
 ```sh
-python -X utf8 -B <slug>/test_<module>.py      # e.g. python -X utf8 -B leap-year/test_leap_year.py
+python -X utf8 -B <stage>/<slug>/test_<module>.py      # e.g. python -X utf8 -B 01-foundations/leap-year/test_leap_year.py
 ```
 
-You can run the same command yourself. Your code goes in `<slug>/<module>.py`, where the module name is the slug with underscores. The test file imports it as `M`, and the shared `harness.py` calls each function and compares the result. Lists, dicts and dataclasses compare by value; `True` doesn't count as `1`, and a tuple doesn't count as a list. For fallible functions, raise an exception with a message (usually `ValueError`); returning `None` fails the test.
+You can run the same command yourself. Each exercise sits inside a numbered folder for its stage, and your code goes in `<stage>/<slug>/<module>.py`, where the module name is the slug with underscores. The test file imports it as `M`, and the shared `harness.py` calls each function and compares the result. Lists, dicts and dataclasses compare by value; `True` doesn't count as `1`, and a tuple doesn't count as a list. For fallible functions, raise an exception with a message (usually `ValueError`); returning `None` fails the test.
+
+The path ends with a project: a data pipeline for a shop's orders, built over eight stages in one folder, `workspace/python/NN-data-pipeline/`, from records and CSV reading to sources, transforms, aggregation, SQLite storage, a Markdown report and an argparse command line. Each stage adds a module and its test file (`test_s1_records.py`, …) once the stage before passes; your code carries forward, and `learn` runs every test file so far with `python -X utf8 -B harness.py NN-data-pipeline`. `PATH.md` in `workspace/python/` shows where you are.
 
 Type hints are documentation here: Python doesn't check them when it runs. An editor with a type checker (below) does.
 

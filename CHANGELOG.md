@@ -10,7 +10,7 @@ All notable changes to this project are listed here. The format follows
 - Projects: a track's stage can be a project, a codebase that grows over several
   stages in one folder. Each stage's files arrive once the one before passes,
   your code carries forward, and checking a stage runs every test so far.
-  Go and Rust run projects; the projects themselves follow one per release.
+  Go, Rust and Python run projects; the projects themselves follow one per release.
 - Go's project: a URL shortener HTTP service in eight stages (store,
   handlers, stats, middleware, concurrency, timeouts, expiry, graceful
   shutdown), standard library only, 43 tests. It closes the Go path.
@@ -19,6 +19,11 @@ All notable changes to this project are listed here. The format follows
   iterator filters and stats, output formats behind a trait, scoped threads,
   zero-copy parsing with lifetimes), standard library only, 47 tests. It
   closes the Rust path; Rust now runs projects too.
+- Python's project: a data pipeline for a shop's orders in eight stages
+  (dataclass records with Decimal money, lazy CSV reading, CSV and JSON Lines
+  sources behind a Protocol, itertools transforms, Counter aggregation,
+  SQLite storage, a Markdown report, an argparse command line), standard
+  library only, 47 tests. It closes the Python path; Python runs projects too.
 
 ## [0.5.0] - 2026-11-11
 

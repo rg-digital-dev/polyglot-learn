@@ -1,0 +1,18 @@
+title = "Command line"
+concept = "argparse"
+summary = "Put the pipeline behind a command line with argparse subcommands: import reads files into the database and reports bad rows, report prints or writes the Markdown report for a period and categories. Then run it for real with python cli.py."
+stubs = ["cli.py"]
+hints = [
+  "`p = argparse.ArgumentParser(prog=\"pipeline\")`, `sub = p.add_subparsers(dest=\"command\", required=True)`, then `imp = sub.add_parser(\"import\")` with `imp.add_argument(\"files\", nargs=\"+\")` and `imp.add_argument(\"--db\", required=True)`.",
+  "`type=date.fromisoformat` on --from and --to makes argparse convert and reject bad dates for you. `dest=\"start\"` is needed for --from, since `from` is a Python keyword. `action=\"append\", default=[]` collects every --category.",
+  "argparse ends the program with SystemExit(2) on a usage error; catch it around `parse_args(argv)` and return its code. For report, chain `in_category(between(store.orders(), start, end), *categories)` into summarize and render. Print errors with `print(..., file=sys.stderr)`.",
+]
+cases = [
+  "import saves orders and says how many",
+  "bad rows go to stderr and set the exit code",
+  "importing twice adds only new orders",
+  "report prints markdown for a period and categories",
+  "report --out writes the file",
+  "usage errors exit with 2",
+  "python cli.py runs as a script",
+]

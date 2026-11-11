@@ -1,0 +1,17 @@
+title = "Sources"
+concept = "protocols"
+summary = "Orders arrive as CSV and as JSON Lines. Put both behind one Source Protocol (a name and a records() method), pick the right one from a file's extension, and merge several sources into one stream that says where each item came from."
+stubs = ["sources.py"]
+hints = [
+  "Put `@runtime_checkable` above `class Source(Protocol)`: then `isinstance(x, Source)` checks that x has `name` and `records`, whatever its class. CsvSource and JsonLinesSource don't inherit from Source; they only have the right shape.",
+  "In CsvSource.records, open the file with `newline=\"\"` (the csv module wants that) inside `with`, and `yield from read_csv(f)`. Because records is a generator, the file stays open exactly as long as someone is reading.",
+  "For JSON Lines, `enumerate(f, start=1)` gives line numbers; skip blank lines, `json.loads` each, check it's a dict, and turn each value into text: `\"\" if v is None else str(v)`. json.JSONDecodeError is a ValueError, so one `except ValueError` catches both kinds of bad line.",
+]
+cases = [
+  "CsvSource reads a file",
+  "JsonLinesSource reads numbers and strings",
+  "a bad JSON line is a RowError with its line number",
+  "open_source picks by extension",
+  "anything with name and records is a Source",
+  "merged tags each item with its source",
+]

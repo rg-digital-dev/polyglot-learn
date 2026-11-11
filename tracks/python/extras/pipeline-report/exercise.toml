@@ -1,0 +1,16 @@
+title = "Report"
+concept = "string-formatting"
+summary = "Turn a Summary into a Markdown report people can read: money with two decimals and grouped thousands, tables whose columns line up, and a section per breakdown."
+stubs = ["report.py"]
+hints = [
+  "money: `amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)` rounds the way people expect, then the format spec `:,.2f` adds the commas: `f\"{rounded:,.2f}\"` works on a Decimal.",
+  "table: work out each column's width first, `max(3, len(header), *(len(row[i]) for row in rows))`. Then each line is `\"| \" + \" | \".join(cells) + \" |\"` with `cell.ljust(w)` or `cell.rjust(w)`.",
+  "render: build a list of parts (the title line, the period line, one heading plus table per section) and join it with `\"\\n\\n\"`, then add one final `\"\\n\"`. Each section is `f\"## {title}\\n\\n\" + table(...)`.",
+]
+cases = [
+  "money has two decimals and grouped thousands",
+  "table pads and aligns columns",
+  "render shows the period, count and revenue",
+  "render has a table per section",
+  "an empty summary says there are no orders",
+]

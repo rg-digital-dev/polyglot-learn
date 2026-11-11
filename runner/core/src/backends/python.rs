@@ -126,6 +126,28 @@ class H:
 
     def finish(self) -> None:
         sys.exit(1 if self.failed else 0)
+
+
+def run_folder(folder: str) -> int:
+    """Run every test_*.py in `folder`, in name order: a project's stages."""
+    import glob
+    import os
+    import runpy
+
+    failed = False
+    for path in sorted(glob.glob(os.path.join(folder, "test_*.py"))):
+        try:
+            runpy.run_path(path, run_name="__main__")
+        except SystemExit as e:
+            failed = failed or bool(e.code)
+        except Exception as e:
+            failed = True
+            print(f"Bail out! {os.path.basename(path)} didn't load: {type(e).__name__}: {e}", flush=True)
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(run_folder(sys.argv[1]))
 "#;
 
 const TASK: &str = r#"def task(ms: int) -> int:
@@ -567,8 +589,13 @@ impl Backend for Python {
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
         // -X utf8: the same text encoding on every system; -B: no __pycache__ in the workspace.
+        // A project has a test file per stage; the harness runs them all.
+        let target = match &spec.project {
+            Some(_) => vec!["harness.py".to_string(), spec.rel(self.id())],
+            None => vec![format!("{}/test_{}.py", spec.rel(self.id()), Self::module(spec))],
+        };
         Invocation::new(&tool.path, track_dir)
-            .args(["-X".to_string(), "utf8".to_string(), "-B".to_string(), format!("{}/test_{}.py", spec.rel(self.id()), Self::module(spec))])
+            .args(["-X".to_string(), "utf8".to_string(), "-B".to_string()].into_iter().chain(target))
             .timeout(Duration::from_secs(60))
     }
 

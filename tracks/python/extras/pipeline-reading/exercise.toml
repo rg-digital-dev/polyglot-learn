@@ -1,0 +1,17 @@
+title = "Reading CSV"
+concept = "generators"
+summary = "Read orders from CSV text lazily with a generator: each row becomes an Order or a RowError with its line number, so one bad row doesn't stop the import. Then split the good from the bad, and drop repeated order ids."
+stubs = ["reading.py"]
+hints = [
+  "`reader = csv.DictReader(lines)` reads the header itself and gives each row as a dict. Loop over it and `yield parse_order(row)`; in `except ValueError as e:` yield `RowError(reader.line_num, str(e))` instead.",
+  "`reader.line_num` is the line the reader has got to, counting the header as line 1, so it's the right number for the row you just got. A function with `yield` in it is a generator: nothing runs until someone asks for the first item.",
+  "dedupe keeps a `seen` set of ids and yields an order only the first time its id shows up. split_valid can append each item to one of two lists with `isinstance(item, RowError)`.",
+]
+cases = [
+  "read_csv yields orders in file order",
+  "a bad row is a RowError with its line number",
+  "read_csv is lazy",
+  "quoted fields with commas work",
+  "split_valid separates orders from errors",
+  "dedupe keeps the first of each order id, lazily",
+]

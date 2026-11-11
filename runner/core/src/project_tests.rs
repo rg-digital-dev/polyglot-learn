@@ -135,3 +135,34 @@ fn a_rust_project_is_one_crate_tested_as_a_whole() {
     let run = rust.command(&specs[2], &tool, &ws.join("rust"));
     assert_eq!(run.args[..5], ["test", "-p", "log-cli", "--tests", "--no-fail-fast"], "every stage's test file runs");
 }
+
+#[test]
+fn a_python_project_runs_every_stage_file_through_the_harness() {
+    let ws = std::env::temp_dir().join(format!("learn-project-python-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&ws);
+    let ctx = Ctx::discover(Some(ws.clone())).unwrap();
+    let python = backends::get("python").unwrap();
+    let specs: Vec<_> = ctx.track_specs("python").into_iter().filter(|s| s.project.is_some()).collect();
+    assert_eq!(specs.len(), 8, "the data pipeline has eight stages");
+    let tool = crate::toolchain::Found { path: "python".into(), version: String::new() };
+    let run = python.command(&specs[3], &tool, &ws.join("python"));
+    assert_eq!(run.args, ["-X", "utf8", "-B", "harness.py", specs[0].rel("python").as_str()], "the harness runs the folder");
+
+    // The harness runs each test file in name order and fails if any did.
+    let Some(tool) = python.tool().find() else { return }; // no Python here
+    let dir = ws.join("python");
+    backends::generate(python, &specs[..0], &dir).unwrap(); // writes harness.py
+    let project = dir.join("demo");
+    std::fs::create_dir_all(&project).unwrap();
+    let test = |n: u32, ok: bool| {
+        format!("import os, sys\nsys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\nfrom harness import H\nt = H()\nt.equals('c0{n}_x', lambda: 1, {})\nt.finish()\n", if ok { 1 } else { 2 })
+    };
+    std::fs::write(project.join("test_s1_a.py"), test(1, true)).unwrap();
+    std::fs::write(project.join("test_s2_b.py"), test(2, false)).unwrap();
+    std::fs::write(project.join("test_s3_c.py"), "raise ImportError('broken stub')\n").unwrap();
+    let out = std::process::Command::new(&tool.path).args(["-X", "utf8", "-B", "harness.py", "demo"]).current_dir(&dir).output().unwrap();
+    let text = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(python.parse_results(&text), [(0, true), (1, false)], "{text}");
+    assert!(text.contains("Bail out! test_s3_c.py didn't load: ImportError: broken stub"), "{text}");
+    assert_eq!(out.status.code(), Some(1));
+}

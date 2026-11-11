@@ -1,0 +1,17 @@
+title = "Aggregations"
+concept = "collections"
+summary = "Add the orders up: revenue per category or country with a Counter, the top customers, revenue per month, and one Summary holding all of it for the report."
+stubs = ["aggregate.py"]
+hints = [
+  "`totals = Counter()` then `totals[key(o)] += o.total`: a missing key starts at 0, and 0 + a Decimal is a Decimal. For months, `defaultdict(Decimal)` does the same, with `o.date.strftime(\"%Y-%m\")` as the key.",
+  "Sort pairs biggest first with ties by name: `sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))`. Negating the amount reverses that part of the order only. A dict built from a sorted list keeps that order.",
+  "summarize may get a generator, which can be read only once: start with `orders = list(orders)`. Then min and max of the dates, `sum((o.total for o in orders), Decimal(0))`, and the helpers you just wrote.",
+]
+cases = [
+  "revenue_by sums totals per key",
+  "top_customers sorts by revenue then name",
+  "monthly_revenue groups by year and month in order",
+  "summarize counts orders, revenue and period",
+  "summarize of nothing is empty",
+  "categories and countries are sorted biggest first",
+]
