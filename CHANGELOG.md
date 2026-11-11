@@ -10,7 +10,7 @@ All notable changes to this project are listed here. The format follows
 - Projects: a track's stage can be a project, a codebase that grows over several
   stages in one folder. Each stage's files arrive once the one before passes,
   your code carries forward, and checking a stage runs every test so far.
-  Go, Rust, Python and TypeScript run projects; the projects themselves follow one per release.
+  Go, Rust, Python, TypeScript and PHP run projects; the projects themselves follow one per release.
 - Go's project: a URL shortener HTTP service in eight stages (store,
   handlers, stats, middleware, concurrency, timeouts, expiry, graceful
   shutdown), standard library only, 43 tests. It closes the Go path.
@@ -31,6 +31,13 @@ All notable changes to this project are listed here. The format follows
   also type-checked with tsc. It closes the TypeScript path.
 - In a project, each stage's "types check" runs tsc on that stage's own files,
   and stays on that stage's first case as later stages arrive.
+- PHP's project: a tiny web framework in eight stages (readonly request and
+  response, a regex router, PSR-15 style middleware, validation with
+  attributes, escaping templates with output buffering, sessions and CSRF
+  tokens, a JSON API with problem details and pagination, an autowiring
+  container and a front controller), no Composer, 48 tests. It closes the
+  PHP path; `php harness.php <folder>` runs a project's test files, each in
+  its own process.
 
 ## [0.5.0] - 2026-11-11
 

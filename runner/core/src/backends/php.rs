@@ -225,6 +225,25 @@ final class Harness
         exit($this->failed === 0 ? 0 : 1);
     }
 }
+
+// `php harness.php <folder>`: run every *.test.php there in name order, a
+// project's stages. Each runs in its own process: finish() exits, and two test
+// files may declare the same helper function.
+if (PHP_SAPI === 'cli' && realpath($_SERVER['argv'][0] ?? '') === __FILE__) {
+    $files = glob(rtrim($_SERVER['argv'][1] ?? '.', '/\\') . '/*.test.php') ?: [];
+    sort($files, SORT_STRING);
+    $failed = false;
+    foreach ($files as $file) {
+        passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($file), $code);
+        if ($code !== 0) {
+            $failed = true;
+            if ($code === 255) {
+                echo 'Bail out! ' . basename($file) . " stopped with a fatal error\n";
+            }
+        }
+    }
+    exit($failed ? 1 : 0);
+}
 "#;
 
 const CLOCK: &str = r#"/**
@@ -531,8 +550,13 @@ impl Backend for Php {
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
+        // A project has a test file per stage; the harness runs them all.
+        let args = match &spec.project {
+            Some(_) => vec!["harness.php".to_string(), spec.rel(self.id())],
+            None => vec![format!("{}/{}.test.php", spec.rel(self.id()), spec.slug)],
+        };
         Invocation::new(&tool.path, track_dir)
-            .args([format!("{}/{}.test.php", spec.rel(self.id()), spec.slug)])
+            .args(args)
             .timeout(Duration::from_secs(60))
     }
 

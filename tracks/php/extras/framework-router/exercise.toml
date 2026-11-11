@@ -1,0 +1,17 @@
+title = "Router"
+concept = "routing"
+summary = "Map URLs to code: register routes with parameters like /posts/{id:\\d+}, find the first one that matches the method and path, call its handler with the parameters, and answer 404 or 405 (with an Allow header) when nothing fits."
+stubs = ["Router.php"]
+hints = [
+  "Compile each pattern to a regex once, when it's added: `{name}` becomes `(?P<name>[^/]+)`, `{name:regex}` becomes `(?P<name>regex)`, and everything else goes through `preg_quote`. Anchor it: `'#^' . $regex . '$#'`.",
+  "`preg_match($regex, $path, $m)` fills $m with numbered and named groups; `array_filter($m, 'is_string', ARRAY_FILTER_USE_KEY)` keeps only the names. Store `Closure::fromCallable($handler)` so any callable works.",
+  "Loop over the routes: path matches and method matches, call it; path matches but method doesn't, remember the method for Allow. Turn the handler's result into a Response with `match (true) { $r instanceof Response => $r, is_string($r) => Response::text($r), default => Response::json($r) }`.",
+]
+cases = [
+  "static routes match by method and path",
+  "parameters are captured by name",
+  "a pattern constrains a parameter",
+  "no matching path is a 404",
+  "a path with other methods is a 405 with Allow",
+  "handlers may return a string or an array",
+]

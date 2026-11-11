@@ -1,0 +1,17 @@
+title = "Sessions and CSRF"
+concept = "security"
+summary = "Keep state per visitor behind a Session interface with an in-memory version for tests, add one-time flash messages, and stop forged form posts with CSRF tokens: random, stored in the session, checked on every unsafe request."
+stubs = ["Session.php"]
+hints = [
+  "ArraySession keeps a private array. `array_key_exists($key, $this->data)` rather than `isset`, so a stored null still counts as stored. Flash values can live in the session too, under a key like '_flash', removed as takeFlash reads them.",
+  "`bin2hex(random_bytes(32))` gives 64 hex characters from the operating system's secure random source; store it under '_csrf' the first time and return the same one after that. `mt_rand` and `uniqid` are guessable: never use them for secrets.",
+  "Compare with `hash_equals($known, $given)`, which takes the same time however many characters match; `===` stops at the first difference, which leaks the token a character at a time. In the middleware, read the X-CSRF-Token header, else `parse_str($request->body, $form)` and `$form['_token']`.",
+]
+cases = [
+  "a session stores values",
+  "a flash message is read once",
+  "a CSRF token is random and kept",
+  "only the session token is valid",
+  "unsafe requests need the token",
+  "valid compares in constant time",
+]

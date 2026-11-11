@@ -1,0 +1,17 @@
+title = "Container and app"
+concept = "dependency-injection"
+summary = "Put it together: a container that builds objects by reading their constructors, an App that joins the router, middleware and container, emit() to send a response, and public/index.php, a front controller you can run with php -S."
+stubs = ["App.php", "public/index.php"]
+hints = [
+  "For autowiring, `new ReflectionClass($class)`; for each constructor parameter, if `$p->getType()` is a ReflectionNamedType that `!isBuiltin()`, get that type from the container; else use `getDefaultValue()` if there is one. `newInstanceArgs($args)` builds it.",
+  "Keep built objects in an array so each is made once. For cycles, keep the ids being built right now: if get() is asked for one already in that list, it's a cycle. Remove it in a `finally`, so an error doesn't leave it marked.",
+  "App's constructor gets the Router from the container. In handle(), turn class names into objects with the container, then `(new Pipeline($this->router, ...$middleware))->handle($request)`. In emit, `$header ??= header(...);` makes a closure from PHP's header function.",
+]
+cases = [
+  "the container builds classes and their dependencies",
+  "factories decide how to build",
+  "the container explains what it cannot build",
+  "the app routes through its middleware",
+  "emit sends the status, headers and body",
+  "public/index.php serves requests",
+]

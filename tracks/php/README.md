@@ -19,10 +19,12 @@ This track uses the plain `php` command-line interpreter. There is no Composer, 
 `learn` runs, from `workspace/php`:
 
 ```sh
-php <slug>/<slug>.test.php
+php <stage>/<slug>/<slug>.test.php      # e.g. php 01-foundations/hello/hello.test.php
 ```
 
-You can run the same command yourself. The test file starts with `declare(strict_types=1);`, loads your solution and the shared `harness.php`, and runs every case from the exercise spec.
+You can run the same command yourself. Each exercise sits inside a numbered folder for its stage. The test file starts with `declare(strict_types=1);`, loads your solution and the shared `harness.php`, and runs every case from the exercise spec.
+
+The path ends with a project: a tiny web framework built over eight stages in one folder, `workspace/php/NN-web-framework/`, from readonly requests and responses to a router, middleware, validation with attributes, escaping templates, sessions with CSRF tokens, a JSON API and an autowiring container, with a front controller you can run with `php -S localhost:8000 public/index.php`. Each stage adds a file and its test file (`s1-http.test.php`, …) once the stage before passes; your code carries forward, and `learn` runs every test file so far with `php harness.php NN-web-framework`, each in its own process. `PATH.md` in `workspace/php/` shows where you are. The project needs PHP 8.1 or newer and only the extensions the standard `php-cli` package ships: no mbstring.
 
 Things the tests rely on:
 

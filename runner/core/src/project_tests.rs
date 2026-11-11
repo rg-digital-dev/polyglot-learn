@@ -193,3 +193,34 @@ fn a_typescript_project_type_checks_each_stage_on_its_own() {
     let run = ts.command(&specs[3], &tool, &ws.join("typescript"));
     assert_eq!(run.args.last().unwrap(), &format!("{}/*.test.ts", specs[0].rel("typescript")), "every stage's tests run");
 }
+
+#[test]
+fn a_php_project_runs_each_stage_file_in_its_own_process() {
+    let ws = std::env::temp_dir().join(format!("learn-project-php-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&ws);
+    let ctx = Ctx::discover(Some(ws.clone())).unwrap();
+    let php = backends::get("php").unwrap();
+    let specs: Vec<_> = ctx.track_specs("php").into_iter().filter(|s| s.project.is_some()).collect();
+    assert_eq!(specs.len(), 8, "the web framework has eight stages");
+    let tool = crate::toolchain::Found { path: "php".into(), version: String::new() };
+    let run = php.command(&specs[4], &tool, &ws.join("php"));
+    assert_eq!(run.args, ["harness.php", specs[0].rel("php").as_str()], "the harness runs the folder");
+
+    // Each file runs in its own process: both declare helper(), and the first exits.
+    let Some(tool) = php.tool().find() else { return }; // no PHP here
+    let dir = ws.join("php");
+    backends::generate(php, &specs[..0], &dir).unwrap(); // writes harness.php
+    let project = dir.join("demo");
+    std::fs::create_dir_all(&project).unwrap();
+    let test = |n: u32, ok: bool| {
+        format!("<?php\nrequire __DIR__ . '/../harness.php';\nfunction helper(): int {{ return 1; }}\n$t = new Harness();\n$t->equals('c0{n}_x', fn() => helper(), {});\n$t->finish();\n", if ok { 1 } else { 2 })
+    };
+    std::fs::write(project.join("s1-a.test.php"), test(1, true)).unwrap();
+    std::fs::write(project.join("s2-b.test.php"), test(2, false)).unwrap();
+    std::fs::write(project.join("s3-c.test.php"), "<?php\nnew NoSuchClass();\n").unwrap();
+    let out = std::process::Command::new(&tool.path).args(["harness.php", "demo"]).current_dir(&dir).output().unwrap();
+    let text = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(php.parse_results(&text), [(0, true), (1, false)], "{text}");
+    assert!(text.contains("Bail out! s3-c.test.php stopped with a fatal error"), "{text}");
+    assert_eq!(out.status.code(), Some(1));
+}

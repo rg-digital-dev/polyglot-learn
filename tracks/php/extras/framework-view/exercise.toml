@@ -1,0 +1,17 @@
+title = "Templates"
+concept = "output-buffering"
+summary = "Render plain PHP templates into a string with output buffering, escape everything that comes from users with an e() helper, and let a page wrap itself in a layout. A failing template must not leave buffers open."
+stubs = ["View.php"]
+hints = [
+  "`htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')`: ENT_QUOTES escapes both quote marks (for attributes), and ENT_SUBSTITUTE replaces broken UTF-8 instead of returning an empty string.",
+  "`ob_start(); require $file; return ob_get_clean();` captures what the template prints. Run the require inside a static function that takes the path and vars and calls `extract($vars)`, so the template sees only its variables and not $this.",
+  "Remember `ob_get_level()` before `ob_start()`, and in a `finally` call `ob_end_clean()` until the level is back, so an exception doesn't leave a buffer open. For layouts, have layout() store the file and vars, then after the page renders, render the layout with `['content' => $output]` added.",
+]
+cases = [
+  "e escapes HTML",
+  "render fills in variables",
+  "escaping stops injected HTML",
+  "a template can use a layout",
+  "render returns output instead of printing it",
+  "a failing template leaves no buffers behind",
+]
