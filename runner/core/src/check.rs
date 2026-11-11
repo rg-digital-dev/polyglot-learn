@@ -158,8 +158,15 @@ pub fn record_pass(ctx: &mut Ctx, track: &str, slug: &str) -> Result<()> {
     ctx.progress.done.entry(track.to_string()).or_default().insert(slug.to_string());
     ctx.save_progress()?;
     // PATH.md shows what's done; keep it current where the track is set up.
+    // Passing a project stage brings the next stage's files and lesson.
     match crate::backends::get(track) {
-        Ok(b) if ctx.workspace.join(track).is_dir() => crate::pathfile::write(ctx, b),
+        Ok(b) if ctx.workspace.join(track).is_dir() => {
+            if ctx.spec(slug).is_ok_and(|s| s.project.is_some()) {
+                crate::lessons::generate_track(ctx, b).map(|_| ())
+            } else {
+                crate::pathfile::write(ctx, b)
+            }
+        }
         _ => Ok(()),
     }
 }

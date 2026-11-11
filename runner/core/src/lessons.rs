@@ -25,7 +25,8 @@ pub fn path(track: &str, spec: &Spec) -> PathBuf {
 /// UI, the TUI) writes.
 pub fn generate_track(ctx: &Ctx, b: &dyn Backend) -> Result<Generated> {
     let dir = ctx.workspace.join(b.id());
-    let specs = ctx.track_specs(b.id());
+    // A project's later stages are written as the one before passes.
+    let specs: Vec<Spec> = ctx.track_specs(b.id()).into_iter().filter(|s| ctx.reached(b.id(), s)).collect();
     let report = backends::generate(b, &specs, &dir)?;
     write_all(ctx, b, &specs, &dir)?;
     crate::pathfile::write(ctx, b)?;
@@ -38,6 +39,12 @@ pub fn generate_track(ctx: &Ctx, b: &dyn Backend) -> Result<Generated> {
 pub fn write_all(ctx: &Ctx, b: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Result<()> {
     let meta = TrackMeta::load(&ctx.root, b.id())?;
     for spec in specs {
+        // A project has one folder, so one LESSON.md: its current stage's.
+        if let Some(p) = &spec.project {
+            if ctx.project_stage(b.id(), &p.id).map(|s| &s.slug) != Some(&spec.slug) {
+                continue;
+            }
+        }
         backends::write(&track_dir.join(path(b.id(), spec)), &markdown(ctx, b, &meta, spec))?;
     }
     Ok(())
@@ -61,7 +68,10 @@ pub fn markdown(ctx: &Ctx, b: &dyn Backend, meta: &TrackMeta, spec: &Spec) -> St
             from.unwrap_or_default()
         ),
         format!("# {}", spec.title),
-        format!("**{}** · {}", spec.concept, b.name()),
+        match &spec.project {
+            Some(p) => format!("**{}** · stage {} of {} · {}", p.title, p.number, p.stages.len(), b.name()),
+            None => format!("**{}** · {}", spec.concept, b.name()),
+        },
         spec.main.summary.clone(),
     ];
 

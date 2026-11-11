@@ -948,9 +948,25 @@ fn selftest(ctx: &Ctx, langs: &[String], solutions: Option<&Path>, require_all: 
         }
         let dir = base.join(b.id());
         let specs = ctx.track_specs(b.id());
-        backends::generate(b, &specs, &dir)?;
+        // A project's stages arrive one at a time, as for a learner: each
+        // untouched stage is checked with only its own and earlier files there.
+        let up_to = |stage: Option<&learn_core::spec::ProjectStage>| -> Vec<Spec> {
+            specs
+                .iter()
+                .filter(|s| match (&s.project, stage) {
+                    (Some(q), Some(p)) if q.id == p.id => q.number <= p.number,
+                    (Some(q), _) => q.number == 1,
+                    (None, _) => true,
+                })
+                .cloned()
+                .collect()
+        };
+        backends::generate(b, &up_to(None), &dir)?;
 
         for spec in &specs {
+            if spec.project.as_ref().is_some_and(|p| p.number > 1) {
+                backends::generate(b, &up_to(spec.project.as_ref()), &dir)?;
+            }
             let r = check::run(b, spec, &specs, &dir, &tool)?;
             let passing = r.count(Some(true));
             if r.passed {
@@ -973,10 +989,13 @@ fn selftest(ctx: &Ctx, langs: &[String], solutions: Option<&Path>, require_all: 
                 println!("   ✗ no reference solutions in {}", src.display());
                 continue;
             }
-            // The solutions repo keeps one folder per exercise (`<track>/<slug>`);
+            // The solutions repo keeps one folder per exercise (`<track>/<slug>`),
+            // and one per project with its finished code (`<track>/<project>`);
             // the workspace has them in stage folders.
+            backends::generate(b, &specs, &dir)?;
+            let solution = |spec: &Spec| src.join(spec.project.as_ref().map_or(&spec.slug, |p| &p.id));
             for spec in &specs {
-                let from = src.join(&spec.slug);
+                let from = solution(spec);
                 if from.is_dir() {
                     copy_dir(&from, &dir.join(spec.dir(b.id())))?;
                 }
@@ -984,7 +1003,7 @@ fn selftest(ctx: &Ctx, langs: &[String], solutions: Option<&Path>, require_all: 
             for spec in &specs {
                 let main = backends::main_file(b, spec);
                 let main = main.strip_prefix(spec.dir(b.id())).unwrap_or(&main);
-                if !src.join(&spec.slug).join(main).exists() {
+                if !solution(spec).join(main).exists() {
                     problems.push(format!("{}/{}: no reference solution", b.id(), spec.slug));
                     println!("   ✗ ref  {:<18} missing {}", spec.slug, main.display());
                     continue;

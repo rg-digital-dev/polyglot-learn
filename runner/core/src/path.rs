@@ -12,6 +12,12 @@
 //! id = "deeper-go"
 //! title = "Deeper Go"
 //! exercises = ["embedded-logger", "pipeline"]
+//!
+//! [[stage]]
+//! id = "url-shortener"
+//! title = "Project: URL shortener"
+//! project = true      # one codebase, one folder; each exercise is a stage
+//! exercises = ["shortener-store", "shortener-handlers"]
 //! ```
 //!
 //! A track without a `path.toml` gets every shared module that's on it, in
@@ -48,6 +54,9 @@ struct StageDef {
     title: Option<String>,
     #[serde(default)]
     exercises: Vec<String>,
+    /// The stage is a project: its exercises build one codebase in one folder.
+    #[serde(default)]
+    project: bool,
 }
 
 /// One stage of a track's path: a module (shared, or the track's own) and the
@@ -93,7 +102,7 @@ fn resolve(course: &mut Course, track: &str, def: PathFile, file: &str) -> Resul
             (Some(_), Some(_)) => bail!("{at}: has both `use` and `id`; a stage uses a shared module or is the track's own"),
             (None, None) => bail!("{at}: needs `use = \"<module>\"` or an `id` and `title` of its own"),
             (Some(name), None) => {
-                if stage.title.is_some() || !stage.exercises.is_empty() {
+                if stage.title.is_some() || !stage.exercises.is_empty() || stage.project {
                     bail!("{at}: a stage that uses `{name}` takes its title and exercises from course.toml");
                 }
                 let Some(i) = course.modules.iter().position(|m| m.id == *name && m.track.is_none()) else {
@@ -127,6 +136,7 @@ fn resolve(course: &mut Course, track: &str, def: PathFile, file: &str) -> Resul
                     tracks: None,
                     exercises: stage.exercises.clone(),
                     readings: Vec::new(),
+                    project: stage.project,
                 });
                 course.modules.len() - 1
             }

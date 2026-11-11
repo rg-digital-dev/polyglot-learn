@@ -6,6 +6,12 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Projects: a track's stage can be a project, a codebase that grows over several
+  stages in one folder. Each stage's files arrive once the one before passes,
+  your code carries forward, and checking a stage runs every test so far.
+  Go runs projects first; the projects themselves follow one per release.
+
 ## [0.5.0] - 2026-11-11
 
 ### Added

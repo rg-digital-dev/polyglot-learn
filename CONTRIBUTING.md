@@ -100,6 +100,27 @@ cases = ["total_len counts characters of every word", "..."]   # in test order
 
 Track-only exercises are left out of `learn compare`; there's nothing to compare them with.
 
+## Adding a project
+
+A project is a track's own stage marked `project = true`. Its exercises are the stages of one codebase that grows in one folder, `workspace/<lang>/<NN-id>/`:
+
+```toml
+[[stage]]
+id = "url-shortener"
+title = "Project: URL shortener"
+project = true
+exercises = ["shortener-store", "shortener-handlers", "..."]
+```
+
+Each stage is a track-only exercise as above (`tracks/<lang>/extras/<slug>/`), with these differences:
+
+- **One folder:** every stage's `files/` land in the project folder. A stage brings only what's new: its test file, new stubs, provided files. Files listed in `stubs` are never overwritten, so the learner's code carries forward.
+- **Stages arrive in order:** a stage's files are written once the stage before it passes. Until then its tests aren't there, so they can't break the build.
+- **Tests build up:** a stage's `cases` lists only its new cases, but test names number across the whole project. If stage 1 has `c01`–`c06`, stage 2 starts at `c07`. Checking a stage runs every test so far, and `cargo test` checks the numbering.
+- **Lesson:** each stage has its own `lesson.md`. The project folder's `LESSON.md` shows the current stage's.
+- **Solutions:** the solutions repo holds the finished codebase in `<lang>/<project id>/`. `learn selftest --solutions` checks that each untouched stage fails, with only the files up to that stage present, and that the finished code passes every stage.
+- **Tracks:** only Go runs projects so far (`ctx::PROJECT_TRACKS`). Its test command runs `go test ./<folder>/...`, and a project that ships a `go.mod` gets a `go.work` entry, so its packages import each other by its own module path. Another track needs its backend's test command to run the project folder's tests before its first project.
+
 ## Writing notes
 
 Each note should fit on one screen and contain:
