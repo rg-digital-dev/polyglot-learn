@@ -36,3 +36,18 @@ exercises = [
   "timestamps-trait",
   "read-lines",
 ]
+
+[[stage]]
+id = "web-framework"
+title = "Project: web framework"
+project = true
+exercises = [
+  "framework-http",
+  "framework-router",
+  "framework-middleware",
+  "framework-validation",
+  "framework-view",
+  "framework-session",
+  "framework-api",
+  "framework-app",
+]

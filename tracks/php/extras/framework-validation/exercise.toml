@@ -1,0 +1,17 @@
+title = "Validation with attributes"
+concept = "attributes"
+summary = "Check form input with rules written on the class itself: #[Required], #[Length(min: 3, max: 80)] and #[Email] on a form's constructor parameters. A Validator reads them through reflection and returns errors per field, or the filled-in object."
+stubs = ["Validation.php"]
+hints = [
+  "Put `#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]` above each rule class. An attribute's arguments become constructor arguments when you call `newInstance()` on it, so `#[Length(min: 3)]` builds `new Length(min: 3)`.",
+  "`(new ReflectionClass($class))->getConstructor()->getParameters()` lists the fields in order. `$param->getAttributes(Rule::class, ReflectionAttribute::IS_INSTANCEOF)` finds every attribute that implements Rule; map them with `fn($a) => $a->newInstance()`.",
+  "For each parameter: trim the input, decide whether it's missing, run the rules (only Required when missing), then convert ints. Use `$param->isDefaultValueAvailable()` and `getDefaultValue()` for missing optional fields, and `new $class(...$args)` with named keys to build the object.",
+]
+cases = [
+  "valid input builds the object",
+  "missing required fields only say so",
+  "each rule reports its own message",
+  "optional fields fall back to their defaults",
+  "an int field needs a whole number",
+  "rules are attributes that implement Rule",
+]

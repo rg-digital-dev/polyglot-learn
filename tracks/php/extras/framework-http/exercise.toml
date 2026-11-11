@@ -1,0 +1,17 @@
+title = "Request and response"
+concept = "readonly-classes"
+summary = "Start a tiny web framework with the two values every request passes through: a Request made from a method, a URI and headers, and a Response with immutable with-methods. Both are readonly, and the HTTP method is a backed enum."
+stubs = ["Http.php"]
+hints = [
+  "`public readonly` on each promoted constructor property makes it assignable once, in the constructor; changing it later throws an Error. `Method::tryFrom(strtoupper($method)) ?? throw new InvalidArgumentException(...)` turns a string into the enum or fails.",
+  "`parse_url($uri, PHP_URL_PATH)` and `PHP_URL_QUERY` split the URI; `parse_str($queryString, $query)` fills an array (tag[]=a&tag[]=b becomes a list). Decode the path with `rawurldecode`, and lower-case header names as you store them.",
+  "A with-method returns `new self(...)` with one thing changed. withHeader drops any header whose name matches in any case (`strcasecmp($k, $name) !== 0` in array_filter with ARRAY_FILTER_USE_KEY) before adding the new one. `match ($this) { self::Get, self::Head, self::Options => true, default => false }` for isSafe.",
+]
+cases = [
+  "create parses the method, path and query",
+  "an unknown method is rejected",
+  "headers match in any case",
+  "requests and responses are read-only",
+  "with methods return changed copies",
+  "response shortcuts set type and status",
+]

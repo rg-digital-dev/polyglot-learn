@@ -1,0 +1,17 @@
+title = "JSON API"
+concept = "json"
+summary = "Serve a JSON API: read JSON request bodies safely, turn errors into RFC 9457 problem details instead of HTML pages, and split long lists into pages with Link headers that point to the next and previous ones."
+stubs = ["Api.php"]
+hints = [
+  "`json_decode($body, false, 64, JSON_THROW_ON_ERROR)` throws JsonException on broken JSON instead of returning null (which is also what valid \"null\" gives). Decoding to objects first tells `{}` (a stdClass) from `[]` (an array); then decode again with true for the array.",
+  "ProblemMiddleware is a try/catch around `$next->handle()` that catches HttpError and returns `problem($e->status, $e->getMessage(), $e->detail)`. Set the Content-Type with withHeader after Response::json.",
+  "paginate: `ctype_digit($raw)` checks for digits only. `array_slice($items, ($page - 1) * $perPage, $perPage)` cuts the page; `http_build_query(['page' => $n] + $request->query)` builds the link, page first, since `+` keeps the left side's keys.",
+]
+cases = [
+  "problem builds RFC 9457 details",
+  "a JSON body is read",
+  "bad JSON bodies are problems",
+  "paginate returns a page and totals",
+  "Link headers point to the next and previous pages",
+  "a bad page number is a 400",
+]

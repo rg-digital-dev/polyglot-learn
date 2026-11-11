@@ -1,0 +1,17 @@
+title = "Middleware"
+concept = "interfaces"
+summary = "Wrap the router in middleware: objects that see every request on the way in and every response on the way out, and may answer by themselves. Build the Pipeline that chains them, then three useful ones: errors to 500, a timing header and trailing-slash redirects."
+stubs = ["Middleware.php"]
+hints = [
+  "Build the chain from the inside out: start with `$next = $this->core`, then for each middleware in reverse order wrap it: `$next = new CallableHandler(fn(Request $r) => $m->process($r, $inner))`, with `$inner` the previous $next. The last one built is the outermost.",
+  "Inside an arrow function, outer variables are captured by value when it's created, so copy `$next` into a fresh `$inner` before reassigning $next, or every layer ends up calling itself.",
+  "ErrorMiddleware: `try { return $next->handle($request); } catch (Throwable $e) { ... }`. Timing: `hrtime(true)` before and after, in nanoseconds, and `sprintf('app;dur=%.1f', $ms)`. For the slash, `str_ends_with`, `rtrim($path, '/')` and `http_build_query($request->query)`.",
+]
+cases = [
+  "the first middleware is outermost",
+  "a middleware can answer by itself",
+  "errors become a 500",
+  "timing adds a Server-Timing header",
+  "trailing slashes redirect with a 301",
+  "a callable handler wraps a function",
+]
