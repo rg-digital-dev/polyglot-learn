@@ -1,0 +1,17 @@
+title = "Storage"
+concept = "sqlite"
+summary = "Keep the orders in SQLite: create the table, save many orders in one transaction (skipping ones already stored), read them back as Orders, let SQL sum revenue per country exactly in cents, and close the store with a with block."
+stubs = ["store.py"]
+hints = [
+  "`self.db = sqlite3.connect(path)` then `self.db.execute(SCHEMA)`. __enter__ returns self and __exit__ calls close, which is `self.db.close()`.",
+  "`with self.db:` is a transaction: it commits at the end, or rolls back if anything inside raised. Inside, `executemany(\"INSERT OR IGNORE INTO orders (...) VALUES (?, ?, ...)\", rows)` with one tuple per order; `?` placeholders keep the values out of the SQL text. Count before and after to know how many were new.",
+  "Store `date.isoformat()` (ISO dates sort as text) and `int(price * 100)` cents. Read back with `date.fromisoformat` and `Decimal(cents) / 100`. For a missing start or end, `WHERE (? IS NULL OR date >= ?)` with the value passed twice is one way. Sum with `SUM(quantity * price_cents)` and `GROUP BY country`.",
+]
+cases = [
+  "save stores orders and counts them",
+  "orders come back equal, by date",
+  "saving again skips known orders",
+  "a failed save stores nothing",
+  "revenue_by_country sums in SQL exactly",
+  "a store is a context manager over a file",
+]

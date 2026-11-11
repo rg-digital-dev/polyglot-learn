@@ -1,0 +1,17 @@
+title = "Records"
+concept = "dataclasses"
+summary = "Start a data pipeline for a shop's orders with its smallest piece: a frozen Order dataclass with exact Decimal money and a real date, and parse_order, which turns a row of text into an Order or a ValueError naming the field that's wrong."
+stubs = ["records.py"]
+hints = [
+  "`@dataclass(frozen=True)` above the class writes __init__, __eq__, __repr__ and __hash__ from the annotations, and makes assigning to a field raise FrozenInstanceError. The total property is `self.unit_price * self.quantity`: a Decimal times an int stays an exact Decimal.",
+  "Loop over FIELDS first: `value = (row.get(field) or \"\").strip()`, and `raise ValueError(f\"missing {field}\")` when it's empty. Then convert: `date.fromisoformat`, `int`, `Decimal`.",
+  "Each conversion raises its own exception (ValueError, or decimal.InvalidOperation for Decimal); catch it and raise a ValueError that names the field, with `from None` to keep the message short. `Decimal(\"NaN\")` parses, so check `price.is_finite()` too.",
+]
+cases = [
+  "parses a valid row",
+  "strips spaces and normalises category and country",
+  "total is quantity times unit price",
+  "a missing or blank field is an error naming it",
+  "bad numbers, dates and countries are errors naming the field",
+  "orders are frozen and hashable",
+]

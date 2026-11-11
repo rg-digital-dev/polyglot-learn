@@ -37,3 +37,18 @@ exercises = [
   "parse-commands",
   "vector-dunder",
 ]
+
+[[stage]]
+id = "data-pipeline"
+title = "Project: data pipeline"
+project = true
+exercises = [
+  "pipeline-records",
+  "pipeline-reading",
+  "pipeline-sources",
+  "pipeline-transform",
+  "pipeline-aggregate",
+  "pipeline-store",
+  "pipeline-report",
+  "pipeline-cli",
+]

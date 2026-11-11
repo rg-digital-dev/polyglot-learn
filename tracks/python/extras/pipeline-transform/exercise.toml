@@ -1,0 +1,16 @@
+title = "Transforms"
+concept = "itertools"
+summary = "Build the lazy steps orders flow through: a date range, a category filter, batches of n, and a running total. Each takes an iterable and returns an iterator, so they chain like a pipeline and work on streams of any length."
+stubs = ["transform.py"]
+hints = [
+  "A generator expression is the shortest lazy filter: `return (o for o in orders if ...)`. For in_category, make a set of the lower-cased categories once, outside the expression.",
+  "batched: `it = iter(items)`, then `while batch := list(itertools.islice(it, n)): yield batch`. islice takes up to n items from the same iterator each time, and an empty list ends the loop.",
+  "running_total needs the orders twice: `a, b = itertools.tee(orders)`, then `zip(a, itertools.accumulate(o.total for o in b))`. accumulate adds as it goes and is lazy too.",
+]
+cases = [
+  "between keeps orders in the inclusive range",
+  "in_category matches any of the categories",
+  "batched groups into lists",
+  "running_total pairs each order with the total so far",
+  "the steps are lazy and chain",
+]
