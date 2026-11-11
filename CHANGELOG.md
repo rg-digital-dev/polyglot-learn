@@ -19,6 +19,10 @@ All notable changes to this project are listed here. The format follows
   the signature shows the task, what the tests check and the hints you've
   revealed; code actions check the exercise, show the next hint and open
   `LESSON.md`. Files outside a learn workspace get nothing.
+- A `.zed/tasks.json` with **learn check** and **learn watch**, so Zed's
+  `task: spawn` runs them. `learn` writes it when it sets up a track, in your
+  checkout (or your own workspace folder), and never over a tasks file that's
+  already there.
 
 ## [0.4.0] - 2026-11-10
 

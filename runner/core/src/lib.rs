@@ -15,3 +15,4 @@ pub mod path;
 pub mod spec;
 pub mod toolchain;
 pub mod views;
+pub mod zed;

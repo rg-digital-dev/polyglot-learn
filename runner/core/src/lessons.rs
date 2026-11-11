@@ -20,13 +20,15 @@ pub fn path(spec: &Spec) -> PathBuf {
     PathBuf::from(&spec.slug).join(FILE)
 }
 
-/// Stubs, tests and every `LESSON.md` for a track: what setting up a track
-/// (`learn start`, `learn generate`, the web UI, the TUI) writes.
+/// Stubs, tests and every `LESSON.md` for a track, plus Zed's tasks when
+/// missing: what setting up a track (`learn start`, `learn generate`, the web
+/// UI, the TUI) writes.
 pub fn generate_track(ctx: &Ctx, b: &dyn Backend) -> Result<Generated> {
     let dir = ctx.workspace.join(b.id());
     let specs = ctx.track_specs(b.id());
     let report = backends::generate(b, &specs, &dir)?;
     write_all(ctx, b, &specs, &dir)?;
+    crate::zed::write_tasks(ctx)?;
     Ok(report)
 }
 
