@@ -50,3 +50,18 @@ exercises = [
   "id-registry",
   "channel-workers",
 ]
+
+[[stage]]
+id = "log-cli"
+title = "Project: log CLI"
+project = true
+exercises = [
+  "logcli-parse",
+  "logcli-errors",
+  "logcli-args",
+  "logcli-input",
+  "logcli-filter",
+  "logcli-output",
+  "logcli-parallel",
+  "logcli-borrowed",
+]

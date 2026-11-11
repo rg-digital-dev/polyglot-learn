@@ -67,7 +67,7 @@ pub struct Reading {
 }
 
 /// Tracks whose backend runs a project's tests as one codebase.
-pub const PROJECT_TRACKS: &[&str] = &["go"];
+pub const PROJECT_TRACKS: &[&str] = &["go", "rust"];
 
 pub struct Ctx {
     pub root: PathBuf,

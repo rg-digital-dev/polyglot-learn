@@ -1,0 +1,15 @@
+title = "Zero-copy parsing"
+concept = "lifetimes"
+summary = "Parse without copying: an EntryRef whose fields are slices of the line, tied to it by a lifetime. Count a whole log's levels without allocating per line, and return slices of the text itself."
+stubs = ["src/borrowed.rs"]
+hints = [
+  "parse_ref is parse_line with the `.to_string()` calls removed: `trim`, `split_once` and `strip_suffix` all return slices of their input, so the fields already point into `line`.",
+  "The `'_` in `EntryRef<'_>` means the result borrows from `line`, the only reference parameter. The compiler then won't let an EntryRef outlive the String it came from.",
+  "count_levels: `text.lines()`, skip blank ones, `match parse_ref(line)`. targets_at returns `Vec<&str>` tied to `text`: push `e.target` itself (a slice of `text`), checking `contains` first to skip repeats.",
+]
+cases = [
+  "fields borrow from the line",
+  "parse_ref agrees with parse_line",
+  "count_levels counts entries and bad lines",
+  "targets_at returns slices of the text, first seen first",
+]

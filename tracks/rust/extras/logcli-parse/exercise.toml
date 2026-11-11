@@ -1,0 +1,18 @@
+title = "Parsing a line"
+concept = "enums"
+summary = "Start logq, a command-line tool for log files, with its smallest piece: turn one line like `2026-11-11T08:00:00Z WARN http: slow request` into an Entry with a Level enum, or a ParseError saying what's wrong."
+stubs = ["src/entry.rs", "src/main.rs"]
+hints = [
+  "`Level::ALL.into_iter().find(|l| l.as_str().eq_ignore_ascii_case(s))` gives an `Option<Level>`; `.ok_or_else(|| ParseError::BadLevel(s.to_string()))` turns it into the Result that `from_str` returns.",
+  "Write a small helper that splits off the first word: trim the start, return None if nothing is left, else `split_once(char::is_whitespace)` (or the whole rest and \"\" when there's no space). Calling it three times gives the timestamp, the level and the target, and what's left is the message.",
+  "`?` works on Option too, after `.ok_or(ParseError::MissingField(\"level\"))`. `level.parse::<Level>()?` uses your FromStr. For the target, `strip_suffix(':')` returns None when there's no colon; also reject an empty name.",
+]
+cases = [
+  "parses a full line",
+  "levels parse in any case",
+  "levels are ordered",
+  "extra spaces and a newline are fine",
+  "an empty line is an error",
+  "an unknown level is an error naming it",
+  "missing fields and bad targets are errors",
+]

@@ -1,0 +1,17 @@
+title = "One error type"
+concept = "errors"
+summary = "Give the program one Error enum for everything that can go wrong (a bad line, a missing file, an i/o failure, a wrong command line), with a message, a source, an exit code for each, and From so `?` converts io errors."
+stubs = ["src/error.rs"]
+hints = [
+  "Display: `match self { Error::Parse { line, source } => write!(f, \"line {line}: {source}\"), … }`. A usage error's message is written as it is.",
+  "`source()` returns `Some(source)` (or `Some(e)` for Io): a `&ParseError` coerces to `&(dyn std::error::Error + 'static)` because ParseError implements Error. Usage has no source, so None.",
+  "`parse_line(text).map_err(|source| Error::Parse { line, source })`. In `read_all`, `r.read_to_string(&mut text)?;` compiles only once `From<io::Error> for Error` exists: that's what `?` calls.",
+]
+cases = [
+  "a parse error says which line",
+  "good lines pass through",
+  "io errors convert with ?",
+  "open errors name the file",
+  "exit codes follow sysexits",
+  "source() points at the cause",
+]
