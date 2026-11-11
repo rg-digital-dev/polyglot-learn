@@ -609,7 +609,7 @@ mod tests {
 │  Return a greeting for name, trimmed of surrounding whitespace,│
 │  falling back to "world" when nothing is left.                 │
 │                                                                │
-│  Edit   target/tui-draw-task/go/hello/hello.go                 │
+│  Edit   target/tui-draw-task/go/01-foundations/hello/hello.go  │
 │         func Greet(name string) string                         │
 │                                                                │
 │  What the tests check                                          │

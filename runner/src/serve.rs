@@ -517,17 +517,16 @@ fn watch_files(app: Arc<App>) {
         std::thread::sleep(Duration::from_millis(500));
         let Ok(ctx) = app.ctx() else { continue };
         let Some(track) = ctx.config.track.clone() else { continue };
-        let dir = ctx.workspace.join(&track);
         for spec in ctx.specs.iter().filter(|s| s.on_track(&track)) {
             let key = (track.clone(), spec.slug.clone());
-            let now = crate::commands::latest_mtime(&dir.join(&spec.slug));
+            let now = crate::commands::latest_mtime(&ctx.exercise_dir(&track, &spec.slug));
             match seen.insert(key, now) {
                 Some(before) if before != now && now.is_some() => {
                     std::thread::sleep(Duration::from_millis(150));
                     app.emit(json!({ "type": "file-changed", "track": track, "slug": spec.slug }));
                     run_check(&app, &track, &spec.slug);
                     // Our own run may touch files; take a fresh baseline.
-                    seen.insert((track.clone(), spec.slug.clone()), crate::commands::latest_mtime(&dir.join(&spec.slug)));
+                    seen.insert((track.clone(), spec.slug.clone()), crate::commands::latest_mtime(&ctx.exercise_dir(&track, &spec.slug)));
                 }
                 _ => {}
             }

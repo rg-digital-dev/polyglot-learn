@@ -408,11 +408,11 @@ impl Backend for Python {
     }
 
     fn stub_path(&self, spec: &Spec) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.py", Self::module(spec)))
+        spec.dir(self.id()).join(format!("{}.py", Self::module(spec)))
     }
 
     fn module_path(&self, spec: &Spec, module: &str) -> PathBuf {
-        PathBuf::from(&spec.slug).join(format!("{}.py", naming::snake(module)))
+        spec.dir(self.id()).join(format!("{}.py", naming::snake(module)))
     }
 
     fn stubs(&self, spec: &Spec) -> Vec<(PathBuf, String)> {
@@ -453,7 +453,7 @@ impl Backend for Python {
         s.push_str(
             "\nimport os\nimport sys\n\n# This file's folder (the exercise) and the track folder (harness.py).\n\
              DIR = os.path.dirname(os.path.abspath(__file__))\n\
-             sys.path[:0] = [DIR, os.path.dirname(DIR)]\n\n",
+             sys.path[:0] = [DIR, os.path.dirname(os.path.dirname(DIR))]\n\n",
         );
         if spec.concurrency {
             s.push_str("import time\n\n");
@@ -549,7 +549,7 @@ impl Backend for Python {
             }
         }
         s.push_str("t.finish()\n");
-        vec![(PathBuf::from(&spec.slug).join(format!("test_{module}.py")), s)]
+        vec![(spec.dir(self.id()).join(format!("test_{module}.py")), s)]
     }
 
     fn shared(&self, _specs: &[Spec]) -> Vec<(PathBuf, String)> {
@@ -557,7 +557,7 @@ impl Backend for Python {
     }
 
     fn resource_module(&self, spec: &Spec) -> Option<(PathBuf, String)> {
-        Some((PathBuf::from(&spec.slug).join("resource.py"), PY_RESOURCE.to_string()))
+        Some((spec.dir(self.id()).join("resource.py"), PY_RESOURCE.to_string()))
     }
 
     /// `DIR` is the test file's folder (set at the top of every test file).
@@ -568,7 +568,7 @@ impl Backend for Python {
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
         // -X utf8: the same text encoding on every system; -B: no __pycache__ in the workspace.
         Invocation::new(&tool.path, track_dir)
-            .args(["-X".to_string(), "utf8".to_string(), "-B".to_string(), format!("{}/test_{}.py", spec.slug, Self::module(spec))])
+            .args(["-X".to_string(), "utf8".to_string(), "-B".to_string(), format!("{}/test_{}.py", spec.rel(self.id()), Self::module(spec))])
             .timeout(Duration::from_secs(60))
     }
 

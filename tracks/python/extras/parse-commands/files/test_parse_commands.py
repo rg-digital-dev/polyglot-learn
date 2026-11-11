@@ -6,7 +6,7 @@ import sys
 
 # This file's folder (the exercise) and the track folder (harness.py).
 DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [DIR, os.path.dirname(DIR)]
+sys.path[:0] = [DIR, os.path.dirname(os.path.dirname(DIR))]
 
 from harness import H
 

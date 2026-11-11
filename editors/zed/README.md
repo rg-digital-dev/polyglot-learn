@@ -4,7 +4,9 @@ This Zed extension starts `learn lsp` for Go, Rust, Python, TypeScript, PHP, Lua
 
 - **Save** an exercise and the failing test cases show up as warnings on the function they test.
 - **Hover** the function's name on its signature line to see the task, what the tests check and the hints you've revealed.
-- **Code actions** (`ctrl-.` / `cmd-.`) on that line: run the tests, show the next hint, open the lesson.
+- **Code actions** (`ctrl-.` / `cmd-.`) on that line: run the tests, show the next hint, open the lesson, open the next exercise.
+
+Zed's file tree lists folders by name, and `learn` numbers each stage's folder in path order, so the tree reads top to bottom. `PATH.md` in the track folder shows the whole path with your progress; open it with `markdown: open preview`.
 
 All the work happens in `learn`; the extension only finds it and starts it. The server only starts where there's a `course.toml` or `.learn/config.toml` at the project root, so your other projects don't get it.
 

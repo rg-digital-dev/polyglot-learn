@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../harness.php';
+require __DIR__ . '/../../harness.php';
 require_once __DIR__ . '/read-lines.php';
 
 /** A generator over $items that counts in $produced how many it has handed out. */

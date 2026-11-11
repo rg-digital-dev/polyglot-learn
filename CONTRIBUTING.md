@@ -79,7 +79,7 @@ Each exercise is a folder `tracks/<lang>/extras/<slug>/`:
 ```
 exercise.toml   title, concept, summary, stubs, hints, cases
 lesson.md       the lesson, with "coming from X" blocks like a track note
-files/          copied to workspace/<lang>/<slug>/
+files/          copied to workspace/<lang>/<NN-stage>/<slug>/
 ```
 
 ```toml
@@ -179,6 +179,10 @@ A track is one Rust module plus one folder. Checklist:
 - [ ] One note per concept in `tracks/<lang>/`.
 - [ ] Toolchain setup in `.github/workflows/ci.yml`.
 - [ ] The verification suite passes for the new track.
+
+## Where an exercise's files live
+
+In a track's workspace folder each exercise sits in a numbered stage folder, `<NN-stage>/<slug>/`, numbered by the track's `path.toml` (stages without exercises on that track don't count). `Ctx::discover` fills `Spec::stages`; use `spec.dir(track)` (a path) or `spec.rel(track)` (`/`-separated, for commands and generated files), or `ctx.exercise_dir(track, slug)`, never `<slug>` on its own. `ctx.exercise_at(track, rel)` goes the other way, from a file to its exercise. `backends::generate` moves folders from older workspaces into place. The solutions repo stays one folder per slug; `selftest` maps them.
 
 ## Working on the web UI
 

@@ -160,7 +160,7 @@ pub struct Generated {
 /// The file the learner starts in, relative to the track folder.
 pub fn main_file(backend: &dyn Backend, spec: &Spec) -> PathBuf {
     match &spec.native {
-        Some(n) => PathBuf::from(&spec.slug).join(&n.stubs[0]),
+        Some(n) => spec.dir(backend.id()).join(&n.stubs[0]),
         None => backend.stub_path(spec),
     }
 }
@@ -169,7 +169,7 @@ pub fn main_file(backend: &dyn Backend, spec: &Spec) -> PathBuf {
 /// first, each with the signatures it must provide (none for native exercises).
 pub fn learner_files(backend: &dyn Backend, spec: &Spec) -> Vec<(PathBuf, Vec<String>)> {
     if let Some(n) = &spec.native {
-        return n.stubs.iter().map(|s| (PathBuf::from(&spec.slug).join(s), Vec::new())).collect();
+        return n.stubs.iter().map(|s| (spec.dir(backend.id()).join(s), Vec::new())).collect();
     }
     let mut files = Vec::new();
     for m in spec.modules() {
@@ -199,10 +199,28 @@ fn native_files(dir: &Path, rel: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
     Ok(())
 }
 
+/// Workspaces from before stage folders keep each exercise in `<track>/<slug>`:
+/// move it, with the learner's code, to `<track>/NN-stage/<slug>`. Never over
+/// a folder that's already there.
+fn move_into_stages(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Result<()> {
+    for spec in specs {
+        let (old, new) = (track_dir.join(&spec.slug), track_dir.join(spec.dir(backend.id())));
+        if old == new || !old.is_dir() || new.exists() {
+            continue;
+        }
+        if let Some(parent) = new.parent() {
+            std::fs::create_dir_all(parent).context(|| format!("can't create {}", parent.display()))?;
+        }
+        std::fs::rename(&old, &new).context(|| format!("can't move {} to {}", old.display(), new.display()))?;
+    }
+    Ok(())
+}
+
 /// Write shared files and tests for every spec, and stubs only where none exist.
 /// `specs` are the track's exercises (shared and its own).
 pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Result<Generated> {
     let mut report = Generated::default();
+    move_into_stages(backend, specs, track_dir)?;
     for (rel, contents) in backend.shared(specs) {
         write(&track_dir.join(rel), &contents)?;
     }
@@ -219,7 +237,7 @@ pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Resu
             for rel in files {
                 let contents = std::fs::read_to_string(n.files.join(&rel))
                     .context(|| format!("can't read {}", n.files.join(&rel).display()))?;
-                let path = track_dir.join(&spec.slug).join(&rel);
+                let path = track_dir.join(spec.dir(backend.id())).join(&rel);
                 if !n.stubs.contains(&rel) {
                     write(&path, &contents)?;
                 } else if path.exists() {
@@ -241,7 +259,7 @@ pub fn generate(backend: &dyn Backend, specs: &[Spec], track_dir: &Path) -> Resu
         }
         // Files the tests read: overwritten like tests, so they stay as the spec says.
         for (name, contents) in &spec.files {
-            write(&track_dir.join(&spec.slug).join(name), contents)?;
+            write(&track_dir.join(spec.dir(backend.id())).join(name), contents)?;
         }
         for (rel, contents) in backend.scaffold(spec) {
             let path = track_dir.join(rel);

@@ -12,6 +12,7 @@ pub mod lessons;
 pub mod naming;
 pub mod notes;
 pub mod path;
+pub mod pathfile;
 pub mod spec;
 pub mod toolchain;
 pub mod views;

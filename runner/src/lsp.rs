@@ -31,6 +31,8 @@ use crate::views;
 pub const CHECK: &str = "learn.check";
 pub const HINT: &str = "learn.hint";
 pub const LESSON: &str = "learn.lesson";
+/// Code action: open the next unfinished exercise on the path.
+pub const NEXT: &str = "learn.next";
 
 const ERROR: u8 = 1;
 const WARNING: u8 = 2;
@@ -54,7 +56,7 @@ pub fn serve(conn: &Connection, workspace: Option<PathBuf>) -> Result<()> {
         "textDocumentSync": { "openClose": false, "change": 0, "save": { "includeText": false } },
         "hoverProvider": true,
         "codeActionProvider": true,
-        "executeCommandProvider": { "commands": [CHECK, HINT, LESSON] },
+        "executeCommandProvider": { "commands": [CHECK, HINT, LESSON, NEXT] },
     });
     let params = conn.initialize(caps).map_err(protocol)?;
     let show_document = params.pointer("/capabilities/window/showDocument/support").and_then(Value::as_bool).unwrap_or(false);
@@ -124,14 +126,13 @@ impl Server {
         let file = uri_to_path(uri)?;
         let ctx = Ctx::discover_from(file.parent()?, self.workspace.clone()).ok()?;
         let rel = file.strip_prefix(&ctx.workspace).ok()?;
-        let mut parts = rel.components().map(|c| c.as_os_str().to_string_lossy().to_string());
-        let (track, slug) = (parts.next()?, parts.next()?);
-        parts.next()?; // a file inside the exercise folder, not the folder itself
+        let track = rel.components().next()?.as_os_str().to_string_lossy().to_string();
         let b = backends::get(&track).ok()?;
         if b.id() != track {
             return None;
         }
-        ctx.spec_on(b.id(), &slug).ok()?;
+        // A file inside an exercise's folder (`NN-stage/slug/…`), not the folder itself.
+        let slug = ctx.exercise_at(b.id(), rel.strip_prefix(&track).ok()?)?.slug.clone();
         Some(Target { ctx, track: b, slug })
     }
 
@@ -161,6 +162,7 @@ impl Server {
                     (CHECK, Some(t)) => self.check(t),
                     (HINT, Some(t)) => self.hint(t),
                     (LESSON, Some(t)) => self.lesson(t),
+                    (NEXT, Some(t)) => self.next(t),
                     _ => self.show_message(WARNING, "That isn't a learn exercise file."),
                 }
                 Value::Null
@@ -227,8 +229,34 @@ impl Server {
     }
 
     /// Open LESSON.md in the editor, or say where it is.
+    /// Open the next unfinished exercise after this one (or the first one
+    /// left, if everything after it is done).
+    fn next(&self, t: Target) {
+        let track = t.track.id();
+        let specs = t.ctx.path_specs(track);
+        let here = specs.iter().position(|s| s.slug == t.slug).unwrap_or(0);
+        let open = |s: &&&learn_core::spec::Spec| !t.ctx.is_done(track, &s.slug) && s.slug != t.slug;
+        let Some(next) = specs.iter().skip(here + 1).find(open).or_else(|| specs.iter().find(open)).copied() else {
+            self.show_message(INFO, "That's every exercise on your path done. Well done!");
+            return;
+        };
+        let path = t.track_dir().join(backends::main_file(t.track, next));
+        if !path.exists() {
+            if let Err(e) = lessons::generate_track(&t.ctx, t.track) {
+                self.show_message(ERROR, &e.0);
+                return;
+            }
+        }
+        if self.show_document {
+            let id = RequestId::from(self.next_id.fetch_add(1, Ordering::SeqCst));
+            self.send(Request::new(id, "window/showDocument".into(), json!({ "uri": path_to_uri(&path), "takeFocus": true })));
+        } else {
+            self.show_message(INFO, &format!("Next: {}, in {}", next.title, path.display()));
+        }
+    }
+
     fn lesson(&self, t: Target) {
-        let path = t.track_dir().join(lessons::path(t.spec()));
+        let path = t.track_dir().join(lessons::path(t.track.id(), t.spec()));
         if !path.exists() {
             if let Err(e) = lessons::generate_track(&t.ctx, t.track) {
                 self.show_message(ERROR, &e.0);
@@ -250,6 +278,7 @@ fn code_actions(uri: &str) -> Value {
         action("Check this exercise", CHECK),
         action("Show next hint", HINT),
         action("Open LESSON.md", LESSON),
+        action("Open next exercise", NEXT),
     ])
 }
 
@@ -532,7 +561,7 @@ mod tests {
     #[test]
     fn hover_code_actions_and_hints_over_the_protocol() {
         let ws = workspace("protocol");
-        let file = ws.join("go").join("hello").join("hello.go");
+        let file = ws.join("go").join("01-foundations").join("hello").join("hello.go");
         let uri = path_to_uri(&std::path::absolute(&file).unwrap());
         let text = std::fs::read_to_string(&file).unwrap();
         let line = anchor(&text, "func Greet(name string) string").unwrap().0;
@@ -547,7 +576,7 @@ mod tests {
 
         let actions = c.request("textDocument/codeAction", json!({ "textDocument": { "uri": uri }, "range": {}, "context": { "diagnostics": [] } }));
         let titles: Vec<&str> = actions.as_array().unwrap().iter().map(|a| a["title"].as_str().unwrap()).collect();
-        assert_eq!(titles, ["Check this exercise", "Show next hint", "Open LESSON.md"]);
+        assert_eq!(titles, ["Check this exercise", "Show next hint", "Open LESSON.md", "Open next exercise"]);
 
         c.request("workspace/executeCommand", json!({ "command": HINT, "arguments": [uri] }));
         let msg = c.notification("window/showMessage");
@@ -569,7 +598,26 @@ mod tests {
             },
         };
         assert_eq!(show.method, "window/showDocument");
-        assert!(show.params["uri"].as_str().unwrap().ends_with("/go/hello/LESSON.md"), "{}", show.params);
+        assert!(show.params["uri"].as_str().unwrap().ends_with("/go/01-foundations/hello/LESSON.md"), "{}", show.params);
+
+        // The next exercise on the path opens in the editor.
+        c.request("workspace/executeCommand", json!({ "command": NEXT, "arguments": [uri] }));
+        let seen = std::mem::take(&mut c.seen);
+        let show = match seen.into_iter().find_map(|m| match m {
+            Message::Request(r) => Some(r),
+            _ => None,
+        }) {
+            Some(r) => r,
+            None => loop {
+                if let Message::Request(r) = c.recv() {
+                    break r;
+                }
+            },
+        };
+        let ctx = Ctx::discover(Some(ws.clone())).unwrap();
+        let go = backends::get("go").unwrap();
+        let want = backends::main_file(go, ctx.path_specs("go")[1]).components().map(|c| c.as_os_str().to_string_lossy().to_string()).collect::<Vec<_>>().join("/");
+        assert!(show.params["uri"].as_str().unwrap().ends_with(&format!("/go/{want}")), "{} should open {want}", show.params);
         stop(c, handle);
     }
 
@@ -587,7 +635,7 @@ mod tests {
     #[test]
     fn saving_runs_the_tests_and_publishes() {
         let ws = workspace("save");
-        let file = std::path::absolute(ws.join("go").join("hello").join("hello.go")).unwrap();
+        let file = std::path::absolute(ws.join("go").join("01-foundations").join("hello").join("hello.go")).unwrap();
         let (c, handle) = start(false);
         c.notify("textDocument/didSave", json!({ "textDocument": { "uri": path_to_uri(&file) } }));
         // With Go installed: the untouched stub fails every case. Without it: a message says so.

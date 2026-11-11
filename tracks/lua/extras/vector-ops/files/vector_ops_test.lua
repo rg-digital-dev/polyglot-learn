@@ -3,7 +3,7 @@
 
 -- Resolve modules relative to this file, wherever lua is started from.
 local dir = (arg and arg[0] or ""):match("^(.*)[/\\]") or "."
-package.path = dir .. "/?.lua;" .. dir .. "/../?.lua;" .. package.path
+package.path = dir .. "/?.lua;" .. dir .. "/../../?.lua;" .. package.path
 
 local H = require("harness")
 local M = require("vector_ops")
