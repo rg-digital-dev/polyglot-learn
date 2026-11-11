@@ -1,0 +1,18 @@
+title = "Output and run"
+concept = "traits"
+summary = "Print as text or JSON through one Format trait chosen at run time, then put every stage together in run(), which takes its input and output as parameters, and make main call it: logq works."
+stubs = ["src/output.rs", "src/run.rs", "src/main.rs"]
+hints = [
+  "`formatter` returns `Box::new(Text)` or `Box::new(Json)`: both coerce to `Box<dyn Format>`. In Text's entry, `{:<5}` pads the level: `writeln!(out, \"{} {:<5} {}: {}\", …)`.",
+  "json_string: push a `\"`, then for each char `match c { '\"' => out.push_str(\"\\\\\\\"\"), …, c if (c as u32) < 0x20 => out.push_str(&format!(\"\\\\u{:04x}\", c as u32)), c => out.push(c) }`, and a closing `\"`.",
+  "In run, match Args::parse first. Then loop over the files: `-` reads `stdin` (take it out of an Option so it's used once), others go through `open`. main is `std::process::exit(run(std::env::args().skip(1).collect(), io::stdin().lock(), &mut io::stdout(), &mut io::stderr()))`.",
+]
+cases = [
+  "json_string escapes",
+  "text prints an entry like a log line",
+  "json prints one object per line",
+  "run filters stdin to stdout",
+  "run prints stats",
+  "bad lines are reported and skipped",
+  "the logq binary runs",
+]

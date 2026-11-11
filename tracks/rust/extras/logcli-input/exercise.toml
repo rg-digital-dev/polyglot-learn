@@ -1,0 +1,16 @@
+title = "Streaming input"
+concept = "io"
+summary = "Read entries from any BufRead a line at a time, lazily, so a log of any size uses little memory: blank lines skipped but counted, bad lines reported without stopping, and files opened with an error that names them."
+stubs = ["src/input.rs"]
+hints = [
+  "`reader.lines()` is already a lazy iterator of `io::Result<String>`. `.enumerate()` adds the index (line number minus one), and `.filter_map` can drop blank lines (return None) and turn the rest into Some(result).",
+  "Inside the filter_map closure, match the line: `Err(e) => Some(Err(Error::from(e)))`, a blank one `=> None`, otherwise `Some(parse_numbered(i + 1, &text))`.",
+  "`File::open(path).map(BufReader::new).map_err(|source| Error::Open { path: path.to_string(), source })`.",
+]
+cases = [
+  "entries come in order",
+  "blank lines are skipped but counted",
+  "a bad line does not stop the rest",
+  "entries is lazy",
+  "open reads a file and names a missing one",
+]

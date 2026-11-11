@@ -10,10 +10,15 @@ All notable changes to this project are listed here. The format follows
 - Projects: a track's stage can be a project, a codebase that grows over several
   stages in one folder. Each stage's files arrive once the one before passes,
   your code carries forward, and checking a stage runs every test so far.
-  Go runs projects first; the projects themselves follow one per release.
+  Go and Rust run projects; the projects themselves follow one per release.
 - Go's project: a URL shortener HTTP service in eight stages (store,
   handlers, stats, middleware, concurrency, timeouts, expiry, graceful
   shutdown), standard library only, 43 tests. It closes the Go path.
+- Rust's project: `logq`, a log-analysis CLI in eight stages (parsing with
+  enums, one error type with exit codes, arguments by hand, streaming input,
+  iterator filters and stats, output formats behind a trait, scoped threads,
+  zero-copy parsing with lifetimes), standard library only, 47 tests. It
+  closes the Rust path; Rust now runs projects too.
 
 ## [0.5.0] - 2026-11-11
 

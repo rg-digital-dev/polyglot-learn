@@ -1,0 +1,16 @@
+title = "Threads"
+concept = "threads"
+summary = "Read several files at once with scoped threads, a few at a time, and get the results back in the order the files were given, so --jobs makes logq faster without changing what it prints."
+stubs = ["src/parallel.rs"]
+hints = [
+  "`thread::scope(|s| { … s.spawn(|| …); … })` lets threads borrow `paths` and `filter`: the scope waits for every thread before it returns, so the borrows are safe.",
+  "To spread the work over `jobs` threads, share an `AtomicUsize` counter: each thread loops on `next.fetch_add(1, Ordering::Relaxed)` and stops when that index is past the end. Store each result at its index, e.g. in a `Vec<Mutex<Option<FileResult>>>`.",
+  "Spawn `jobs.clamp(1, paths.len().max(1))` threads. Afterwards, `into_iter().map(|m| m.into_inner().unwrap().unwrap())` gives the results in order. Then make run collect the files between stdin's `-`s and pass them to process_files.",
+]
+cases = [
+  "results keep the order of the paths",
+  "each file counts only its matching entries",
+  "an unreadable file does not stop the others",
+  "any number of jobs gives the same results",
+  "run with jobs prints files in order",
+]

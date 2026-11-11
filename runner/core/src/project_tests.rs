@@ -113,3 +113,25 @@ fn checking_a_stage_runs_every_test_so_far() {
     let r = check::run(go, &two, &specs, &ws.join("go"), &tool).unwrap();
     assert!(r.passed, "{}", r.output);
 }
+
+#[test]
+fn a_rust_project_is_one_crate_tested_as_a_whole() {
+    let ws = std::env::temp_dir().join(format!("learn-project-rust-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&ws);
+    let mut ctx = Ctx::discover(Some(ws.clone())).unwrap();
+    ctx.config.track = Some("rust".into());
+    let rust = backends::get("rust").unwrap();
+    // Every stage at once, as the selftest's reference run has them.
+    let specs: Vec<_> = ctx.track_specs("rust").into_iter().filter(|s| s.project.is_some()).collect();
+    assert_eq!(specs.len(), 8, "the log CLI has eight stages");
+    let dir = specs[0].dir("rust");
+    backends::generate(rust, &specs, &ws.join("rust")).unwrap();
+    let manifest = std::fs::read_to_string(ws.join("rust/Cargo.toml")).unwrap();
+    assert_eq!(manifest.matches("log-cli\"").count(), 1, "the crate is a member once: {manifest}");
+    let lib = std::fs::read_to_string(ws.join("rust").join(&dir).join("src/lib.rs")).unwrap();
+    assert!(lib.contains("pub mod borrowed;"), "the last stage's lib.rs declares every module: {lib}");
+
+    let tool = crate::toolchain::Found { path: "cargo".into(), version: String::new() };
+    let run = rust.command(&specs[2], &tool, &ws.join("rust"));
+    assert_eq!(run.args[..5], ["test", "-p", "log-cli", "--tests", "--no-fail-fast"], "every stage's test file runs");
+}

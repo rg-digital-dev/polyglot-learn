@@ -1,0 +1,18 @@
+title = "Arguments"
+concept = "cli-args"
+summary = "Parse logq's command line by hand: --level, --grep, --format, --stats and --jobs (also as --name=value), files in order with - for stdin, and a usage error naming whatever is wrong."
+stubs = ["src/args.rs"]
+hints = [
+  "Start from an Args with the defaults, then `while let Some(arg) = args.next()`. Inside the loop you can call `args.next()` again to take an option's value: that's why the iterator is `let mut args = args.into_iter();`.",
+  "For `--name=value`, `arg.split_once('=')` gives the name and an inline value; otherwise the value is the next argument. A missing value is `ok_or_else(|| Error::Usage(…))`.",
+  "Keep a `bool` for whether `--` has been seen: after it, every argument is a file. Build usage errors with one helper, `format!(\"{message}\\n{USAGE}\")`, so they all end with the usage line.",
+]
+cases = [
+  "no arguments reads stdin as text",
+  "level and grep take values",
+  "format and stats",
+  "files keep their order",
+  "jobs takes a positive number",
+  "an unknown option is a usage error naming it",
+  "a missing or bad value is a usage error",
+]

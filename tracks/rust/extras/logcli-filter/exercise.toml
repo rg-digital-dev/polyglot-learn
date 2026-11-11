@@ -1,0 +1,17 @@
+title = "Filters and stats"
+concept = "iterators"
+summary = "Decide which entries to keep (a minimum level, a case-insensitive search) and add them up: counts per level, per target, the busiest targets, and merging two summaries."
+stubs = ["src/filter.rs"]
+hints = [
+  "`Option::is_none_or` reads well here: `self.min_level.is_none_or(|min| e.level >= min)`. Levels compare because Level derives Ord. For grep, lower-case both sides and use `contains`.",
+  "`*self.by_level.entry(e.level).or_default() += 1` counts without checking first. merge does the same for each pair in the other Stats, which it owns, so it can move the Strings in.",
+  "top_targets: collect the map into a Vec of (String, usize), `sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)))`, then `truncate(n)`. summarize is `.filter(…).fold(Stats::default(), |mut s, e| { s.add(e); s })`.",
+]
+cases = [
+  "an empty filter keeps everything",
+  "level keeps that level and above",
+  "grep matches message or target in any case",
+  "summarize counts matching entries",
+  "top_targets sorts by count, then name",
+  "merge adds another Stats",
+]
