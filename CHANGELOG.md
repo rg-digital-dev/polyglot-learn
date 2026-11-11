@@ -6,6 +6,8 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-11
+
 ### Added
 - `LESSON.md` in every exercise folder: the task and signature, the concept
   lesson, your track's note and the "go deeper" links, written for the language
