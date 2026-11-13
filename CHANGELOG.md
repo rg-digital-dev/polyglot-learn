@@ -10,7 +10,7 @@ All notable changes to this project are listed here. The format follows
 - Projects: a track's stage can be a project, a codebase that grows over several
   stages in one folder. Each stage's files arrive once the one before passes,
   your code carries forward, and checking a stage runs every test so far.
-  Go, Rust, Python, TypeScript and PHP run projects; the projects themselves follow one per release.
+  Go, Rust, Python, TypeScript, PHP and Lua run projects; the projects themselves follow one per release.
 - Go's project: a URL shortener HTTP service in eight stages (store,
   handlers, stats, middleware, concurrency, timeouts, expiry, graceful
   shutdown), standard library only, 43 tests. It closes the Go path.
@@ -38,6 +38,14 @@ All notable changes to this project are listed here. The format follows
   container and a front controller), no Composer, 48 tests. It closes the
   PHP path; `php harness.php <folder>` runs a project's test files, each in
   its own process.
+- Lua's project: a text adventure engine in eight stages (rooms as tables, a
+  parser built on patterns, entity classes from metatables with __call and
+  __tostring, a dispatch table of verbs, events from closures and weak tables,
+  coroutine conversations and a scheduler, saves read back with load() in a
+  sandbox, and a Game that wires it all together), standard library only, 58
+  tests, with a lighthouse world to play through `lua main.lua`. It closes the
+  Lua path; `lua harness.lua <test file>...` runs a project's test files in one
+  process, each with fresh modules.
 
 ## [0.5.0] - 2026-11-11
 

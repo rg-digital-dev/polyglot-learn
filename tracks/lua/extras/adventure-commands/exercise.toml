@@ -1,0 +1,19 @@
+title = "Commands"
+concept = "dispatch-tables"
+summary = "Make the verbs work with a dispatch table of handler functions: look, go, take, drop, inventory, examine and put on a game state, failures as nil, err, and per-game verbs in a handlers table that falls through to the defaults."
+stubs = ["commands.lua"]
+hints = [
+  "`handlers = setmetatable({}, { __index = M.handlers })` gives each state its own table that reads through to the defaults. register reads `state.handlers[verb]` (which may come from the defaults) before it assigns the new one, and returns it.",
+  "find tries the room's items, then the inventory, with `entity:matches(word)`; only then the contents of containers that are `open` in either list. Return the entity and the list or container it was in, so take knows where to remove it from: a container has `contents` and its own `remove`.",
+  "run looks up `state.handlers[command.verb]` and calls it; a handler is a plain function, so `local text, err = handler(state, command)` passes both results on. Count a turn only when text came back. Use `entities.is_a(target, entities.Container)` before put.",
+]
+cases = [
+  "new_state starts in the start room with empty hands",
+  "look and go describe rooms and move the player",
+  "take moves a portable item into the inventory",
+  "drop puts a carried item in the room",
+  "inventory lists what you carry",
+  "find and take reach inside open containers",
+  "examine describes things here or carried",
+  "unknown verbs fail and a state can add its own",
+]

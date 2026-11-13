@@ -1,0 +1,18 @@
+title = "Saving"
+concept = "serialization"
+summary = "Save and load a game by writing its state as a Lua table literal and reading it back with load() in an empty environment, with text mode only and a step limit set by a debug hook, so a save file stays data."
+stubs = ["save.lua"]
+hints = [
+  "serialize is a recursive encode(value, path, seen): `string.format(\"%q\", s)` for strings, `math.type` to tell integers from floats (`%.17g` and add \".0\" when there's no dot or exponent), and for tables the list part `1..#t` first, then the other keys collected, `table.sort`ed, and written as `name = ` or `[key] = `. Mark a table in `seen` while you're inside it and unmark it after, so a table used twice isn't a cycle.",
+  "`load(text, \"=save\", \"t\", {})`: mode \"t\" refuses bytecode, and the empty table becomes the chunk's _ENV, so `os` is nil inside it. `debug.sethook(function() error(\"...\", 0) end, \"\", M.STEP_LIMIT)` raises after that many instructions; call the chunk with pcall and always remove the hook with `debug.sethook()` afterwards.",
+  "snapshot only writes ids; restore looks every id up in `M.index(state)`. Resolve all the lists before you change anything, so an unknown id returns the error with the state untouched. `local f <close>, err = io.open(path, \"w\")` closes the file however the function ends.",
+]
+cases = [
+  "serialize writes plain values as Lua source",
+  "tables list their sequence then sorted keys",
+  "serialize refuses functions and cycles and names the path",
+  "deserialize reads what serialize wrote",
+  "deserialize runs with no globals and a step limit",
+  "snapshot and restore put everything back",
+  "save and load go through a file",
+]

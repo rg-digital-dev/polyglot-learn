@@ -202,6 +202,40 @@ function H:finish()
   os.exit(self.failed == 0 and 0 or 1)
 end
 
+-- `lua harness.lua <test file>...`: run a project's stage test files in order,
+-- in this one process. Each file gets fresh copies of the modules it requires,
+-- and its finish() ends that file, not the run. A file that stops with an
+-- error is reported and the rest still run.
+if arg and arg[0] and arg[0]:match("harness%.lua$") and ... ~= "harness" then
+  local preloaded = {}
+  for name, value in pairs(package.loaded) do preloaded[name] = value end
+  local exit, failed = os.exit, false
+  for _, file in ipairs({ ... }) do
+    for name in pairs(package.loaded) do
+      if preloaded[name] == nil then package.loaded[name] = nil end
+    end
+    arg[0] = file
+    local chunk, err = loadfile(file)
+    local ok, code = false, nil
+    if chunk then
+      os.exit = function(c) error({ exit = c }, 0) end
+      ok, err = pcall(chunk)
+      os.exit = exit
+      if not ok and type(err) == "table" and err.exit ~= nil then
+        ok, code = true, err.exit
+      end
+    end
+    if not ok then
+      failed = true
+      print("Bail out! " .. (file:match("[^/\\]+$") or file) .. " stopped with an error: " .. tostring(err))
+    elseif code ~= nil and code ~= 0 and code ~= true then
+      failed = true
+    end
+  end
+  io.stdout:flush()
+  exit(failed and 1 or 0)
+end
+
 return H
 "#;
 
@@ -545,8 +579,18 @@ impl Backend for Lua {
     }
 
     fn command(&self, spec: &Spec, tool: &Found, track_dir: &Path) -> Invocation {
+        // A project has a test file per stage, s<N>_<slug>_test.lua; the
+        // harness runs those of every stage so far (plain Lua can't list a folder).
+        let args = match &spec.project {
+            Some(p) => std::iter::once("harness.lua".to_string())
+                .chain(p.stages[..p.number].iter().enumerate().map(|(i, slug)| {
+                    format!("{}/s{}_{}_test.lua", spec.rel(self.id()), i + 1, naming::snake(slug))
+                }))
+                .collect(),
+            None => vec![format!("{}/{}_test.lua", spec.rel(self.id()), Self::module(spec))],
+        };
         Invocation::new(&tool.path, track_dir)
-            .args([format!("{}/{}_test.lua", spec.rel(self.id()), Self::module(spec))])
+            .args(args)
             .timeout(Duration::from_secs(60))
     }
 

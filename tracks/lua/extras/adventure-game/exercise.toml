@@ -1,0 +1,19 @@
+title = "The game"
+concept = "modules"
+summary = "Wire every module together behind one Game object: build a world and its entities from a definition, add verbs as closures over the game, run each turn through the parser, the event listeners, the commands and the scheduler, and play the lighthouse to the end."
+stubs = ["game.lua"]
+hints = [
+  "new: `world.build(def)`, then `setmetatable({...}, Game)` with a state from `commands.new_state`, an emitter and a scheduler. Make each item with `M.KINDS[fields.kind or \"item\"]` (call `class.new` under pcall to turn a missing name into nil, err). Place items with `inside` after all the others exist, straight into the container's `contents`.",
+  "The game's own verbs are closures over `self`: `commands.register(self.state, \"quit\", function() self.over = true; return \"Goodbye.\" end)`. talk wraps the npc's script so it also gets the game: `scripts.conversation(function(say, ask) return script(say, ask, self) end)`; keep it in `self.conversation` until it's done.",
+  "input: in a conversation, pass the line to `self.conversation:next(line)`. Otherwise parse, `emit(\"before \" .. verb, self, command)`, run, then on success emit the after event and `self.scheduler:tick()`. Collect game:say lines in a table during the turn, put them after the text, and empty it for the next turn.",
+]
+cases = [
+  "new builds the world the items and the player",
+  "new returns nil and an error for a broken definition",
+  "input parses runs and answers",
+  "before listeners can block and after listeners follow",
+  "talk starts a conversation that takes the next inputs",
+  "spawned scripts take a step after each turn",
+  "save load and quit",
+  "the lighthouse can be won",
+]

@@ -224,3 +224,44 @@ fn a_php_project_runs_each_stage_file_in_its_own_process() {
     assert!(text.contains("Bail out! s3-c.test.php stopped with a fatal error"), "{text}");
     assert_eq!(out.status.code(), Some(1));
 }
+
+#[test]
+fn a_lua_project_runs_every_stage_file_so_far_in_one_process() {
+    let ws = std::env::temp_dir().join(format!("learn-project-lua-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&ws);
+    let ctx = Ctx::discover(Some(ws.clone())).unwrap();
+    let lua = backends::get("lua").unwrap();
+    let specs: Vec<_> = ctx.track_specs("lua").into_iter().filter(|s| s.project.is_some()).collect();
+    assert_eq!(specs.len(), 8, "the adventure engine has eight stages");
+    let tool = crate::toolchain::Found { path: "lua".into(), version: String::new() };
+    let run = lua.command(&specs[1], &tool, &ws.join("lua"));
+    let folder = specs[0].rel("lua");
+    assert_eq!(
+        run.args,
+        ["harness.lua".to_string(), format!("{folder}/s1_adventure_world_test.lua"), format!("{folder}/s2_adventure_parser_test.lua")],
+        "the harness runs the test file of every stage so far"
+    );
+
+    // Each file gets fresh modules, finish() ends only that file, and an error is reported.
+    let Some(tool) = lua.tool().find() else { return }; // no Lua here
+    let dir = ws.join("lua");
+    backends::generate(lua, &specs[..0], &dir).unwrap(); // writes harness.lua
+    let project = dir.join("demo");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::write(project.join("counter.lua"), "local M = { n = 0 }\nfunction M.bump() M.n = M.n + 1 return M.n end\nreturn M\n").unwrap();
+    let test = |n: u32| {
+        format!("local dir = arg[0]:match(\"^(.*)[/\\\\]\") or \".\"\npackage.path = dir .. \"/?.lua;\" .. dir .. \"/../?.lua;\" .. package.path\nlocal H = require(\"harness\")\nlocal c = require(\"counter\")\nlocal t = H.new()\nt:equals(\"c0{n}_x\", function() return c.bump() end, {n})\nt:finish()\n")
+    };
+    std::fs::write(project.join("s1_a_test.lua"), test(1)).unwrap(); // bump() -> 1
+    std::fs::write(project.join("s2_b_test.lua"), test(2)).unwrap(); // a fresh counter: 1, not 2
+    std::fs::write(project.join("s3_c_test.lua"), "error(\"broken stub\")\n").unwrap();
+    let out = std::process::Command::new(&tool.path)
+        .args(["harness.lua", "demo/s1_a_test.lua", "demo/s2_b_test.lua", "demo/s3_c_test.lua"])
+        .current_dir(&dir)
+        .output()
+        .unwrap();
+    let text = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(lua.parse_results(&text), [(0, true), (1, false)], "{text}");
+    assert!(text.contains("Bail out! s3_c_test.lua stopped with an error:") && text.contains("broken stub"), "{text}");
+    assert_eq!(out.status.code(), Some(1));
+}

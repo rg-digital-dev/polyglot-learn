@@ -1,0 +1,18 @@
+title = "Events"
+concept = "closures"
+summary = "Add an event emitter built from closures: listeners with an off function that unsubscribes them, once, vetoes that stop a command, a watch that holds its object in a weak table, and a wrap that runs listeners before and after a command handler."
+stubs = ["events.lua"]
+hints = [
+  "on stores a small table `{ fn = fn }` in the event's list and returns a closure that finds that same table (compare with ==) and removes it. Because the closure keeps `list` and `entry` alive, it still works long after on returned.",
+  "In emit, copy the list first (`table.move(list, 1, #list, 1, {})`) and loop over the copy, so a listener that unsubscribes or subscribes doesn't disturb the loop. once can be written with on: the wrapper calls `off()` and then `fn(...)`; declare `local off` before you assign it so the wrapper can see it.",
+  "A table with `__mode = \"v\"` in its metatable holds its values weakly: `setmetatable({ object }, { __mode = \"v\" })` lets the collector take the object, and then `ref[1]` is nil. wrap returns a new function(state, command) that closes over the emitter, the verb and the handler.",
+]
+cases = [
+  "emit calls the listeners in order with the arguments",
+  "on returns a function that unsubscribes",
+  "listeners can unsubscribe while emit runs",
+  "once runs a listener a single time",
+  "a listener vetoes by returning false and a reason",
+  "watch lets its object be garbage collected",
+  "wrap emits before and after around a handler",
+]

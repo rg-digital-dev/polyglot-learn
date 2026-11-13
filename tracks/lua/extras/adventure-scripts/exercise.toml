@@ -1,0 +1,18 @@
+title = "Scripts"
+concept = "coroutines"
+summary = "Let scripts pause with coroutines: conversations that yield at each question and resume with the player's answer, and a scheduler that runs background scripts a step per tick, waits, and drops scripts that fail."
+stubs = ["scripts.lua"]
+hints = [
+  "A conversation is `coroutine.create(function() return script(say, ask) end)`. say and ask are closures that call `coroutine.yield` with a small table saying what happened; whatever you pass to the next `coroutine.resume(co, value)` becomes the return value of that yield, which is how ask returns the answer.",
+  "next keeps resuming until it meets a question or the end: collect the say lines, stop at an ask. `coroutine.resume` returns false and the error when the script raised; `coroutine.status(co) == \"dead\"` after a resume means it returned, and the resume's second value is what it returned.",
+  "wait is `coroutine.yield(n or 1)`, guarded by `coroutine.isyieldable()`. The scheduler remembers for each script the tick it wakes at; tick resumes the due ones and sets their next wake from the number they yielded. Loop over a copy of the task list, since you remove tasks as they finish.",
+]
+cases = [
+  "a conversation runs to its first question",
+  "next resumes with the answer and ask returns it",
+  "answers must be one of the choices",
+  "a finished conversation has a result and says it is over",
+  "an error in a script ends the conversation",
+  "the scheduler runs scripts a step per tick",
+  "a failing script is dropped and reported",
+]

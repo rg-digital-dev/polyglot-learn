@@ -19,10 +19,12 @@ A `lua` 5.4 interpreter. `learn` looks for `lua5.4`, `lua54`, `lua` and `luajit`
 `learn` runs, from `workspace/lua`:
 
 ```sh
-lua <slug>/<module>_test.lua      # e.g. lua leap-year/leap_year_test.lua
+lua <stage>/<slug>/<module>_test.lua      # e.g. lua 01-foundations/leap-year/leap_year_test.lua
 ```
 
-You can run the same command yourself. Your code goes in `<slug>/<module>.lua`, where the module name is the slug with underscores. It returns a table `M` of functions. The shared `harness.lua` calls each one under `pcall` and compares results, tables included, key by key. For fallible functions, return `nil, "message"`; raising with `error()` fails the test.
+You can run the same command yourself. Each exercise sits inside a numbered folder for its stage. Your code goes in `<slug>/<module>.lua`, where the module name is the slug with underscores. It returns a table `M` of functions. The shared `harness.lua` calls each one under `pcall` and compares results, tables included, key by key. For fallible functions, return `nil, "message"`; raising with `error()` fails the test.
+
+The path ends with a project: a text adventure engine built over eight stages in one folder, `workspace/lua/NN-adventure/`. It starts with rooms as plain tables and goes on to a parser built on patterns, entity classes made from metatables, a dispatch table of verbs, events built from closures and weak tables, coroutine conversations and a scheduler, and saves that are read back in a sandbox. At the end it's a game you can play with `lua main.lua`. Each stage adds a module and its test file (`s1_adventure_world_test.lua`, …) once the stage before passes. Your code carries forward, and `learn` runs every test file so far in one process with `lua harness.lua NN-adventure/s1_adventure_world_test.lua …`, giving each file fresh copies of your modules. `PATH.md` in `workspace/lua/` shows where you are.
 
 ## Lua 5.4 details that matter here
 

@@ -1,0 +1,17 @@
+title = "The parser"
+concept = "string-patterns"
+summary = "Turn what the player types into a command table with Lua patterns: split and clean the words, expand directions and synonyms, recognise two-word verbs, and split an object from its target at a preposition."
+stubs = ["parser.lua"]
+hints = [
+  "`line:lower():gsub(\"[^%w%s'%-]\", \" \")` replaces every character that isn't a letter, digit, space, apostrophe or hyphen with a space; inside a set, `%-` is a literal hyphen. Then `for word in s:gmatch(\"%S+\") do` visits each run of non-space characters.",
+  "Check the special cases in order: no words, a lone direction, a two-word phrase (`M.PHRASES[words[1] .. \" \" .. words[2]]`), then a one-word synonym (`M.SYNONYMS[w] or w`). Remember where the verb's words end, so the rest of the line starts after them.",
+  "Walk the remaining words once: before you've seen a preposition (and once there is at least one object word), a word in `M.PREPOSITIONS` becomes `prep`; words before it are the object, words after it the target. `table.concat(object, \" \")` puts several words back together. For go, map the object through `M.DIRECTIONS` too.",
+]
+cases = [
+  "words lowercases and drops punctuation and articles",
+  "a direction alone means go",
+  "synonyms and two word verbs become one verb",
+  "the object can be several words",
+  "a preposition splits the object and the target",
+  "empty input and unknown words return nil and an error",
+]

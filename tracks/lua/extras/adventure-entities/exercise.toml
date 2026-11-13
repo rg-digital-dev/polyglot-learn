@@ -1,0 +1,18 @@
+title = "Entities"
+concept = "metatables"
+summary = "Model the things in the world as classes built from metatables: an Entity with Item, Container and Npc inheriting from it, callable like constructors, printing themselves with __tostring, and an is_a that walks the chain."
+stubs = ["entities.lua"]
+hints = [
+  "Write one small helper that turns a table into a class: `c.__index = c`, then `setmetatable(c, { __index = parent, __call = function(cls, ...) return cls.new(...) end })`. `__call` makes `Item{...}` work; `__index = parent` is the inheritance.",
+  "Metamethods are looked up on the metatable itself with rawget, never through `__index`, so a subclass doesn't inherit `__tostring`: give every class its own (the same function will do). Entity.new copies the fields into a new table and sets defaults; Item.new can call Entity.new and `setmetatable` the result to Item again.",
+  "is_a: start at `getmetatable(object)`, and while there is a class, compare it with the one you're looking for, then move up with `getmetatable(class).__index`. The error in Entity.new uses level 2: `error(\"an entity needs an id and a name\", 2)`.",
+]
+cases = [
+  "Entity new keeps its fields and needs an id and a name",
+  "tostring adds the article for every class",
+  "matches the id the name its last word and aliases in any case",
+  "classes inherit through their metatables",
+  "classes can be called like constructors",
+  "a container holds items up to its capacity when open",
+  "descriptions and lists read like English",
+]

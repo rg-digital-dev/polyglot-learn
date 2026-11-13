@@ -1,0 +1,19 @@
+title = "The world"
+concept = "tables"
+summary = "Start a text adventure engine with its map: rooms, exits and items as plain tables in a module, connected both ways, listed in a fixed order whatever pairs does, and built from a definition table."
+stubs = ["world.lua"]
+hints = [
+  "A room is a table literal: `{ id = id, name = name, description = description, exits = {}, items = {} }`. Store it in `world.rooms[id]`, and use `world.start = world.start or id` so only the first room becomes the start.",
+  "`pairs` visits keys in no fixed order, so list exits by walking `M.DIRECTIONS` with `ipairs` and keeping the ones in `room.exits`. In build, collect the room ids, `table.sort` them, add every room, then connect the exits (one-way) in a second pass, so an exit can point at a room added later.",
+  "Items are a sequence: append with `items[#items + 1] = item`, and `table.remove(items, i)` closes the gap so the others keep their order. `table.concat(names, \", \")` joins the names; build `describe`'s lines in a table and concat them with \"\\n\".",
+]
+cases = [
+  "add_room makes a room and the first is the start",
+  "a room id can only be used once",
+  "connect adds the way back unless one way",
+  "exits are listed in a fixed order",
+  "go follows an exit or says you cant",
+  "place and remove move items in and out of a room",
+  "describe shows the name text exits and items",
+  "build makes a world from a definition table",
+]

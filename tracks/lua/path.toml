@@ -36,3 +36,18 @@ exercises = [
   "number-generator",
   "error-objects",
 ]
+
+[[stage]]
+id = "adventure"
+title = "Project: text adventure"
+project = true
+exercises = [
+  "adventure-world",
+  "adventure-parser",
+  "adventure-entities",
+  "adventure-commands",
+  "adventure-events",
+  "adventure-scripts",
+  "adventure-save",
+  "adventure-game",
+]
