@@ -19,10 +19,12 @@ Qt 6 with Qt Declarative and `qmltestrunner`; 6.7 or newer is recommended (type 
 `learn` runs, from `workspace/qml`:
 
 ```sh
-qmltestrunner -platform offscreen -input <slug>    # e.g. -input leap-year
+qmltestrunner -platform offscreen -input <stage>/<slug>    # e.g. -input 01-foundations/leap-year
 ```
 
-You can run the same command yourself. Your code goes in `<slug>/<PascalSlug>.qml` (for example `leap-year/LeapYear.qml`), and the test is `<slug>/tst_<slug_with_underscores>.qml`. The test instantiates your component and calls its functions, checking results with `compare()` and `verify()`. Fallible functions must `throw new Error(...)`; the stub's own `TODO: implement` error does not count.
+You can run the same command yourself. Each exercise sits inside a numbered folder for its stage. Your code goes in `<slug>/<PascalSlug>.qml` (for example `leap-year/LeapYear.qml`), and the test is `<slug>/tst_<slug_with_underscores>.qml`. The test instantiates your component and calls its functions, checking results with `compare()` and `verify()`. Fallible functions must `throw new Error(...)`; the stub's own `TODO: implement` error does not count.
+
+The path ends with a project: the data layer of a desktop status bar, built over eight stages in one folder, `workspace/qml/NN-bar/`. It starts with a clock made of bindings, then a battery read from sysfs with an enum and signals, workspaces in a `ListModel` fed by Hyprland's event lines, notifications that expire, a media player with a `StateGroup`, a config parsed by an ECMAScript module, widgets made at runtime from inline components with required properties, and a `Bar` that composes it all. Each stage adds a component and its test file (`tst_s1_bar_clock.qml`, …) once the stage before passes. Your code carries forward, and `learn` runs every test file so far with `qmltestrunner -platform offscreen -input NN-bar`. The last stage includes `Preview.qml`, a window you can open with Qt's `qml` tool to see the bar. `PATH.md` in `workspace/qml/` shows where you are.
 
 ## The JavaScript you get
 

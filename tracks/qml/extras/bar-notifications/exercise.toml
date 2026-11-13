@@ -1,0 +1,17 @@
+title = "Notifications"
+concept = "signals"
+summary = "Build the notification center: a model of notifications newest first, with urgency levels, expiry driven by a now property, dismissing and clearing, do-not-disturb that holds back popups, grouping per app and a badge for the bar."
+stubs = ["Notifications.qml"]
+hints = [
+  "notify works out `expires` once: 0 for Critical or a timeout of 0, otherwise now plus the timeout (defaultTimeout for -1). Insert at index 0 so the newest comes first, and emit `popup(nid)` unless doNotDisturb is on and the urgency isn't Critical.",
+  "`onNowChanged: expire()` runs whenever the bar moves time on. Walk the model from the end to the start: removing an element shifts the ones after it, and going backwards also visits the oldest first.",
+  "groups walks the model from the newest, adding an entry the first time it meets an app and counting after that; an object keyed by app finds the entry. count and badge are bindings on `model.count`.",
+]
+cases = [
+  "notify adds the newest first",
+  "notifications expire as now passes",
+  "dismiss and clear remove notifications",
+  "do not disturb holds back popups",
+  "groups counts per app latest first",
+  "badge counts for the bar",
+]

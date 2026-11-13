@@ -10,7 +10,7 @@ All notable changes to this project are listed here. The format follows
 - Projects: a track's stage can be a project, a codebase that grows over several
   stages in one folder. Each stage's files arrive once the one before passes,
   your code carries forward, and checking a stage runs every test so far.
-  Go, Rust, Python, TypeScript, PHP and Lua run projects; the projects themselves follow one per release.
+  Every track runs projects; the projects themselves follow one per release.
 - Go's project: a URL shortener HTTP service in eight stages (store,
   handlers, stats, middleware, concurrency, timeouts, expiry, graceful
   shutdown), standard library only, 43 tests. It closes the Go path.
@@ -46,6 +46,14 @@ All notable changes to this project are listed here. The format follows
   tests, with a lighthouse world to play through `lua main.lua`. It closes the
   Lua path; `lua harness.lua <test file>...` runs a project's test files in one
   process, each with fresh modules.
+- QML's project: the data layer of a desktop status bar in eight stages (a
+  clock made of bindings, a battery from sysfs with an enum and a signal, a
+  workspace ListModel fed by Hyprland's event lines, expiring notifications,
+  a media player with a StateGroup, a config parsed by an ECMAScript module,
+  widgets made at runtime from inline components with required properties,
+  and a Bar that composes them), Qt Quick only, 53 tests, with a
+  Preview.qml to open in Qt's `qml` tool. It closes the QML path;
+  `qmltestrunner -input <folder>` already runs a project's test files.
 
 ## [0.5.0] - 2026-11-11
 

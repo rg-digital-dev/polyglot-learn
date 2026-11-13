@@ -265,3 +265,39 @@ fn a_lua_project_runs_every_stage_file_so_far_in_one_process() {
     assert!(text.contains("Bail out! s3_c_test.lua stopped with an error:") && text.contains("broken stub"), "{text}");
     assert_eq!(out.status.code(), Some(1));
 }
+#[test]
+fn a_qml_project_runs_the_test_files_in_its_folder() {
+    let ws = std::env::temp_dir().join(format!("learn-project-qml-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&ws);
+    let ctx = Ctx::discover(Some(ws.clone())).unwrap();
+    let qml = backends::get("qml").unwrap();
+    let specs: Vec<_> = ctx.track_specs("qml").into_iter().filter(|s| s.project.is_some()).collect();
+    assert_eq!(specs.len(), 8, "the status bar has eight stages");
+    let tool = crate::toolchain::Found { path: "qmltestrunner".into(), version: String::new() };
+    let run = qml.command(&specs[2], &tool, &ws.join("qml"));
+    let folder = specs[0].rel("qml");
+    assert_eq!(run.args[..4], ["-platform", "offscreen", "-input", folder.as_str()], "qmltestrunner runs every tst_*.qml in the folder");
+
+    // Each test file gets a fresh component, and one that doesn't compile is reported.
+    let Some(tool) = qml.tool().find() else { return }; // no Qt here
+    let project = ws.join("qml").join("demo");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::write(project.join("Counter.qml"), "import QtQuick\nQtObject { property int n: 0; function bump() { n += 1; return n } }\n").unwrap();
+    let test = |n: u32| {
+        format!("import QtQuick\nimport QtTest\nTestCase {{\n    name: \"S{n}\"\n    Counter {{ id: c }}\n    function test_c0{n}_x() {{ compare(c.bump(), {n}) }}\n}}\n")
+    };
+    std::fs::write(project.join("tst_s1_a.qml"), test(1)).unwrap(); // bump() -> 1
+    std::fs::write(project.join("tst_s2_b.qml"), test(2)).unwrap(); // a fresh counter: 1, not 2
+    std::fs::write(project.join("tst_s3_c.qml"), "import QtQuick\nimport QtTest\nTestCase {\n    name: \"S3\"\n    NoSuchType {}\n}\n").unwrap();
+    let report = ws.join("report.txt");
+    std::process::Command::new(&tool.path)
+        .args(["-platform", "offscreen", "-input", "demo", "-o"])
+        .arg(format!("{},txt", report.display()))
+        .env("QT_QPA_PLATFORM", "offscreen")
+        .current_dir(ws.join("qml"))
+        .output()
+        .unwrap();
+    let text = std::fs::read_to_string(&report).unwrap();
+    assert_eq!(qml.parse_results(&text), [(0, true), (1, false)], "{text}");
+    assert!(text.contains("FAIL!  : qmltestrunner::tst_s3_c::compile()"), "{text}");
+}

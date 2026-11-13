@@ -1,0 +1,18 @@
+title = "The battery"
+concept = "enums-and-signals"
+summary = "Model the battery from Linux's sysfs uevent file: an enum for its status, a level, icon, label and time estimate as bindings, and a lowBattery signal emitted from change handlers once per drop below the threshold."
+stubs = ["Battery.qml"]
+hints = [
+  "An enum declared in a QML file is reached through the file's type name, also inside the file: `status === Battery.Charging`. The values are plain integers, so `property int status` holds them.",
+  "Write level, low, icon, label and remaining as bindings: `readonly property int level: Math.max(0, Math.min(100, Math.round(percent)))`. A `switch` in a binding block works: `readonly property string label: { switch (status) { case Battery.Full: return \"Full\" ... } }`.",
+  "Every property gets a change signal and a handler: `onLowChanged: { if (low && !warned) { warned = true; lowBattery(level) } }`. Keep the warned flag in a property of its own, and clear it in onLevelChanged (above lowThreshold + 5) and onStatusChanged (Charging). In parseUevent, split the text on \"\\n\" and each line at its first \"=\".",
+]
+cases = [
+  "level rounds and clamps percent",
+  "status is an enum and the label shows it",
+  "icon follows level and status",
+  "low at or below the threshold unless charging",
+  "lowBattery fires once per drop",
+  "parseUevent reads sysfs lines",
+  "remaining estimates time to empty or full",
+]

@@ -33,3 +33,18 @@ exercises = [
   "connections",
   "todo-model",
 ]
+
+[[stage]]
+id = "bar"
+title = "Project: status bar"
+project = true
+exercises = [
+  "bar-clock",
+  "bar-battery",
+  "bar-workspaces",
+  "bar-notifications",
+  "bar-media",
+  "bar-config",
+  "bar-widgets",
+  "bar-bar",
+]

@@ -1,0 +1,17 @@
+title = "Widgets"
+concept = "dynamic-objects"
+summary = "Make the bar's widgets on demand: inline components built on one base with required properties, a Component per kind, createObject with initial properties, destroy, and a live count kept up to date from Component.onDestruction."
+stubs = ["Widgets.qml"]
+hints = [
+  "`component Widget: QtObject { required property string kind; required property var source; ... }` declares a type inside the file. `component ClockWidget: Widget { kind: \"clock\"; text: source.time }` builds on it; setting kind there satisfies the requirement, and source comes from createObject.",
+  "Wrap each kind in a Component: `property Component clockComponent: Component { ClockWidget {} }`, then `component.createObject(root, { source: source, owner: root })`. An inline component can't see the ids of the file around it, which is why each widget gets its owner as a property: `Component.onDestruction: if (owner) owner.alive--`.",
+  "The Qt docs warn against using ListModel.get() in bindings, so the workspaces widget recomputes its text in a function, called from Connections on the model (onCountChanged, onDataChanged) and on the source (onActiveChanged), and once in Component.onCompleted. destroy() happens later, at the next turn of the event loop.",
+]
+cases = [
+  "create makes a widget bound to its source",
+  "unknown kinds and missing sources throw",
+  "a widget requires its kind and source",
+  "visible follows the source",
+  "workspaces widget marks active and urgent",
+  "build replaces a section and destroys the old widgets",
+]

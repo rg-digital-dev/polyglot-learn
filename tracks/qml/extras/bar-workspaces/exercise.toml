@@ -1,0 +1,18 @@
+title = "Workspaces"
+concept = "models"
+summary = "Keep the compositor's workspaces in a ListModel sorted by id, updated from Hyprland's event socket lines: focus, create, destroy and rename workspaces, count windows as they open, close and move, and mark urgent ones."
+stubs = ["Workspaces.qml"]
+hints = [
+  "`model.get(i)` reads an element, `model.insert(i, { ... })` adds one at an index and `model.setProperty(i, \"windows\", n)` changes one field. Find the insert position by walking until the next id is larger.",
+  "Split a line at its first \">>\" into event and data, then the data with `split(\",\")`. A title or a new name may itself contain commas, so join the rest back: `data.slice(1).join(\",\")`. `parseInt` returns NaN for text that isn't a number; check with `isNaN`.",
+  "closewindow, movewindow and urgent only give the window's address, so remember where each window is: `windowsAt[address] = workspaceId` on openwindow, `delete windowsAt[address]` on closewindow. Emit `activated(id)` only when active really changes.",
+]
+cases = [
+  "add keeps workspaces sorted by id",
+  "remove takes a workspace out",
+  "workspace events move the focus",
+  "create destroy and rename events",
+  "window events count windows per workspace",
+  "urgent marks a workspace until it is focused",
+  "feed handles many lines and skips the rest",
+]

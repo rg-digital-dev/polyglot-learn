@@ -1,0 +1,19 @@
+title = "The bar"
+concept = "composition"
+summary = "Compose the whole bar: typed properties holding every part, bindings that pass the time and the config's settings down, an alias for the config text, Connections that rebuild the sections and turn a low battery into a notification, and three live lines of text."
+stubs = ["Bar.qml"]
+hints = [
+  "Each part is a property of its own type with its bindings inside: `property Clock clock: Clock { now: bar.now; use24h: cfg.config.clock.use24h }`. Give the Config an id (`property Config config: Config { id: cfg }`) so `property alias configText: cfg.text` can point into it.",
+  "Rebuild the sections in a function that calls widgets.build for each of left, center and right with the old lists, and assigns a new object to sections, so bindings on it update. Call it in `Component.onCompleted`, and from `Connections { target: cfg; function onParsedChanged() { bar.rebuild() } }`.",
+  "A property can hold a Connections too: `property Connections batteryWatch: Connections { target: bar.battery; function onLowBattery(level) { ... } }`. left, center and right are bindings on `widgets.textOf(sections.left)` and so on: the engine also records the widgets' text and visible read inside textOf.",
+]
+cases = [
+  "one now drives the clock and the notifications",
+  "the config sets sections and settings",
+  "changing the config rebuilds the sections",
+  "sections show the visible widgets text live",
+  "ipc lines reach the workspaces",
+  "a low battery raises a critical notification",
+  "tick moves time and playback",
+  "an invalid config falls back and reports",
+]

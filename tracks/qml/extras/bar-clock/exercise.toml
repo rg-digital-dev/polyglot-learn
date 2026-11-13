@@ -1,0 +1,17 @@
+title = "The clock"
+concept = "bindings"
+summary = "Start the data layer of a desktop status bar with its clock: time, date and greeting as bindings on one now property, a relative-time helper, and a label whose binding you break by assigning and restore with Qt.binding."
+stubs = ["Clock.qml"]
+hints = [
+  "A property whose value is an expression is a binding: `readonly property string time: format(now, use24h, showSeconds)` runs again whenever now, use24h or showSeconds changes, because the engine records every property the expression reads. A block `{ ... return x }` works as a binding too.",
+  "Build the text from `new Date(now)`: getHours(), getMinutes(), getDay() (0 is Sunday) and getMonth() (0 is January) give local values. Pad with `n < 10 ? \"0\" + n : String(n)`. In 12-hour form the hour is `h % 12`, shown as 12 when that is 0.",
+  "`label = text` replaces label's binding with a fixed value; from then on a new time doesn't reach it. `label = Qt.binding(() => root.time)` assigns a new binding instead of a value. Give label its first binding in its declaration: `property string label: time`.",
+]
+cases = [
+  "time follows now in 24 hour form",
+  "the 12 hour form",
+  "date uses day and month names",
+  "greeting changes with the hour",
+  "relative says how far away a time is",
+  "override breaks the label binding and follow restores it",
+]

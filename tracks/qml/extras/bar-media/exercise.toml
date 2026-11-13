@@ -1,0 +1,18 @@
+title = "Media"
+concept = "states"
+summary = "Give the media player a queue, play, pause, stop, next, previous and seek, and a StateGroup whose states switch on their when conditions and set the icon with PropertyChanges, while time passing moves through the queue."
+stubs = ["Media.qml"]
+hints = [
+  "A State with `when: root.playing && root.track !== null` becomes the group's state as soon as its condition is true; with no state active, the group's state is \"\". Inside it, `PropertyChanges { root.icon: \"media-playback-start\" }` sets a property while the state is active and puts it back afterwards.",
+  "track is a binding: `index >= 0 && index < queue.length ? queue[index] : null`. status maps the group's \"\" to \"stopped\". The methods only change playing, index and position; the states follow by themselves.",
+  "advance loops while playing: when the seconds fit in what's left of the track, add them and stop; otherwise take off what was left, call next() and go on with the rest. next() at the end without repeat sets playing to false, which ends the loop.",
+]
+cases = [
+  "load sets the queue and stops",
+  "play pause toggle and stop change the status",
+  "the icon follows the state",
+  "next and previous change track",
+  "advance moves on through the queue",
+  "the end of the queue stops or repeats",
+  "label and progress describe the track",
+]

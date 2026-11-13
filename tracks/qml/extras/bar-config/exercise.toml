@@ -1,0 +1,17 @@
+title = "The config"
+concept = "javascript-modules"
+summary = "Read the bar's settings from JSON with an ECMAScript module imported into QML: deep-merge the file over the defaults, validate every setting with the path of each problem, fall back to the defaults, and parse through a binding on the text."
+stubs = ["config.mjs", "Config.qml"]
+hints = [
+  "merge copies the defaults first (`copy` is given), then for each key of the overrides either merges again, when both sides are plain objects, or puts a copy of the override's value in. Arrays replace: check `Array.isArray` before treating something as an object.",
+  "validate collects strings in an array. Walk the config's keys recursively against DEFAULTS to find unknown ones (`Object.prototype.hasOwnProperty.call(shape, key)`), then check each setting. `Number.isInteger` rejects 12.5 and \"30\". A section that was overridden with something else may not be an object at all.",
+  "`import \"config.mjs\" as Lib` makes the exports available as `Lib.parse` and so on. `readonly property var parsed: Lib.parse(text)` reruns whenever text changes; config, errors and valid are bindings on parsed. JSON.parse throws a SyntaxError; catch it and use its message.",
+]
+cases = [
+  "merge combines nested objects without changing them",
+  "the defaults are valid",
+  "validate names the path of each problem",
+  "parse falls back to the defaults",
+  "Config parses its text through a binding",
+  "get reads a dotted path",
+]
