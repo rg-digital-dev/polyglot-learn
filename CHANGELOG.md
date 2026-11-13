@@ -6,6 +6,8 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-13
+
 ### Added
 - Projects: a track's stage can be a project, a codebase that grows over several
   stages in one folder. Each stage's files arrive once the one before passes,
